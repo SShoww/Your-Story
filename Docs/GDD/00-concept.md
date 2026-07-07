@@ -1,22 +1,18 @@
----
 type: gdd-concept
 version: 0.1
-date: [7/7/2026]
-team: [รายชื่อสมาชิก]
+date: 7/7/2026
+team: Your Story
 ---
-
-# [ชื่อเกม] — Game Concept
-
+# Cute boss rush — Game Concept
 ## Elevator Pitch
-[อธิบายเกมใน 2-3 ประโยค: เกมอะไร, ผู้เล่นทำอะไร, ทำไมถึงสนุก]
-
+Simple Metroidvania Bossrush game with unique character progression
 ## Genre & Platform
-- **Genre:** [เช่น 2D Platformer, Top-down Shooter]
+- **Genre:** Metroidvania | Hack/Slash | Single player 
 - **Platform:** PC (Windows)
 - **Engine:** MonoGame (C#)
-- **Target Audience:** [กลุ่มเป้าหมาย]
-
-## Inspiration & References
-| เกม/สื่อ | แรงบันดาลใจที่นำมาใช้ |
+- **Target Audience:** For people who like Progressing character in the fast placed Metroidvania Game
+## Inspiration & Referencesa
+| idle boss rush And Dead cell |
 |---|---|
-| [ชื่อ] | [ด้านไหน เช่น visual style, mechanic] |
+| Dead Cells |    Mechanic & Combat Feel |
+| Idle boss rush | Idea and Game loop |

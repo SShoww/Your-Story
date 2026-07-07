@@ -1,26 +1,30 @@
 ---
 type: gdd-scope
 version: 0.1
-date: [วันที่]
+date: [7/7/2026 ]
 ---
-
-# [ชื่อเกม] — Scope & Feature List
-
-## Unique Selling Point (USP)
-1. [USP ที่ 1]
-2. [USP ที่ 2]
-
-## In Scope — สิ่งที่ "จะทำ" ในภาคการศึกษานี้
+[Cute Boss rush (ชื่อชั่วคราว)] — Scope & Feature List
+Unique Selling Point (USP)
+[Cute Aesthetics x Hardcore Challenge: งานภาพสไตล์การ์ตูน 2D แสนน่ารักสดใส แต่แฝงไปด้วยระบบการต่อสู้กับบอสที่ท้าทาย อาศัยจังหวะและการหลบหลีกที่แม่นยำ (น่ารักแต่ไม่อ่อนโยน)]
+[Tailored Build Progression: ระบบอัปเกรดและปรับแต่งตัวละครแบบกึ่ง Roguelite ที่ให้ผู้เล่นสามารถ Reset และปรับเปลี่ยนสายการเล่น (Build) เพื่อแก้ทาง (Counter) รูปแบบการโจมตีของบอสแต่ละตัวได้อย่างอิสระ]
+In Scope —สิ่งที่ "จะที่" ในภาคการศึกษานี้
 | # | Feature | Priority | หมายเหตุ |
 |---|---|---|---|
-| 1 | [Feature] | Must | |
-| 2 | [Feature] | Should | |
-| 3 | [Feature] | Could | |
+| 1 | [Core Gameplay & Boss Arena] | Must | |
+| 2 | [1 Unique Bosses] | Must| |
+| 3 | [Basic Progression System] | Must| |
+| 4 | [Game Juice & Feedbacks] | Should | |
+| 5 | [More Strategy Mechanics ] | Could | |
+| 5 | [More bosses] | Could | |
+| 6 | [Audio & UI Elements] | Could | |
+| 7 | [Save/Load System] | Could | |
+| 8 | [Narrative & Cutscenes] | Could | |
+| 9 | [different weapon arsenal] | Could | |
+Out of Scope - สิ่งที่จะไม่ทำ"
+[Advance Animation: เหตุผลเนื่องจากที่กำลังที่จำกัดในด้าน Art จึงควรจะลดคุณภาพ/เรมของผู้เล่น และ บอส ได้ให้มากที่สุดเพื่อลดภาระงาน]
+[Advance aesthetic: หน้าเมนูส่วนใหญ่จะที่แทนที่ด้วยกรอบ UI มากกว่า Graphic จะได้ไปโฟกัสกับงานในส่วนอื่น ( พื้นหลังตอนต่อสู้ และ Animation )]
+Risks & Assumptions
+| ภาระงานที่มากเกินไป | งานอาจจะไม่ได้เป็นอย่างที่ควร และ ทำให้ทีมงานได้รับความเครียดในการทำงาน  | ใช้ Asset ซ้ำ และ ลด Mechanic บางอย่าง  |
+| กำหนดเวลาในการที่งานที่กระชันชิด | ทำให้ที่งานได้รับภาระงานที่มากเกินไปและไม่มีเวลาว่างสำหรับการพักผ่อน | อาจต้องเร่งแบ่งงานทำในบ่างส่วนหากมีภาระงานที่มากเกินไป |
 
-## Out of Scope — สิ่งที่ "จะไม่ทำ"
-- [สิ่งที่ตัดออก + เหตุผล]
-
-## Risks & Assumptions
-| ความเสี่ยง | ผลกระทบ | แผนรับมือ |
-|---|---|---|
-| [เช่น ทีมยังไม่เคยทำ X] | | |
+|---|---|---| 
