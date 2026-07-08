@@ -1,4 +1,4 @@
-type: gdd-concept
+## type: gdd-concept
 version: 0.1
 date: 7/7/2026
 team: Your Story
@@ -28,3 +28,5 @@ Simple Metroidvania Bossrush game with unique character progression
 | ---------------------------- | ---------------------- |
 | Dead Cells                   | Mechanic & Combat Feel |
 | Idle boss rush               | Idea and Game loop     |
+
+---
