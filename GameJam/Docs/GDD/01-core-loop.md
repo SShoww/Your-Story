@@ -11,28 +11,31 @@ date: 14/7/2026
 
 ```mermaid
 flowchart LR
-A[MENU] --> B[-]
-B --> C[-]
-C --> D[-]
-D --> B
+A[MENU] --> B[Text Based Story Scene]
+B --> C[Action]
+C --> B
+C --> D[Summary / Ending]
 ```
 
 ## Core Mechanics
 
-1. [-]
-2. [-]
-3. [-]
+1. [Interactive with story rich game]
+2. [Simple but challenging Platformer Action Gameplay]
+3. [Text Exploration and Story telling]
 
 ## Controls
 
-| Key | Action |
-| --- | ------ |
-|     |        |
-|     |        |
+| Key             | Action               |
+| --------------- | -------------------- |
+| A / D           | Left / Right         |
+| W / SpaceBar    | Jump                 |
+| Shift           | Dodge                |
+| Left Click / J  | Attack               |
+| Right Click / L | Special/Heavy Attack |
 
 ## Win / Lose Condition
 
-- **ชนะเมื่อ:**
-- **แพ้เมื่อ:**
+- **ชนะเมื่อ:เอาชนะศัตรูจนหมด**
+- **แพ้เมื่อ:HP ของเราเหลือ 0**
 
 ---
