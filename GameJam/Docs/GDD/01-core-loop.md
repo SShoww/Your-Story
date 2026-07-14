@@ -25,13 +25,13 @@ C --> D[Summary / Ending]
 
 ## Controls
 
-| Key             | Action               |
-| --------------- | -------------------- |
-| A / D           | Left / Right         |
-| W / SpaceBar    | Jump                 |
-| Shift           | Dodge                |
-| Left Click / J  | Attack               |
-| Right Click / L | Special/Heavy Attack |
+| Key             | Action                             |
+| --------------- | ---------------------------------- |
+| A / D           | Left / Right                       |
+| W / SpaceBar    | Jump                               |
+| Shift           | Dodge                              |
+| Left Click / J  | Attack                             |
+| Right Click / L | Special/Heavy Attack (Not Require) |
 
 ## Win / Lose Condition
 
