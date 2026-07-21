@@ -1,9 +1,9 @@
 ---
 type: doc-index
 version: 0.1
-date: [วันที่]
+date: [07/14/2026]
 ---
-# [ชื่อเกม] — Documentation Index
+# [Cute Boss rush] — Documentation Index
 
 ## 📖 เอกสารในโปรเจกต์นี้
 
