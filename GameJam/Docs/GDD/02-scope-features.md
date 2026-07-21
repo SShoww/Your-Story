@@ -12,7 +12,7 @@ date: 14/7/2026
 * **Challenge**: Text Based Driven with Platformer Action Gameplay
 * **Build Progression**: Learn about character And Lovecraftain world Story and progressing Character stat along the way with discovering newer path in the loop
 
-## In Scope — สิ่งที่จะทำในภาคการศึกษานี้
+## In Scope — สิ่งที่จะทำในGameJam
 
 | # | Feature                                             | Priority | รายละเอียด / คำอธิบายเพิ่มเติม            | หมายเหตุ            |
 | - | --------------------------------------------------- | -------- | -------------------------------------------------------------------- | --------------------------- |
@@ -29,7 +29,7 @@ date: 14/7/2026
 ## Out of Scope - สิ่งที่จะไม่ทำ
 
 * **Advance Animation**: ไม่ลงทุนกับด้านกราฟฟิกมากเกืนไปและพยายามใช้ Asset free เท่าที่เป็นไปได้
-* **Complex RPG Systems:** No inventory, crafting, or skill trees.		
+* **Complex RPG Systems:** No inventory, crafting, or skill trees.
 
 | ความเสี่ยง               | ผลกระทบ                               | แนวทางการแก้ไข                                                  |
 | ---------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------- |
