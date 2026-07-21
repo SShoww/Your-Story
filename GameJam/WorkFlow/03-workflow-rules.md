@@ -1,10 +1,10 @@
 ---
 type: jam-workflow
 version: 0.1
-date: [วันที่]
-team: [ชื่อทีม]
+date: [21/7/2026]
+team: [Your Story]
 ---
-# Git Workflow Rules — [ชื่อทีม]
+# Git Workflow Rules — [Your Story]
 
 > ปรับจาก branching workflow ปกติให้ "เร็วพอ" สำหรับ 48 ชม. — ตกลงกติกาให้ครบก่อนเริ่ม แล้วห้ามเปลี่ยนกลางทาง
 
