@@ -3,8 +3,7 @@ type: gdd-class-diagram
 version: 0.1
 date: [วันที่]
 ---
-
-# Class Diagram — [ชื่อเกม]
+# Class Diagram — [Cute Boss rush]
 
 ```mermaid
 classDiagram
