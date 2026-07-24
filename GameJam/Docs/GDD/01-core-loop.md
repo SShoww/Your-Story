@@ -27,15 +27,14 @@ C --> D[Summary / Ending]
 
 | Key             | Action                             |
 | --------------- | ---------------------------------- |
-| A / D           | Left / Right                       |
-| W / SpaceBar    | Jump                               |
-| Shift           | Dodge                              |
+| W / S / A / D   | Left / Right / Down / Up           |
+| / SpaceBar      | Dash / Dodge                       |
 | Left Click / J  | Attack                             |
 | Right Click / L | Special/Heavy Attack (Not Require) |
 
 ## Win / Lose Condition
 
-- **ชนะเมื่อ:เอาชนะศัตรูจนหมด**
+- **ชนะเมื่อ:เอาชนะศัตรูจนหมด และสำรวจจนถึงจุดสิ้นสุด**
 - **แพ้เมื่อ:HP ของเราเหลือ 0**
 
 ---

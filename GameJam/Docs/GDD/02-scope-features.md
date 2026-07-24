@@ -14,17 +14,17 @@ date: 14/7/2026
 
 ## In Scope — สิ่งที่จะทำในGameJam
 
-| # | Feature                                             | Priority | รายละเอียด / คำอธิบายเพิ่มเติม            | หมายเหตุ            |
-| - | --------------------------------------------------- | -------- | -------------------------------------------------------------------- | --------------------------- |
-| 1 | Core Gameplay                                       | Must     | ระบบต่อสู้แนว Platfrom / Main Control and Game state   | Main Control and Game state |
-| 2 | Text based story and loop Mechanic                 | Must     | useable Ui with Unlockable path                                      |                             |
-| 3 | Player Progression                                  | Should   | Up stat when Choosing the right path (HP,ATTACK,ATTACK SPEED, Armor) |                             |
-| 4 | Special Action Move Or Player Progression Mechanics | Should   | Special skill that help player with the hard situation               |                             |
-| 5 | Enemies in depth Mechanic                           | Should   | Well design of Enemies Attacking mechanics                           |                             |
-| 6 | Sound / Visual Effect                               | Should   |                                                                      |                             |
-| 7 | Save/Load                                           | maybe    | for longer game seasion                                              |                             |
-| 8 |                                                     |          |                                                                      |                             |
-| 9 |                                                     |          |                                                                      |                             |
+| # | Feature                        | Priority | รายละเอียด / คำอธิบายเพิ่มเติม            | หมายเหตุ            |
+| - | ------------------------------ | -------- | -------------------------------------------------------------------- | --------------------------- |
+| 1 | Core Gameplay                  | Must     | ระบบต่อสู้แนว Platfrom / Main Control and Game state   | Main Control and Game state |
+| 2 | Last stage of Demo             | Must     | Enconter with some thing terrible                                    |                             |
+| 3 | Player/Weapon Progression      | Should   | Up stat when Choosing the right path (HP,ATTACK,ATTACK SPEED, Armor) |                             |
+| 4 | Special Action Move Mechanics | Should   | Special skill that help player with the hard situation               |                             |
+| 5 | Enemies in depth Mechanic      | Should   | Well design of Enemies Attacking mechanics                           |                             |
+| 6 | Sound / Visual Effect feedback | Should   | Sound and Visual Effect are nessery in Fast placed Gameplay          |                             |
+| 7 | Save/Load                      | Could    | for longer game seasion                                              |                             |
+| 8 |                                |          |                                                                      |                             |
+| 9 |                                |          |                                                                      |                             |
 
 ## Out of Scope - สิ่งที่จะไม่ทำ
 
