@@ -1,18 +1,30 @@
 ---
 type: doc-index
 version: 0.1
-date: [07/14/2026]
+date:
+  - 09/01/2026
 ---
-# [Cute Boss rush] — Documentation Index
+# [BePal] — Documentation Index
+## 👥คนในทีม
+
+| รหัส      | ชื่อ               | ชื่อเล่น |
+| --------- | ------------------ | -------- |
+| 682110119 | ธัญญรัตน์ ติ๊บหน่อ | เดียร์   |
+| 682110128 | ปีย์ตะวัน แห่งหาญ  | ซุง      |
+| 682110137 | ภูมิพัฒน์ ตามวงค์  | ภูมิ     |
+| 682110141 | วศิน ศรีวรกุล      | โชว์     |
 
 ## 📖 เอกสารในโปรเจกต์นี้
 
 | ไฟล์                                          | เนื้อหา                          | สถานะ |
 | --------------------------------------------- | -------------------------------- | ----- |
 | [00-concept.md](BEPAL/Docs/GDD/00-concept.md) | Game concept, core loop, scope   | ✅     |
-| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | ✅     |
-| [02-asset-list.md](02-asset-list.md)          | Asset list + asset pipeline flow | ✅     |
-| [03-class-diagram.md](03-class-diagram.md)    | Class diagram เบื้องต้น          | ✅     |
+| [01-core-loop.md](01-core-loop.md)            | Class diagram เบื้องต้น          | 🛑    |
+| [02-scope-features.md](02-scope-features.md)  |                                  |       |
+| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | 🛑    |
+| [04-class-diagram.md](04-class-diagram.md)    |                                  |       |
+| [05-asset-list.md](05-asset-list.md)          | Asset list + asset pipeline flow | ✅     |
+
 
 ## 🏷️ Naming Convention
 
@@ -40,9 +52,9 @@ date: [07/14/2026]
 
 ## 📁 ใครดูแลส่วนไหน
 
-| คนที่ | รับผิดชอบ  | โฟลเดอร์ staging                |
-| ---------- | ------------------- | --------------------------------------- |
-| 1          | Sprites / Textures  | `docs/02_Assets/_candidates/sprites/` |
-| 2          | Sound Effects (SFX) | `docs/02_Assets/_candidates/sfx/`     |
-| 3          | Music / BGM         | `docs/02_Assets/_candidates/music/`   |
-| 4          | Fonts + Data        | `docs/02_Assets/_candidates/fonts/`   |
+| คนที่ | รับผิดชอบ           | โฟลเดอร์ staging                      |
+| ----- | ------------------- | ------------------------------------- |
+| 1     | Sprites / Textures  | `docs/02_Assets/_candidates/sprites/` |
+| 2     | Sound Effects (SFX) | `docs/02_Assets/_candidates/sfx/`     |
+| 3     | Music / BGM         | `docs/02_Assets/_candidates/music/`   |
+| 4     | Fonts + Data        | `docs/02_Assets/_candidates/fonts/`   |

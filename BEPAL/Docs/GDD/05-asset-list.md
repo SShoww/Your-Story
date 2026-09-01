@@ -3,7 +3,7 @@ type: asset-list
 version: 0.1
 date: [วันที่]
 ---
-# Asset List — [Cute Boss rush]
+# Asset List — [BePal]
 
 ## Sprites / Textures
 
