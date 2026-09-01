@@ -44,6 +44,6 @@
 ---
 
 ## Links
-- [[docs/gdd/00-concept|GDD Concept]]
+- [[BEPAL/Docs/GDD/00-concept|GDD Concept]]
 - [[docs/agile/01-product-backlog|Product Backlog]]
 - [[docs/agile/02-sprint-backlog|Sprint Backlog]]

@@ -9,12 +9,12 @@
 
 ## Timeline (4 Sprint, Sprint ละ 2 สัปดาห์)
 
-| Sprint   | เริ่ม      | สิ้นสุด    |
-| -------- | ---------- | ---------- |
-| Sprint 1 | 2026-09-01 | 2026-09-14 |
-| Sprint 2 | 2026-09-15 | 2026-09-28 |
-| Sprint 3 | 2026-09-29 | 2026-10-12 |
-| Sprint 4 | 2026-10-13 | 2026-10-26 |
+| Sprint   | เริ่ม      | สิ้นสุด    |     |
+| -------- | ---------- | ---------- | --- |
+| Sprint 1 | 2026-09-01 | 2026-09-14 |     |
+| Sprint 2 | 2026-09-15 | 2026-09-28 |     |
+| Sprint 3 | 2026-09-29 | 2026-10-12 |     |
+| Sprint 4 | 2026-10-13 | 2026-10-26 |     |
 
 ```mermaid
 gantt
@@ -55,12 +55,12 @@ gantt
 
 ## Sprint 4 (Draft)
 
-| #     | User Story                                                                                         | MoSCoW                                                               | Estimate (SP) |
-| ----- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------- |
-| 1     | As a designer, I want to have other status. so player can feel more challanges.                    | Nice to Have                                                         | 3             |
-| 2     | As a designer, I want to have a tutorial page so player can see how to play or interact with game. | อยากให้มีภาพแสดงวิธีการเล่น ผู้เล่นจะได้ณู้ว่าเล่นเกมยังไง           | 2             |
-| 3     | As a Artist, I want animation when got attack or pet behavior when qte.                            | อยากให้มีอนิเมชัน เมื่อมัปฏิสัมพันธ์กับสัตว์เลี้ยง หรือเมื่อโดนโจมตี | 5             |
-| ==4== | ==As a programmer, I want ...==                                                                    |                                                                      | ==3==             |
+| #   | User Story                                                                                         | MoSCoW                                                               | Estimate (SP) |
+| --- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------- |
+| 1   | As a designer, I want to have other status. so player can feel more challanges.                    | Nice to Have                                                         | 3             |
+| 2   | As a designer, I want to have a tutorial page so player can see how to play or interact with game. | อยากให้มีภาพแสดงวิธีการเล่น ผู้เล่นจะได้รู้ว่าเล่นเกมยังไง           | 2             |
+| 3   | As a Artist, I want animation when got attack or pet behavior when qte.                            | อยากให้มีอนิเมชัน เมื่อมีปฏิสัมพันธ์กับสัตว์เลี้ยง หรือเมื่อโดนโจมตี | 5             |
+| 4   | As a programmer, I want debug mode                                                                 | debug mode                                                           | 5             |
 
 > **Sprint 2-4 คือ draft ระดับ release plan** — เป้าหมายคือฝึกกะจำนวน SP ต่อ Sprint ให้ใกล้เคียง capacity ของทีม ไม่ใช่ล็อก scope ตายตัว ปรับได้ทุกครั้งที่ทำ Sprint Planning ของ Sprint ถัดไป
 >
