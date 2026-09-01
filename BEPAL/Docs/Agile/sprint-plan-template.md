@@ -13,9 +13,10 @@
 
 ## Sprint Backlog
 
-| # | User Story | รับผิดชอบ | MoSCoW | Estimate (SP) | Status |
-|---|---|---|---|---|---|
-| 1 | [User Story ของ Sprint นี้ จาก 02-sprint-backlog.md] | [ชื่อ] | Must Have | [SP] | 🔲 Todo |
+| #   | User Story                                       | รับผิดชอบ | MoSCoW    | Estimate (SP) | Status  |
+| --- | ------------------------------------------------ | --------- | --------- | ------------- | ------- |
+| 1   | As a player, I want to press button to play qte. | วศิน      | Must Have | 5             | 🔲 Todo |
+| 2   | As a player, I want to see attacked system       | วศิน      | Must Have | 5             | 🔲 Todo |
 
 ## Status Legend
 - 🔲 Todo
@@ -28,8 +29,8 @@
 ## Tasks
 
 ### Story 1 — [ชื่อย่อของ Story]
-- [ ] [Task ย่อย]  [owner:: ชื่อ]  [estimate:: Nh]  [status:: todo]
-- [ ] [Task ย่อย]  [owner:: ชื่อ]  [estimate:: Nh]  [status:: todo]
+- [ ] [qte]  [วศิน]  [5]  [status:: todo]
+- [ ] [HP]  [เดียร์]  [3]  [status:: todo]
 
 ---
 
@@ -37,7 +38,7 @@
 
 ### [วันที่]
 **เมื่อวาน:** ...
-**วันนี้:** ...
+**วันนี้:** ทำ Sprint-Backlog
 **Blocked:** ...
 
 ---
