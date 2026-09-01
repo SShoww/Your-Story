@@ -9,14 +9,14 @@ date: [07/14/2026]
 
 | ไฟล์                                | เนื้อหา                   | สถานะ |
 | --------------------------------------- | -------------------------------- | ---------- |
-| [00-concept.md](00-concept.md)             | Game concept, core loop, scope   | ✅         |
+| [00-concept.md](BEPAL/Docs/GDD/00-concept.md)             | Game concept, core loop, scope   | ✅         |
 | [01-mechanics.md](01-mechanics.md)         | Mechanic flow (state diagram)    | ✅         |
 | [02-asset-list.md](02-asset-list.md)       | Asset list + asset pipeline flow | ✅         |
 | [03-class-diagram.md](03-class-diagram.md) | Class diagram เบื้องต้น | ✅         |
 
 ## 🏷️ Naming Convention
 
-**Asset:** ดูตารางเต็มใน [00-concept.md](00-concept.md#asset-naming-convention)
+**Asset:** ดูตารางเต็มใน [00-concept.md](BEPAL/Docs/GDD/00-concept.md#asset-naming-convention)
 
 | Prefix   | ประเภท     |
 | -------- | ---------------- |

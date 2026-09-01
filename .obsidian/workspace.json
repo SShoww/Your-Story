@@ -1,0 +1,214 @@
+{
+  "main": {
+    "id": "16f62d90b378bd91",
+    "type": "split",
+    "children": [
+      {
+        "id": "03eed4f91a2deabf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "22f8d75425d1c32d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "BEPAL/Docs/GDD/05-asset-list-pipeline-flow.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "05-asset-list-pipeline-flow"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "d33ebdbbe85a2b4f",
+    "type": "split",
+    "children": [
+      {
+        "id": "94c8e374c82fdb90",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fca0ffa927c19bc7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "fe13dd16f12cb06e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "6f2aeff72d4f5d17",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "36eba5f1bb361e97",
+    "type": "split",
+    "children": [
+      {
+        "id": "cbbd8d5909b68799",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "05db8c9eea44401a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "BEPAL/Docs/GDD/05-asset-list-pipeline-flow.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 05-asset-list-pipeline-flow"
+            }
+          },
+          {
+            "id": "9b9254878f580a57",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "BEPAL/Docs/GDD/05-asset-list-pipeline-flow.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 05-asset-list-pipeline-flow"
+            }
+          },
+          {
+            "id": "cb43f31f60068e82",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "40c8fb86d5dee76e",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "2bd94a19fc4f380b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "BEPAL/Docs/GDD/05-asset-list-pipeline-flow.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 05-asset-list-pipeline-flow"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "22f8d75425d1c32d",
+  "lastOpenFiles": [
+    "BEPAL/Docs/GDD/README-1.md",
+    "BEPAL/Docs/GDD/05-asset-list-pipeline-flow.md",
+    "BEPAL/Docs/GDD/03-mechanics.md",
+    "BEPAL/Docs/GDD/00-concept.md",
+    "BEPAL/Docs/GDD/05-asset-list.md",
+    "BEPAL/Docs/GDD/04-class-diagram-1.md",
+    "BEPAL/Docs/GDD/01-core-loop.md",
+    "Docs/GDD/00-concept.md",
+    "BEPAL/Docs/GDD/02-scope-features.md",
+    "Docs/GDD/README-1.md",
+    "01-mechanics.md",
+    "Docs/GDD/05-asset-list-pipeline-flow.md",
+    "Docs/GDD/05-asset-list.md",
+    "Docs/GDD/04-class-diagram-1.md",
+    "Docs/GDD/03-mechanics.md",
+    "Docs/GDD/02-scope-features.md",
+    "Docs/GDD/01-core-loop.md",
+    "BEPAL/Docs/Agile/sprint-plan-template.md",
+    "BEPAL/Docs/Agile/sprint-backlog-template.md",
+    "BEPAL/Docs/Agile/product-backlog-template.md",
+    "BEPAL/Docs/GDD",
+    "BEPAL/Docs/Agile",
+    "BEPAL/Docs",
+    "Untitled",
+    "BEPAL"
+  ]
+}

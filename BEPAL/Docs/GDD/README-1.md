@@ -1,18 +1,18 @@
 ---
 type: doc-index
 version: 0.1
-date: [วันที่]
+date: [07/14/2026]
 ---
-# [ชื่อเกม] — Documentation Index
+# [Cute Boss rush] — Documentation Index
 
 ## 📖 เอกสารในโปรเจกต์นี้
 
-| ไฟล์                                | เนื้อหา                   | สถานะ |
-| --------------------------------------- | -------------------------------- | ---------- |
-| [00-concept.md](BEPAL/Docs/GDD/00-concept.md)             | Game concept, core loop, scope   | ✅         |
-| [01-mechanics.md](01-mechanics.md)         | Mechanic flow (state diagram)    | ✅         |
-| [02-asset-list.md](02-asset-list.md)       | Asset list + asset pipeline flow | ✅         |
-| [03-class-diagram.md](03-class-diagram.md) | Class diagram เบื้องต้น | ✅         |
+| ไฟล์                                          | เนื้อหา                          | สถานะ |
+| --------------------------------------------- | -------------------------------- | ----- |
+| [00-concept.md](BEPAL/Docs/GDD/00-concept.md) | Game concept, core loop, scope   | ✅     |
+| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | ✅     |
+| [02-asset-list.md](02-asset-list.md)          | Asset list + asset pipeline flow | ✅     |
+| [03-class-diagram.md](03-class-diagram.md)    | Class diagram เบื้องต้น          | ✅     |
 
 ## 🏷️ Naming Convention
 
