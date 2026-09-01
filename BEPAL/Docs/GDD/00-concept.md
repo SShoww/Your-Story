@@ -4,7 +4,7 @@ date: 7/7/2026
 
 ---
 
-# Cute boss rush — Game Concept
+# BePal — Game Concept
 
 ## Elevator Pitch
 

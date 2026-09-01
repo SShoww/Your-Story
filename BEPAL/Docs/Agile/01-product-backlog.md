@@ -25,12 +25,12 @@
 
 ## Nice to Have
 
-| #     | User Story                                                                                         | Acceptance Criteria                                                  | Estimate (SP) | Sprint |
-| ----- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------- | ------ |
-| 1     | As a designer, I want to have other status. so player can feel more challanges.                    | อยากให้มี status เพิ่มเพื่อให้ผู้เล่นรู้สึกท้าทาย                    | 4             | 3      |
-| 2     | As a designer, I want to have a tutorial page so player can see how to play or interact with game. | อยากให้มีภาพแสดงวิธีการเล่น ผู้เล่นจะได้ณู้ว่าเล่นเกมยังไง           | 2             | 3      |
-| 3     | As a Artist, I want animation when got attack or pet behavior when qte.                            | อยากให้มีอนิเมชัน เมื่อมัปฏิสัมพันธ์กับสัตว์เลี้ยง หรือเมื่อโดนโจมตี | 5             | 3      |
-| ==4== | ==As a programmer, I want ...==                                                                    |                                                                      |               | ==3==  |
+| #   | User Story                                                                                         | Acceptance Criteria                                                  | Estimate (SP) | Sprint |
+| --- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------- | ------ |
+| 1   | As a designer, I want to have other status. so player can feel more challanges.                    | อยากให้มี status เพิ่มเพื่อให้ผู้เล่นรู้สึกท้าทาย                    | 4             | 3      |
+| 2   | As a designer, I want to have a tutorial page so player can see how to play or interact with game. | อยากให้มีภาพแสดงวิธีการเล่น ผู้เล่นจะได้รู้ว่าเล่นเกมยังไง           | 2             | 3      |
+| 3   | As a Artist, I want animation when got attack or pet behavior when qte.                            | อยากให้มีอนิเมชัน เมื่อมีปฏิสัมพันธ์กับสัตว์เลี้ยง หรือเมื่อโดนโจมตี | 5             | 3      |
+| 4   | As a programmer, I want debug mode                                                                 | debug mode                                                           | 5             | 3      |
 
 
 ## MoSCoW Legend
@@ -39,5 +39,5 @@
 - **Nice to Have** — ทำถ้ามีเวลาเหลือ
 
 ## Links
-- [[docs/gdd/00-concept|GDD Concept]]
+- [[BEPAL/Docs/GDD/00-concept|GDD-concept]]
 - [[docs/agile/02-sprint-backlog|Sprint Backlog]]

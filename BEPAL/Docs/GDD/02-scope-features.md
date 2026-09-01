@@ -5,7 +5,7 @@ date: 7/7/2026
 
 ---
 
-# [BePal)] — Scope & Feature List
+# [BePal] — Scope & Feature List
 
 ## Unique Selling Point (USP)
 
