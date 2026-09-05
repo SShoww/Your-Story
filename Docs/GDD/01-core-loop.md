@@ -5,13 +5,13 @@ date: 7/7/2026
 
 ---
 
-# Cute boss rush  — Core Loop & Gameplay
+# Project BePal  — Core Loop & Gameplay
 
 ## Core Loop
 
 ```mermaid
 flowchart LR
-A[MENU] --> B[Character Progression / Customize]
+A[MENU] --> B[Story dialogue scene]
 B --> C[GAMEPLAY]
 C --> D[Reward]
 D --> B
@@ -19,24 +19,22 @@ D --> B
 
 ## Core Mechanics
 
-1. [Fast-Paced Hack/Slash Combat]
-2. [Instant Boss Rush Stage]
-3. [Synergy Progression]
+1. [Guess and experiment]
+2. [Perform actions via QTEs]
+3. [Get results]
+4. [Survival Log]
 
 ## Controls
 
-| Key         | Action                      |
-| ----------- | --------------------------- |
-| A/D         | Left Right movement         |
-| Space       | Jump / Double Jump          |
-| Left Click  | Light Attack                |
-| Right Click | Heavy Attack / Special Move |
-| Shift       | Dash / Dodge                |
-| ESC         | Pause                       |
+| Key        | Action                   |
+| ---------- | ------------------------ |
+| Left Click | to interact              |
+| ESC        | Pause                    |
+| Mouse      | to see around & play QTE |
 
 ## Win / Lose Condition
 
-- **ชนะเมื่อ:** [ผู้เล่นสามารถลด HP ของบอสในด่านนั้นจนเหลือ 0 ได้สำเร็จ และจะได้รับรางวัล (Reward) เป็นวัตถุดิบหรือแต้มสำหรับไปอัปเกรดตัวละครต่อ]
-- **แพ้เมื่อ:** [HP ของผู้เล่นเหลือ 0 จากการโดนบอสโจมตี / เวลาหมด โดยตัวเกมจะส่งผู้เล่นกลับไปยังหน้าเมนูหลัก/หน้าอัปเกรด (ไม่มี Game Over แบบลบเซฟ แต่เป็นการเปิดโอกาสให้ผู้เล่นได้ปรับแต่งตัวละครใหม่เพื่อกลับมาแก้มือ)
+- **ชนะเมื่อ:** [**เอาชีวิตรอดให้ถึงวันสุดท้ายที่กำหนด** (เช่น 5 วัน) โดยที่ HP ยังเหลือรอด]
+- **แพ้เมื่อ:** [**HP ลดเหลือ 0** จากการถูกสัตว์เลี้ยงโจมตี (เนื่องจากเลือกวิธีดูแลผิดหรือกด QTE พลาดสะสมจนเลือดหมด]
 
 ---
