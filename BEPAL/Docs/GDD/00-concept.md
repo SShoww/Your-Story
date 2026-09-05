@@ -8,20 +8,20 @@ date: 7/7/2026
 
 ## Elevator Pitch
 
-Simple Metroidvania Bossrush game with unique character progression
+**“It’s Pet caring management simulator: you manage a character status for you to take caring abnormal pet, learn their rules through trial and error, and discovering the story of where they came from.”**
 
 ## Genre & Platform
 
-- **Genre:** Metroidvania | Hack/Slash | Single player
+- **Genre:** Management | Simulation | Single player
 - **Platform:** PC (Windows)
 - **Engine:** MonoGame (C#)
-- **Target Audience:** For people who like Progressing character in the fast placed Metroidvania Game
+- **Target Audience:** For people who like cute and cozy with advance gameplay mechanics
 
 ## Inspiration & Referencesa
 
-| idle boss rush And Dead cell |                        |
-| ---------------------------- | ---------------------- |
-| Dead Cells                   | Mechanic & Combat Feel |
-| Idle boss rush               | Idea and Game loop     |
+| idle boss rush And Dead cell |                                              |
+| ---------------------------- | -------------------------------------------- |
+| Lobotomy corporation         | Mechanic and Game loop                       |
+| Paper please                 | for narrative style and background mechanics |
 
 ---
