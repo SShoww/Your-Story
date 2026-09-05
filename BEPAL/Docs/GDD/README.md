@@ -1,6 +1,6 @@
 ---
-type: doc-index
-version: 0.1
+type: README
+version: 0.2
 date:
   - 09/01/2026
 ---
@@ -19,11 +19,11 @@ date:
 | ไฟล์                                          | เนื้อหา                          | สถานะ |
 | --------------------------------------------- | -------------------------------- | ----- |
 | [00-concept.md](BEPAL/Docs/GDD/00-concept.md) | Game concept, core loop, scope   | ✅     |
-| [01-core-loop.md](01-core-loop.md)            | Class diagram เบื้องต้น          | 🛑    |
-| [02-scope-features.md](02-scope-features.md)  |                                  |       |
-| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | 🛑    |
-| [04-class-diagram.md](04-class-diagram.md)    |                                  |       |
-| [05-asset-list.md](05-asset-list.md)          | Asset list + asset pipeline flow | ✅     |
+| [01-core-loop.md](01-core-loop.md)            | Class diagram เบื้องต้น          | ✅     |
+| [02-scope-features.md](02-scope-features.md)  | Scope ของ Feature ในเกม          | ✅     |
+| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | ✅     |
+| [04-class-diagram.md](04-class-diagram.md)    | OOP Diagram                      | 🛑    |
+| [05-asset-list.md](05-asset-list.md)          | Asset list + asset pipeline flow | 🛑    |
 
 
 ## 🏷️ Naming Convention
@@ -52,9 +52,9 @@ date:
 
 ## 📁 ใครดูแลส่วนไหน
 
-| คนที่ | รับผิดชอบ           | โฟลเดอร์ staging                      |
-| ----- | ------------------- | ------------------------------------- |
-| 1     | Sprites / Textures  | `docs/02_Assets/_candidates/sprites/` |
-| 2     | Sound Effects (SFX) | `docs/02_Assets/_candidates/sfx/`     |
-| 3     | Music / BGM         | `docs/02_Assets/_candidates/music/`   |
-| 4     | Fonts + Data        | `docs/02_Assets/_candidates/fonts/`   |
+| คนในทีม       | รับผิดชอบ           | โฟลเดอร์ staging                      |
+| ------------- | ------------------- | ------------------------------------- |
+| เดียร์ & โชว์ | Sprites / Textures  | `docs/02_Assets/_candidates/sprites/` |
+| โชว์          | Sound Effects (SFX) | `docs/02_Assets/_candidates/sfx/`     |
+| ภู            | Music / BGM         | `docs/02_Assets/_candidates/music/`   |
+| ซุง           | Fonts + Data        | `docs/02_Assets/_candidates/fonts/`   |
