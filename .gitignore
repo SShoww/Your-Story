@@ -1,13 +1,2 @@
-# Obsidian — personal workspace (ไม่ share) 
-.obsidian\workspace.json 
-.obsidian\workspace-mobile.json 
-.obsidian\cache 
-.obsidian
-
-# Obsidian — shared config (commit ร่วมกัน — อย่า ignore) 
-
-# .obsidian/plugins/ 
-
-# .obsidian/app.json 
-
-.obsidian/workspace.json
+# Obsidian
+.obsidian/
