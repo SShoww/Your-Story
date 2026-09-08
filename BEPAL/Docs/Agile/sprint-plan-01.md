@@ -5,18 +5,19 @@
 
 # Sprint [1] Plan
 
-**Sprint Goal:** [เป้าหมายหลักของ Sprint นี้ในหนึ่งประโยค]
-**ระยะเวลา:** [วันที่เริ่ม] — [วันที่สิ้นสุด]
-**Team:** [รายชื่อ]
+**Sprint Goal:** [ออกระบบหน้าจอ UI หลัก และร่างโครงสร้างด่านที่ 1 (Level 1 Block out) ให้พร้อมสำหรับการนำไปเขียนโค้ด]
+**ระยะเวลา:** [9/8/2026] — [9/30/2026]
+**Team:** [Your Story]
 
 ---
 
 ## Sprint Backlog
 
-| #   | User Story                                       | รับผิดชอบ | MoSCoW    | Estimate (SP) | Status  |
-| --- | ------------------------------------------------ | --------- | --------- | ------------- | ------- |
-| 1   | As a player, I want to press button to play qte. | วศิน      | Must Have | 5             | 🔲 Todo |
-| 2   | As a player, I want to see attacked system       | วศิน      | Must Have | 5             | 🔲 Todo |
+| #   | User Story                                                                             | รับผิดชอบ | MoSCoW    | Estimate (SP) | Status  |
+| --- | -------------------------------------------------------------------------------------- | --------- | --------- | ------------- | ------- |
+| 1   | As a player, I want to see a clear Main Menu so I can easily start the game.           | ภูมิพัฒน์ | Must Have | 3             | 🔲 Todo |
+| 2   | As a player, I want to explore a well-structured first level to learn basic mechanics. | ภูมิพัฒน์ | Must Have | 5             | 🔲 Todo |
+| 3   | As a player, I want                                                                    |           |           |               |         |
 
 ## Status Legend
 - 🔲 Todo
@@ -28,18 +29,27 @@
 
 ## Tasks
 
-### Story 1 — [ชื่อย่อของ Story]
-- [ ] [qte]  [วศิน]  [5]  [status:: todo]
-- [ ] [HP]  [เดียร์]  [3]  [status:: todo]
+### Story 1 — [Main Menu UI]
+- [ ] [Layout]  [ภูมิพัฒน์]  [3]  [status:: todo]
+- [ ] [Draw and cut out assets]  [ภูมิพัฒน์]  [3]  [status:: todo]
+
+### Story 2 — [Dialogue]
+- [ ] [Design the storyline]  [ภูมิพัฒน์]  [4]  [status:: todo]
+- [ ] [Layout Text box]  [ภูมิพัฒน์]  [3]  [status:: todo]
+- [ ] [Draw and cut out assets]  [ภูมิพัฒน์]  [3]  [status:: todo]
+
+### Story 3 — [QTE UI]
+- [ ] [Layout QTE]  [ภูมิพัฒน์]  [4]  [status:: todo]
+- [ ] [Draw and cut out assets]  [ภูมิพัฒน์]  [3]  [status:: todo]
 
 ---
 
 ## Daily Notes
 
-### [วันที่]
-**เมื่อวาน:** ...
+### [2026-09-08]
+**เมื่อวาน:** หา Reference สไตล์ภาพของเกม
 **วันนี้:** ทำ Sprint-Backlog
-**Blocked:** ...
+**Blocked:** รอโปรแกรมเมอร์คอนเฟิร์มขนาดความละเอียดหน้าจอ (Screen Resolution) และขนาด Tile Size
 
 ---
 
