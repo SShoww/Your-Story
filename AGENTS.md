@@ -13,9 +13,10 @@ This is a .NET 8 MonoGame DesktopGL game. The solution is at
 - `Icon.ico`, `Icon.bmp`, and `app.manifest` provide Windows application metadata.
 
 Keep gameplay code under `CoPoject/BePal/`, grouping new features into focused
-folders (for example, `Entities/Player.cs` or `Screens/MainMenuScreen.cs`). Keep
-source assets and their content-pipeline definitions in `Content/`.
-
+folders (for example, `Screens/MainMenuScreen.cs`, `Gameplay/ActionPattern.cs`, or
+`Gameplay/PetDefinition.cs`). Keep source assets and their content-pipeline
+definitions in `Content/`. Comprehensive game design and sprint backlogs are
+maintained under `BEPAL/Docs/`.
 ## Build, Test, and Development Commands
 
 Run commands from the repository root:
@@ -42,8 +43,8 @@ directly in `Game1`.
 ## Testing Guidelines
 
 Place future unit tests in a dedicated project such as `CoPoject/BePal.Tests`.
-Name test files after the unit under test (for example, `PlayerTests.cs`) and
-tests as behavior statements, such as `Update_WhenEscapePressed_ExitsGame`.
+Name test files after the unit under test (for example, `PrototypeRunTests.cs`) and
+tests as behavior statements, such as `TakeDamage_WhenHealthZero_ForcesRetreat`.
 Run all tests with `dotnet test CoPoject/CoPoject.slnx` once a test project exists.
 
 ## Commit & Pull Request Guidelines
