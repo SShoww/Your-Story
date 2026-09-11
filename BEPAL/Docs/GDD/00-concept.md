@@ -19,9 +19,11 @@ date: 7/7/2026
 
 ## Inspiration & Referencesa
 
-| idle boss rush And Dead cell |                                              |
-| ---------------------------- | -------------------------------------------- |
-| Lobotomy corporation         | Mechanic and Game loop                       |
-| Paper please                 | for narrative style and background mechanics |
+| Game Ref             | Ref                                          |
+| -------------------- | -------------------------------------------- |
+| Lobotomy corporation | Mechanic and Game loop                       |
+| Paper please         | for narrative style and background mechanics |
+| Samsara              | Scene system                                 |
+| Death Spiral         | QTE Gameplay                                 |
 
 ---
