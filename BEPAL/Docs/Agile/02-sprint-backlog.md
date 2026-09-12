@@ -131,6 +131,7 @@ gantt
 - [[BEPAL/Docs/Agile/03-kanban-board|Kanban Board]]
 - [[BEPAL/Docs/Agile/04-Kanban-for-Obsidian|Obsidian Interactive Kanban]]
 - [[BEPAL/Docs/Agile/sprint-plan-01|Sprint 1 Plan]]
+- [[BEPAL/Docs/Agile/sprint-plan-02|Sprint 2 Plan]]
 - [[BEPAL/Docs/GDD/00-concept|GDD Concept]]
 - [[BEPAL/Docs/GDD/01-core-loop|GDD Core Loop]]
 - [[BEPAL/Docs/GDD/02-scope-features|GDD Scope & Features]]
