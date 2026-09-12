@@ -95,6 +95,7 @@ Game1.Draw(GameTime)
   - `GDD/`: Concept, mechanics, core loop, class diagrams, and asset flow (`01-core-loop.md`, `04-class-diagram.md`).
   - `Agile/`: Sprint plans, sprint backlogs, kanban setup, and MoSCoW breakdowns.
 - `docs/`: Repository governance and architectural documentation.
+  - `gitflow-workflow.md`: Complete Gitflow branching, PR, and release specification.
   - `adr/`: Architectural Decision Records (`0001-screen-and-care-qte-architecture.md`).
   - `agents/`: Domain guidelines, GitHub issue tracking conventions, and triage labels.
 - `screenshots/`: Playtest artifacts and automated visual test captures (`01_menu.png` - `06_summary.png`).
@@ -136,7 +137,21 @@ dotnet tool restore --configfile CoPoject/BePal/.config/dotnet-tools.json
 dotnet mgcb CoPoject/BePal/Content/Content.mgcb
 ```
 
-### Issue Tracking via GitHub CLI (`gh`)
+### Gitflow Workflow & Branching Rules
+This repository strictly follows the [Atlassian Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) standard (full specification in `docs/gitflow-workflow.md`):
+
+1. **Core Branches**:
+   - **`main`**: Production release history only. Direct commits strictly forbidden. Every commit is tagged (`vX.Y.Z`).
+   - **`Develop`**: Continuous integration branch. All features branch from and merge back into `Develop`.
+2. **Supporting Branches**:
+   - **`feature/<topic>`**: Branch from `Develop`, merge back to `Develop` via PR with `--no-ff`. Delete branch after merge.
+   - **`release/v<version>`**: Branch from `Develop` for stabilization/bugfixes only. Merge into both `main` (with tag) and `Develop`. Delete branch.
+   - **`hotfix/v<version>`**: Branch from `main` to address critical production issues. Merge into both `main` (with tag) and `Develop`. Delete branch.
+3. **Pre-Merge Validation**:
+   - Must build with 0 errors: `dotnet build CoPoject/CoPoject.slnx`
+   - Must pass screenshot harness: `dotnet run --project CoPoject/BePal -- --screenshot`
+
+### Issue Tracking via GitHub CLI (`gh`) & MCP
 ```powershell
 # List open issues
 gh issue list --state open
@@ -206,6 +221,7 @@ Adhere strictly to canonical terms defined in `CONTEXT.md` (avoid synonyms):
 | `CoPoject/BePal/Content/Content.mgcb` | Content pipeline asset build definitions |
 | `CoPoject/BePal/.config/dotnet-tools.json` | .NET tool manifest declaring `dotnet-mgcb` 3.8.4 |
 | `CONTEXT.md` | Domain glossary and ubiquitous language definitions |
+| `docs/gitflow-workflow.md` | Complete Atlassian Gitflow Workflow standard and repository branching rules |
 | `docs/adr/0001-screen-and-care-qte-architecture.md` | ADR for screen decomposition and Care QTE architecture |
 | `docs/agents/issue-tracker.md` | GitHub CLI conventions for issue and PRD tracking |
 | `docs/agents/triage-labels.md` | Triage label mappings (`needs-triage`, `ready-for-agent`, etc.) |
@@ -221,7 +237,7 @@ Adhere strictly to canonical terms defined in `CONTEXT.md` (avoid synonyms):
   - Solution uses XML-based `.slnx` format.
   - The project restores .NET local tools (`dotnet tool restore`) via an MSBuild target `RestoreDotnetTools` before resolving packages.
   - MonoGame.Extended pipeline DLL is loaded from `pipeline-references/MonoGame.Extended.Content.Pipeline.dll`.
-  - Issue tracker workflows rely on `gh` CLI.
+  - Issue tracker workflows rely on `gh` CLI or GitHub MCP server tools.
 
 ## Testing & QA
 
