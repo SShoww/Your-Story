@@ -103,20 +103,10 @@
 
 ## Daily Notes & Standup Log
 
-### 2026-09-15 (Day 1 — Sprint Planning & Kickoff)
-- **เมื่อวาน:** สรุปผลการส่งมอบ Sprint 1 MVP สำเร็จครบ 29 SP, ตรวจสอบภาพจับหน้าจอ Playtest ผ่านฉลุย
-- **วันนี้:** ประชุมวางแผน Sprint 2 มุ่งเน้นการขัดเกลาเชิงลึก (Deepening), เริ่มงานวาดภาพป้ายกระดาษฉีก ART-01 และร่างโครงสร้าง Pure C# Domain Models TECH-01
-- **Blocked:** ไม่มี
-
-### 2026-09-18 (Day 4 — Mid-Sprint Sync)
-- **เมื่อวาน:** เดียร์ส่งมอบ Sprite อารมณ์ Mossling (US-07 เสร็จสมบูรณ์), โชว์เรนเดอร์วงล้อคู่ Death Spiral และระบบจับภาพหน้าจออัตโนมัติสำเร็จ อยู่ระหว่าง Review
-- **วันนี้:** ภูมิเริ่มบันทึกและตัดต่อไฟล์เสียง SFX 8 เสียงลง Staging, ซุงสรุปค่าตัวเลข Balance Sheet ส่งให้ทีมโปรแกรมเมอร์
-- **Blocked:** รอไฟล์เสียง SFX ตัวจริงจากภูมิเพื่อเริ่มต่อเข้า AudioManager (US-12)
-
-### 2026-09-22 (Day 8 — Architecture & Polish Check)
-- **เมื่อวาน:** ซุงส่งมอบตาราง Balance Matrix และ Hazard Level สเปกครบถ้วน, โชว์เริ่มแยก Pure Domain Models ออกจาก Game1
-- **วันนี้:** โชว์เตรียมสร้างโปรเจกต์ `BePal.Tests` (TECH-02) เพื่อเขียน Unit Tests สำหรับ Domain Logic, ภูมิดำเนินการทดสอบ Playtest และรวบรวมฟีดแบ็กความรู้สึกการกด QTE
-- **Blocked:** ไม่มี
+### 2026-09- (Day 1 — Sprint Planning & Kickoff)
+- **เมื่อวาน:** 
+- **วันนี้:** 
+- **Blocked:** 
 
 ---
 
