@@ -1,2 +1,2 @@
-﻿using var game = new BePal.Game1();
+﻿using var game = new BePal.Game1(args);
 game.Run();

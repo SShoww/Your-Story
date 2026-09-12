@@ -1,43 +1,46 @@
-## type: gdd-scope
-
-version: 0.1
-date: 7/7/2026
-
+---
+type: gdd-scope
+version: 0.2
+date: 2026-09-11
 ---
 
-# [BePal] — Scope & Feature List
+# BePal — Scope & Feature List
 
 ## Unique Selling Point (USP)
 
-* **Cute Aesthetics But have in-depth hardcore mechanic**: ถึงเกมจะมีงานภาพโดยรวมที่ดูน่ารักแต่ระบบการเล่นและเนื้อเรื่องเบื้องหลังนั้นถูกแฝงไปด้วยความลึกลับและอันตราย ที่ออกมาในรูปแบบของสัตว์ประหลาดที่ดูน่ารัก
-* **Unique Narrative and Gameplay**: มีระบบการเล่นและการดำเนินเนื้อเรื่องที่ไม่เหมือนใคร
+1. **Cozy Aesthetics with Uncanny Hardcore Mechanics:** บรรยากาศบ้านและศูนย์พักพิงที่อบอุ่นนุ่มนวล แต่แฝงไปด้วยสัตว์เลี้ยงที่มีสรีระหรือพฤติกรรมผิดปกติ (Uncanny) และอันตรายถึงชีวิต
+2. **Observation & Consequential Interaction:** แก่นการเล่นเน้นการสังเกตและลองผิดลองถูกที่มีผลลัพธ์ตามมาอย่างชัดเจน—ทุกการกระทำที่ผิดพลาดจะถูกลงโทษด้วยดาเมจ และทุกการกระทำที่ถูกต้องจะนำไปสู่ข้อมูลใน Survival Log
+3. **Wheel-based Care & Dodge QTE:** ระบบการดูแลสัตว์ผ่านวงล้อ 4 ตัวเลือก พร้อมจังหวะสกิลเช็คที่ปรับเปลี่ยนตามพฤติกรรมสัตว์ เช่น เข็มวาร์ปสุ่มตำแหน่ง หรือการโจมตีสวนกลับที่ต้องหลบใน Dodge Zone สีทอง
 
-## In Scope — สิ่งที่จะทำในภาคการศึกษานี้
+## Feature List & Priorities
 
-| #   | Feature                                                | Priority | รายละเอียด / คำอธิบายเพิ่มเติม                                                                                                    | หมายเหตุ |
-| --- | ------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 1   | **Core Gameplay **                                     | Must     | Wheel skill check Qte for the core gameplay mechanic with four choice of action                                                   |          |
-| 2   | **Core Ui**                                            | Must     | Including Menu, pet information, and QTE scene                                                                                    |          |
-| 3   | **Pet rule Gameplay design **                          | Should   | Applying some pet rule that impact the gameplay                                                                                   |          |
-| 4   | **Narrative **                                         | Should   | to inform the player about the world and background of BEPAL                                                                      |          |
-| 5   | **Tutorial and information Ui **                       | Could    | description of each action player choose to inform what happening and how player should considering about it                      |          |
-| 6   | **More management mechanics beside the core gameplay** | Could    | Random event that happen in each day or progressing mechanics beside the core game play to attaching player interest              |          |
-| 7   | **Audio & UI Elements**                                | Could    | Feedback Sound and element in core gameplay or Ui And background music                                                            |          |
-| 8   | **Save/Load System**                                   | Could    | ระบบบันทึกพลังตัวละครและสเตจที่ผ่านลงไฟล์ (เช่น JSON) เพื่อให้เล่นต่อได้                                                          |          |
-| 9   | **Narrative & Cutscenes**                              | Could    | บทสนทนาสั้น ๆ หรือภาพนิ่งเล่าเรื่องระหว่างวันหรือการกระทำต่างๆ                                                                    |          |
-| 10  | **different weapon arsenal**                           | Could    | ตัวเลือกอาวุธอื่น (เช่น ดาบใหญ่ ปืนคู่ มีด) ที่เปลี่ยนระยะการโจมตีและแอนิเมชันของตัวละคร เพื่อเพิ่มแนวทางในการต่อสู้ให้กับผู้เล่น |          |
-|     |                                                        |          |                                                                                                                                   |          |
+| # | Feature | Priority | รายละเอียด / Acceptance Criteria |
+| --- | --- | --- | --- |
+| 1 | **Care QTE Wheel System** | **Must** | วงล้อ 4 ตัวเลือก (Feed, Play, Pet, Observe) เข็มหมุนวนตรวจจับตำแหน่ง และกดยืนยันด้วย Spacebar |
+| 2 | **Pet Behavior & Action Patterns** | **Must** | สัตว์เลี้ยง 3 ชนิดแรก (Mossling, Nibbleclaw, Blinkbun) ที่มีรูปแบบพฤติกรรมและเงื่อนไขความชอบต่างกัน |
+| 3 | **Dodge QTE Challenge** | **Must** | เมื่อสัตว์เข้าสู่สถานะจู่โจม วงล้อจะเปลี่ยนเป็น Dodge QTE ที่มี Dodge Zone สีทอง หากกดพลาดจะเสีย Health |
+| 4 | **Health & Forced Retreat** | **Must** | ผู้เล่นมี Health 3 หน่วย หากหมดจะเกิด Forced Retreat จบวันฉุกเฉินและฟื้นฟู Health ในวันถัดไป |
+| 5 | **Survival Log System** | **Must** | สมุดบันทึกข้อมูลพฤติกรรมสัตว์ ปลดล็อก Action Pattern แบบสมบูรณ์เมื่อดูแลสัตว์ตัวนั้นสำเร็จครบ 3 Sessions |
+| 6 | **Daily Progression (Game Day 1–5)** | **Must** | วงจรการเล่น 5 วัน มีตารางสัตว์ประจำวัน (Day Schedule) และหน้าสรุป Run Summary เมื่อจบเกม |
+| 7 | **Core UI & Screen Flow** | **Must** | หน้าจอ Main Menu, Help Screen, Main Pet Room, QTE Overlay, Survival Log Overlay, Run Summary |
+| 8 | **Hazard & Harm Classification** | **Should** | แสดงข้อมูลหน้าห้อง: Hazard Level (ระดับ 1–3), Harm Type (Physical / Mental), และ Care Requirement |
+| 9 | **Audio Feedback & BGM** | **Should** | เสียง SFX ตอนกด QTE ถูก/ผิด, เสียงเข็มวาร์ป, เสียงเตือน Dodge, และเพลงบรรเลง BGM สไตล์ Cozy |
+| 10 | **Arrival / Unboxing Scene** | **Could** | ฉากรับกล่องพัสดุปริศนาหน้าบ้านในแต่ละวันพร้อมข้อความบรรยายสั้นๆ (Typewriter effect) |
+| 11 | **Caretaker Daily Upgrades** | **Could** | ระบบพัฒนาความสามารถตัวละครเมื่อจบวัน (ขยายช่องเข็มสำเร็จ, เพิ่มแถบเลือด/ความทนทาน) |
+| 12 | **Save / Load System** | **Could** | บันทึกความคืบหน้าของวันและข้อมูล Survival Log ลงไฟล์ JSON |
 
-## Out of Scope - สิ่งที่จะไม่ทำ
+## Out of Scope — สิ่งที่ไม่ทำในเฟสนี้
 
-* **Advance Animation**: เหตุผลเนื่องจากเวลากำจัดในด้าน Art จึงควรจะลดคุณภาพ/เฟรมของผู้เล่น และ บอส ให้ได้มากที่สุดเพื่อลดภาระงาน
-* **Advance aesthetic**: หน้าเมนูส่วนใหญ่จะถูกแทนที่ด้วยกรอบ UI มากกว่า Graphic จะได้ไปโฟกัสกับงานในส่วนอื่น ( พื้นหลังตอนต่อสู้ และ Animation )
+- **No Weapon Arsenal / Combat Mechanics:** ไม่มีการใช้อาวุธ ดาบ หรือปืนใดๆ ทั้งสิ้น—ปฏิสัมพันธ์กับสัตว์ทำผ่านการดูแลและหลบหลีกเท่านั้น
+- **No Free-roam Platforming:** ไม่มีระบบกระโดดหรือเดินสำรวจฉากแพลตฟอร์ม—เป็นระบบ Point-and-Click บริหารจัดการในห้อง
+- **No Complex Multi-frame Animations:** ไม่ทำแอนิเมชันความละเอียดสูงหลายเฟรม เพื่อควบคุมภาระงานศิลป์ (ใช้ Sprite อารมณ์หลัก: Idle, Happy, Angry, Attack)
+- **No Pure Horror / Blood Splatter:** หลีกเลี่ยงภาพเลือดสาดหรือความสยองขวัญสุดโต่ง เพื่อรักษาแก่น "Cozy yet Dangerous"
 
-## Risks & Assumptions
+## Risks & Mitigation
 
-| ความเสี่ยง                                                       | ผลกระทบ                                                                                                                               | แนวทางการแก้ไข                                                                               |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **ภาระงานที่มากเกินไป**                           | งานอาจจะไม่ได้เป็นอย่างที่ควร และ ทำให้ทีมงานได้รับความเครียดในการทำงาน | ใช้ Asset ซ้ำ และ ลด Mechanic บางอย่าง                                                  |
-| **กำหนดเวลาในการทำงานที่กระชั้นชิด** | ทำให้ทีมงานได้รับภาระงานที่มากเกินไปและไม่มีเวลาว่างสำหรับการพักผ่อน     | อาจต้องเร่งแบ่งงานทำในบางส่วนหากมีภาระงานที่มากเกินไป |
+| ความเสี่ยง                                | ผลกระทบ                          | แนวทางป้องกันและแก้ไข                                                                            |
+| ----------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **ภาระงานด้าน Art และ Sprite ไม่ทันเวลา** | เกมขาดความหลากหลายทางภาพ         | นำเทคนิค Procedural Shape / Color Tint มาช่วยเสริม และใช้ Sprite Sheet อารมณ์หลัก 3-4 ท่า        |
+| **ระบบ QTE เล่นยากหรือน่าเบื่อเกินไป**    | ผู้เล่นรู้สึกหงุดหงิดหรือไม่สนุก | ปรับขนาดของ Hitbox และความเร็วการหมุนของเข็มให้ตอบสนองดี และเพิ่มลูกเล่นอย่าง Teleporting Marker |
+| **ระยะเวลาพัฒนาจำกัด**                    | ฟีเจอร์หลุดจาก Scope             | ยึดมั่นตามเกณฑ์ Must-Have ก่อนเสมอ เลื่อนระบบ Upgrade และ Save/Load เป็นเฟสเสริม                 |
 
----

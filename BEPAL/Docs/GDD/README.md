@@ -7,23 +7,21 @@ date:
 # [BePal] — Documentation Index
 ## 👥คนในทีม
 
-| รหัส      | ชื่อ               | ชื่อเล่น |
-| --------- | ------------------ | -------- |
-| 682110119 | ธัญญรัตน์ ติ๊บหน่อ | เดียร์   |
-| 682110128 | ปีย์ตะวัน แห่งหาญ  | ซุง      |
-| 682110137 | ภูมิพัฒน์ ตามวงค์  | ภูมิ     |
-| 682110141 | วศิน ศรีวรกุล      | โชว์     |
-
-## 📖 เอกสารในโปรเจกต์นี้
+| รหัส | ชื่อ | ชื่อเล่น | บทบาทหน้าที่ |
+| --- | --- | --- | --- |
+| 682110141 | วศิน ศรีวรกุล | โชว์ | Lead Programmer |
+| 682110128 | ปีย์ตะวัน แห่งหาญ | ซุง | Game Designer |
+| 682110137 | ภูมิพัฒน์ ตามวงค์ | ภูมิ | Flex (leans towards Design) / Audio Support |
+| 682110119 | ธัญญรัตน์ ติ๊บหน่อ | เดียร์ | 2D Art & UI Lead |
 
 | ไฟล์                                          | เนื้อหา                          | สถานะ |
 | --------------------------------------------- | -------------------------------- | ----- |
 | [00-concept.md](BEPAL/Docs/GDD/00-concept.md) | Game concept, core loop, scope   | ✅     |
-| [01-core-loop.md](01-core-loop.md)            | Class diagram เบื้องต้น          | ✅     |
+| [01-core-loop.md](01-core-loop.md)            | Core loop & daily gameplay flow  | ✅     |
 | [02-scope-features.md](02-scope-features.md)  | Scope ของ Feature ในเกม          | ✅     |
-| [03-mechanics.md](03-mechanics.md)            | Mechanic flow (state diagram)    | ✅     |
-| [04-class-diagram.md](04-class-diagram.md)    | OOP Diagram                      | 🛑    |
-| [05-asset-list.md](05-asset-list.md)          | Asset list + asset pipeline flow | 🛑    |
+| [03-mechanics.md](03-mechanics.md)            | Mechanic flow & QTE formulas     | ✅     |
+| [04-class-diagram.md](04-class-diagram.md)    | OOP Diagram & Architecture       | ✅     |
+| [05-asset-list.md](05-asset-list.md)          | Asset list + asset pipeline flow | ✅     |
 
 
 ## 🏷️ Naming Convention
@@ -44,17 +42,17 @@ date:
 
 | Prefix   | ประเภท     | ตัวอย่าง        |
 | -------- | ---------------- | ----------------------- |
-| `spr_` | Sprite / Texture | `spr_player_idle.png` |
-| `sfx_` | Sound Effect     | `sfx_jump.wav`        |
-| `bgm_` | Background Music | `bgm_stage_01.mp3`    |
-| `fnt_` | Font             | `fnt_ui_main.ttf`     |
-| `dat_` | Data / Config    | `dat_enemies.json`    |
+| `spr_` | Sprite / Texture | `spr_pet_idle.png`      |
+| `sfx_` | Sound Effect     | `sfx_qte_success.wav`   |
+| `bgm_` | Background Music | `bgm_shelter_cozy.mp3`  |
+| `fnt_` | Font             | `fnt_ui_cozy.ttf`       |
+| `dat_` | Data / Config    | `dat_pets.json`         |
 
 ## 📁 ใครดูแลส่วนไหน
 
-| คนในทีม       | รับผิดชอบ           | โฟลเดอร์ staging                      |
-| ------------- | ------------------- | ------------------------------------- |
-| เดียร์ & โชว์ | Sprites / Textures  | `docs/02_Assets/_candidates/sprites/` |
-| โชว์          | Sound Effects (SFX) | `docs/02_Assets/_candidates/sfx/`     |
-| ภู            | Music / BGM         | `docs/02_Assets/_candidates/music/`   |
-| ซุง           | Fonts + Data        | `docs/02_Assets/_candidates/fonts/`   |
+| คนในทีม | รับผิดชอบ | โฟลเดอร์ staging / Source |
+| --- | --- | --- |
+| เดียร์ | 2D Art, Sprites & UI Graphics | `docs/02_Assets/_candidates/sprites/` |
+| ภูมิ | Flex Design, Narrative & Audio (SFX/BGM) | `docs/02_Assets/_candidates/sfx/`, `music/` |
+| ซุง | Game Design & Mechanics | `docs/02_Assets/_candidates/fonts/`, `data/` |
+| โชว์ | Lead Gameplay Code & Architecture | `CoPoject/BePal/` |

@@ -1,27 +1,69 @@
-## type: gdd-concept
-version: 0.1
-date: 7/7/2026
-
+---
+type: gdd-concept
+version: 0.2
+date: 2026-09-11
 ---
 
 # BePal — Game Concept
 
 ## Elevator Pitch
 
-**“It’s Pet caring management simulator: you manage a character status for you to take caring abnormal pet, learn their rules through trial and error, and discovering the story of where they came from.”**
+**“It’s a pet-care management simulation where you manage daily operations to care for abnormal pets, learn their hidden rules through trial and error, and uncover the mystery behind where they came from.”**
+
+> **สโลแกนแนวคิด:** เกมที่เราต้องดูแลสัตว์เลี้ยงที่ไม่รู้จักด้วยวิธีที่ถูกต้องตามที่มันต้องการ เพื่อไม่ให้มันสร้างอันตรายกับเราและวิจัยเรียนรู้พฤติกรรมของมัน เปลี่ยนบรรยากาศที่เย็นชาให้กลายเป็นบ้านที่แสนอบอุ่น
 
 ## Genre & Platform
 
-- **Genre:** Management | Simulation | Single player
-- **Platform:** PC (Windows)
-- **Engine:** MonoGame (C#)
-- **Target Audience:** For people who like cute and cozy with advance gameplay mechanics
+- **Genre:** Management | Simulation | Puzzle / QTE | Single-Player
+- **Platform:** PC (Windows DesktopGL)
+- **Engine:** MonoGame (.NET 8 C#)
+- **Target Audience:** ผู้เล่นที่ชอบบรรยากาศ Cozy อบอุ่น ผสมผสานความลึกลับ (Uncanny) และเกมเพลย์เชิงกลยุทธ์ที่ท้าทาย
 
-## Inspiration & Referencesa
+## Core Pillars
 
-| idle boss rush And Dead cell |                                              |
-| ---------------------------- | -------------------------------------------- |
-| Lobotomy corporation         | Mechanic and Game loop                       |
-| Paper please                 | for narrative style and background mechanics |
+1. **Observation & Understanding (การสังเกตและทำความเข้าใจ):**
+   การสังเกตพฤติกรรมและทำความเข้าใจกฎเกณฑ์เฉพาะตัวของสัตว์เลี้ยงแต่ละชนิดคือหัวใจสำคัญ ผู้เล่นต้องลองผิดลองถูกอย่างมีสติ
+2. **Cozy yet Dangerous (อบอุ่นแต่แฝงความอันตราย):**
+   บ้าน/ศูนย์พักพิงที่ดูปลอดภัย แสงไฟอบอุ่น สบายตา ขัดแย้งกับความอันตรายและความแปลกประหลาด (Uncanny) ที่ซ่อนอยู่ในรูปลักษณ์ไร้พิษสงของสัตว์เลี้ยง
+3. **Consequential Interaction (ทุกการกระทำมีผลลัพธ์):**
+   การเลือกวิธีดูแลมีผลลัพธ์ชัดเจน—หากเลือกถูกสัตว์จะเชื่องและพอใจ หากเลือกผิดสัตว์จะตื่นตระหนกและโจมตีผู้เล่น
 
----
+## Setting & Narrative
+
+### The Setting (สถานที่)
+**ศูนย์วิจัยกึ่งพักพิงสัตว์เลี้ยง (Shelter / Daycare)** ในบรรยากาศที่อบอุ่นเหมือนบ้าน มีห้องดูแลสัตว์เลี้ยง (Pet Room) แสงแดดส่องถึง โต๊ะเก้าอี้และของใช้ดูแลสัตว์ ให้ความรู้สึกปลอดภัยและเป็นมิตรเพื่อลดความตึงเครียดของสัตว์ทดลอง
+
+### Protagonist & Background (ตัวละครเอก)
+ผู้ดูแลสัตว์เลี้ยงธรรมดาที่รักสัตว์และตั้งใจเปิดบริการ Daycare ดูแลสัตว์ แต่ก่อนที่จะเปิดทำการอย่างเป็นทางการ กลับมีกล่องพัสดุปริศนาถูกส่งมาวางไว้หน้าประตูบ้าน ภายในกล่องคือสิ่งมีชีวิตแปลกประหลาดที่ไม่มีใครรู้จัก
+
+### Narrative Arc & Mystery (แก่นเรื่องและปมปริศนา)
+- **เป้าหมาย:** เรียนรู้วิธีเลี้ยงดูพวกมันให้อยู่รอดปลอดภัย ไม่ให้คลั่งหรือทำร้ายเรา พร้อมบันทึกข้อมูลเข้า **Survival Log**
+- **ปมปริศนาเบื้องหลัง:** ใครเป็นผู้ส่งกล่องเหล่านี้มา? สัตว์เหล่านี้มาจากศูนย์วิจัยลับใด? มีการคิดค้นเซรุ่มพิเศษเพื่อมอบพลังเหนือธรรมชาติให้สัตว์จริงหรือไม่ หรือทั้งหมดเกิดจากผลข้างเคียงของยาที่ตัวเอกใช้จนเกิดภาพหลอน?
+
+## Inspiration & Competitor Analysis
+
+### Game References
+
+| Game Ref | จุดที่นำมาประยุกต์ใช้ |
+| --- | --- |
+| **Lobotomy Corporation** | ระบบเรียนรู้กฎการดูแลสิ่งมีชีวิตผิดปกติผ่านการทดลองและการจดบันทึกสารานุกรม |
+| **Papers, Please** | สไตล์การเล่าเรื่องผ่านเอกสาร กฎเกณฑ์ และบรรยากาศความกดดันประจำวัน |
+| **Death Spiral** | วงล้อ QTE สกิลเช็คที่มีจังหวะท้าทาย |
+
+### Competitor Analysis (2D Focus)
+
+1. **Cozy Grove (2D Hand-drawn):**
+   - *จุดเด่นที่หยิบยืม:* บรรยากาศแคมป์/บ้านที่ค่อยๆ อบอุ่นขึ้นควบคู่กับความลึกลับ และกิจวัตรประจำวัน
+   - *จุดที่ BePal แตกต่างและพัฒนาต่อ:* สัตว์ใน Cozy Grove เป็นมิตรเกินไป ขาดความ Uncanny ที่แท้จริง ส่วน BePal เน้นความอันตรายและผลลัพธ์การลองผิดลองถูกที่เสี่ยงถึงชีวิต
+2. **Spiritfarer (2D Side-view Hand-drawn):**
+   - *จุดเด่นที่หยิบยืม:* การผูกพันกับสิ่งมีชีวิตผ่านการดูแลเฉพาะตัว (กอด ให้อาหาร สัมผัส) และลายเส้นที่นุ่มนวล
+   - *จุดที่ BePal แตกต่างและพัฒนาต่อ:* Spiritfarer เน้นความเศร้าโศก (Melancholy) แต่ BePal เน้นความไม่สบายใจ (Uncanny suspense) โดยสัตว์สามารถทำร้ายผู้เล่นได้จริง
+3. **Strange Horticulture (2D Illustrated):**
+   - *จุดเด่นที่หยิบยืม:* ระบบสังเกตและลองผิดลองถูกเพื่อระบุสิ่งแปลกประหลาดในร้านที่ดูอบอุ่น
+   - *จุดที่ BePal แตกต่างและพัฒนาต่อ:* BePal เปลี่ยนจากพืชมาเป็นสัตว์เลี้ยงที่มีชีวิต มีอารมณ์ความรู้สึก และโต้ตอบแบบเรียลไทม์ผ่านวงล้อ Care QTE
+
+## Art & Visual Direction
+
+- **Art Style:** Soft Hand-drawn หรือ Soft Pixel Art ที่มีโทนสีอบอุ่น (Cream, Warm Wood, Soft Mint, Amber)
+- **Uncanny Pet Aesthetics:** โครงสร้างพื้นฐานดูเป็นสัตว์เลี้ยงน่ารัก แต่มีรายละเอียดที่ "ผิดปกติ" (สัดส่วนดวงตาโตเกินไป มีหลายตา ลวดลายผิดธรรมชาติ หรือแอนิเมชันตอนอยู่นิ่งที่กำลังจ้องมองผู้เล่นตลอดเวลา)
+- **ข้อห้ามทาง Art:** หลีกเลี่ยงสัตว์ที่น่ารักจัดแบบ *Animal Crossing* (จะสูญเสียความ Uncanny) และหลีกเลี่ยงสไตล์เลือดสาด/มืดทึบ (จะสูญเสียความ Cozy)
