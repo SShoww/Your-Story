@@ -63,22 +63,22 @@ gantt
 ## 3. Sprint 2: Deepening, Death Spiral QTE & Systems (กำลังดำเนินการ 🔄)
 **ระยะเวลา:** 2026-09-15 — 2026-09-28 | **Estimated Velocity:** 45 SP | **Status:** 🔄 In Progress
 
-| ID | User Story / Task | ผู้รับผิดชอบหลัก | MoSCoW | SP | Status | คำอธิบายความรับผิดชอบ |
-| --- | --- | --- | --- | --- | --- | --- |
-| **US-07** | Dynamic Pet Emotional Sprites (Mossling) | เดียร์ (2D Art Lead) | Should Have | 4 | ✅ Done | เดียร์วาดภาพอารมณ์ โชว์ต่อเข้า Reaction Timer |
-| **US-08** | Death Spiral Circular Track & Needle | โชว์ (Lead Prog) | Should Have | 5 | 🔍 Review | โชว์เขียนวงล้อคู่ด้วย MonoGame.Extended |
-| **US-09** | Hazard Level & Harm Type System Design | ซุง (Game Designer) | Should Have | 3 | 🔍 Review | ซุงออกแบบสเกลความอันตราย โชว์ต่อขึ้น HUD |
-| **US-10** | Playtest Screenshot & Capture Pipeline | โชว์ (Lead Prog) | Should Have | 3 | 🔍 Review | โชว์สร้างคำสั่ง `--screenshot` และปุ่ม `F12` |
-| **US-11** | Sound Effects Production (8 SFX) | ภูมิ (Pooh / Audio) | Should Have | 4 | 🔄 In Progress | ภูมิจัดหาและตัดต่อเสียง 8 เสียงลง Staging |
-| **US-12** | Audio Engine Integration into MonoGame | โชว์ (Lead Prog) | Should Have | 3 | 📋 Ready | โชว์เขียนระบบเล่นเสียง SFX เมื่อกดยืนยัน |
-| **ART-01** | Death Spiral UI Scrap Badges (6 Badges) | เดียร์ (2D Art Lead) | Should Have | 3 | 🔄 In Progress | เดียร์วาดป้าย FEED, PLAY, PET, OBSERVE, DODGE |
-| **DES-01** | QTE Balance Matrix & Timing Calculations | ซุง (Game Designer) | Should Have | 3 | 🔄 In Progress | ซุงคำนวณขนาดมุม $60^\circ$ Dead Zone และแต้ม Favor |
-| **QA-01** | Lead QA Playtesting & Feel Feedback | ภูมิ (Pooh / Design) | Should Have | 3 | 🔄 In Progress | ภูมิทดสอบฟีลลิ่งจังหวะกด Spacebar ส่งให้ซุง/โชว์ |
-| **TECH-01** | Pure C# Domain Models Extraction | โชว์ (Lead Prog) | Should Have | 3 | 🔄 In Progress | โชว์แยกคลาสตามสเปกของซุงเพื่อความสะอาดของโค้ด |
-| **TECH-02** | Automated Unit Testing (`BePal.Tests`) | โชว์ (Lead Prog) | Should Have | 4 | 📋 Ready | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม State |
-| **TECH-03** | Modular Screen Hierarchy (`IScreen`) | โชว์ (Lead Prog) | Should Have | 5 | 📋 Ready | โชว์แยก Screen Classes ออกจาก `Game1.cs` |
-| **TECH-04** | Content Pipeline Warning Cleanups | โชว์ (Lead Prog) | Should Have | 2 | 📋 Ready | โชว์คลีนอัพการอ้างอิง DLL ใน `Content.mgcb` |
-| **รวม** | **Sprint 2 Velocity** | - | - | **45** | - | โชว์: 25 SP, ซุง: 6 SP, ภูมิ: 7 SP, เดียร์: 7 SP |
+| ID          | User Story / Task                        | ผู้รับผิดชอบหลัก     | MoSCoW      | SP     | Status         | คำอธิบายความรับผิดชอบ                               |
+| ----------- | ---------------------------------------- | -------------------- | ----------- | ------ | -------------- | --------------------------------------------------- |
+| **US-07**   | Dynamic Pet Emotional Sprites (Mossling) | เดียร์ (2D Art Lead) | Should Have | 4      | ✅ Done         | เดียร์วาดภาพอารมณ์ โชว์ต่อเข้า Reaction Timer       |
+| **US-08**   | Death Spiral Circular Track & Needle     | โชว์ (Lead Prog)     | Should Have | 5      | 🔍 Review      | โชว์เขียนวงล้อคู่ด้วย MonoGame.Extended             |
+| **US-09**   | Hazard Level & Harm Type System Design   | ซุง (Game Designer)  | Should Have | 3      | 🔍 Review      | ซุงออกแบบสเกลความอันตราย โชว์ต่อขึ้น HUD            |
+| **US-10**   | Playtest Screenshot & Capture Pipeline   | โชว์ (Lead Prog)     | Should Have | 3      | 🔍 Review      | โชว์สร้างคำสั่ง `--screenshot` และปุ่ม `F12`        |
+| **US-11**   | Sound Effects Production (8 SFX)         | ภูมิ (Pooh / Audio)  | Should Have | 4      | 🔄 In Progress | ภูมิจัดหาและตัดต่อเสียง 8 เสียงลง Staging           |
+| **US-12**   | Audio Engine Integration into MonoGame   | โชว์ (Lead Prog)     | Should Have | 3      | 📋 Ready       | โชว์เขียนระบบเล่นเสียง SFX เมื่อกดยืนยัน            |
+| **ART-01**  | Death Spiral UI Scrap Badges (6 Badges)  | เดียร์ (2D Art Lead) | Should Have | 3      | 🔄 In Progress | เดียร์วาดป้าย FEED, PLAY, PET, OBSERVE, DODGE       |
+| **DES-01**  | QTE Balance Matrix & Timing Calculations | ซุง (Game Designer)  | Should Have | 3      | 🔄 In Progress | ซุงคำนวณขนาดมุม $60^\circ$ Dead Zone และแต้ม Favor  |
+| **QA-01**   | Lead QA Playtesting & Feel Feedback      | ภูมิ (Pooh / Design) | Should Have | 3      | 🔄 In Progress | ภูมิทดสอบฟีลลิ่งจังหวะกด Spacebar ส่งให้ซุง/โชว์    |
+| **TECH-01** | Pure C# Domain Models Extraction         | โชว์ (Lead Prog)     | Should Have | 3      | 🔄 In Progress | โชว์แยกคลาสตามสเปกของซุงเพื่อความสะอาดของโค้ด       |
+| **TECH-02** | Automated Unit Testing (`BePal.Tests`)   | โชว์ (Lead Prog)     | Should Have | 4      | 📋 Ready       | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม State |
+| **TECH-03** | Modular Screen Hierarchy (`IScreen`)     | โชว์ (Lead Prog)     | Should Have | 5      | 📋 Ready       | โชว์แยก Screen Classes ออกจาก `Game1.cs`            |
+| **TECH-04** | Content Pipeline Warning Cleanups        | โชว์ (Lead Prog)     | Should Have | 2      | 📋 Ready       | โชว์คลีนอัพการอ้างอิง DLL ใน `Content.mgcb`         |
+| **รวม**     | **Sprint 2 Velocity**                    | -                    | -           | **45** | -              | โชว์: 25 SP, ซุง: 6 SP, ภูมิ: 7 SP, เดียร์: 7 SP    |
 
 ---
 
