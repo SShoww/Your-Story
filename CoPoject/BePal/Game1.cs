@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,15 +39,15 @@ public class Game1 : Game
     private float _reactionTime;
     private readonly List<FloatingTag> _tags = new();
 
-    private static readonly string[] Actions = { "Feed", "Play", "Pet", "Observe" };
-    private static readonly string[] ActionNeeds = { "Appetite", "Recreation", "Intimacy", "Observation" };
-    private static readonly Color[] ActionColors =
+    private record struct CareActionDescriptor(CareAction Action, string Need, Color Color);
+    private static readonly CareActionDescriptor[] CareActionDescriptors =
     {
-        new(72, 205, 130),
-        new(65, 170, 245),
-        new(245, 115, 165),
-        new(180, 125, 245)
+        new(CareAction.Feed, "Appetite", new Color(72, 205, 130)),
+        new(CareAction.Play, "Recreation", new Color(65, 170, 245)),
+        new(CareAction.Pet, "Intimacy", new Color(245, 115, 165)),
+        new(CareAction.Observe, "Observation", new Color(180, 125, 245))
     };
+
     public Game1(string[]? args = null)
     {
         _args = args ?? Array.Empty<string>();
@@ -151,7 +152,8 @@ public class Game1 : Game
     {
         _angle = (_angle + 2.2f * (float)time.ElapsedGameTime.TotalSeconds) % Tau;
         _qteTime += (float)time.ElapsedGameTime.TotalSeconds;
-        if (_screen == Screen.Care && _run.ActivePet == PetKind.Trickster && !_teleported && _qteTime >= _teleportAt)
+        PetDefinition pet = PetCatalog.Get(_run.ActivePet);
+        if (_screen == Screen.Care && pet.Pattern.HasTeleportingMarker && !_teleported && _qteTime >= _teleportAt)
         {
             _angle = (float)_random.NextDouble() * Tau;
             _teleported = true;
@@ -171,24 +173,24 @@ public class Game1 : Game
         _reactionTime = 0;
         _screen = Screen.Care;
         ResetQte();
-        _message = $"Time your Spacebar when the needle enters {Action(_run.ActivePet)}!";
+        _message = $"Time your Spacebar when the needle enters {PetCatalog.Get(_run.ActivePet).Pattern.PreferredAction}!";
     }
 
-    private int? GetHoveredActionIndex()
+    private CareAction? GetHoveredAction()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < CareActionDescriptors.Length; i++)
         {
             float centerA = i * MathF.PI / 2f + MathF.PI / 4f;
             float diff = MathF.Abs(Wrap(_angle, centerA));
-            if (diff <= MathF.PI / 6f) return i;
+            if (diff <= MathF.PI / 6f) return CareActionDescriptors[i].Action;
         }
         return null;
     }
 
     private void ResolveCare()
     {
-        int? actionIdx = GetHoveredActionIndex();
-        if (actionIdx == null)
+        CareAction? action = GetHoveredAction();
+        if (action == null)
         {
             TriggerShake(0.24f, 9f);
             _petImage = _petAngry;
@@ -198,15 +200,15 @@ public class Game1 : Game
             return;
         }
 
-        int targetIdx = ActionIndex(_run.ActivePet);
-        if (actionIdx.Value == targetIdx)
+        PetDefinition activePet = PetCatalog.Get(_run.ActivePet);
+        if (action.Value == activePet.Pattern.PreferredAction)
         {
             _run.RecordCareSuccess();
             _petImage = _petHappy;
             _reactionTime = 0.75f;
             SpawnTag("PERFECT! +1 SATISFACTION", new Color(16, 48, 28), new Color(110, 245, 150));
 
-            if (_run.ActivePet == PetKind.Attacker && _run.Satisfaction == 2)
+            if (activePet.Pattern.HasDodgeAttack && _run.Satisfaction == activePet.Pattern.AttackThreshold)
             {
                 _screen = Screen.Dodge;
                 ResetQte();
@@ -235,7 +237,7 @@ public class Game1 : Game
             TriggerShake(0.24f, 9f);
             _petImage = _petAngry;
             _reactionTime = 0.65f;
-            string chosen = Actions[actionIdx.Value];
+            string chosen = action.Value.ToString();
             SpawnTag($"REJECTED: {chosen.ToUpperInvariant()}! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
             Fail($"Disliked {chosen}! Lost 1 Health.");
         }
@@ -351,7 +353,7 @@ public class Game1 : Game
         _batch.DrawRectangle(new RectangleF(frame.X, frame.Y, frame.Width, frame.Height), new Color(255, 203, 139), 2f);
 
         Rectangle careBtn = new(490, 480, 300, 48);
-        Button(careBtn, $"CARE FOR {Name(_run.ActivePet).ToUpperInvariant()}", true);
+        Button(careBtn, $"CARE FOR {PetCatalog.Get(_run.ActivePet).Name.ToUpperInvariant()}", true);
 
         Center(_message, new Vector2(640, 550), 0.76f, new Color(255, 225, 165));
         Button(new Rectangle(50, 595, 250, 60), "End Day", _run.CanEndDay);
@@ -367,8 +369,9 @@ public class Game1 : Game
     }
     private void Log(PetKind pet, int y)
     {
+        PetDefinition def = PetCatalog.Get(pet);
         bool unlocked = _run.IsLogUnlocked(pet);
-        string text = unlocked ? $"{Name(pet)}: prefers {Action(pet)}. {Pattern(pet)}" : $"{Name(pet)}: locked ({_run.CompletedSessions(pet)} / 3 sessions)";
+        string text = unlocked ? $"{def.Name}: prefers {def.Pattern.PreferredAction}. {def.Pattern.Description}" : $"{def.Name}: locked ({_run.CompletedSessions(pet)} / 3 sessions)";
         Text(text, new Vector2(205, y), unlocked ? Color.White : Color.Gray);
     }
     private void DrawQte(bool dodge)
@@ -415,19 +418,20 @@ public class Game1 : Game
         }
         else
         {
-            int? hovered = GetHoveredActionIndex();
-            for (int i = 0; i < 4; i++)
+            CareAction? hovered = GetHoveredAction();
+            for (int i = 0; i < CareActionDescriptors.Length; i++)
             {
+                CareActionDescriptor desc = CareActionDescriptors[i];
                 float centerA = i * MathF.PI / 2f + MathF.PI / 4f;
                 float span = MathF.PI / 3f;
-                bool isHovered = hovered == i;
-                Color baseCol = ActionColors[i];
+                bool isHovered = hovered == desc.Action;
+                Color baseCol = desc.Color;
                 Color arcCol = isHovered ? Color.Lerp(baseCol, Color.White, 0.45f) : baseCol;
 
                 _batch.DrawArc(c, trackRadius, centerA - span / 2f, span, 32, arcCol, isHovered ? 24f : 18f);
 
                 Vector2 badgePos = c + Dir(centerA) * (trackRadius + 58f);
-                DrawScrapBadge(badgePos, Actions[i].ToUpperInvariant(), ActionNeeds[i], arcCol, Color.White, isHovered);
+                DrawScrapBadge(badgePos, desc.Action.ToString().ToUpperInvariant(), desc.Need, arcCol, Color.White, isHovered);
             }
         }
 
@@ -473,14 +477,15 @@ public class Game1 : Game
         RectangleF petRect = new(860, 20, 384, 70);
         _batch.FillRectangle(petRect, new Color(22, 25, 38));
         _batch.DrawRectangle(petRect, new Color(255, 203, 139), 2f);
-        string hazard = _run.ActivePet switch
+        PetDefinition pet = PetCatalog.Get(_run.ActivePet);
+        string hazard = pet.Kind switch
         {
-            PetKind.Baseline => "Hazard Lv 1 (Physical)",
-            PetKind.Attacker => "Hazard Lv 2 (Aggressive)",
-            _ => "Hazard Lv 3 (Teleporting)"
+            PetKind.Baseline => $"Hazard Lv {pet.HazardLevel} ({pet.HarmType})",
+            PetKind.Attacker => $"Hazard Lv {pet.HazardLevel} (Aggressive)",
+            _ => $"Hazard Lv {pet.HazardLevel} (Teleporting)"
         };
         Center($"DAY {_run.DayNumber} / 5", new Vector2(petRect.Center.X, petRect.Y + 20f), 0.85f, Color.White);
-        Center($"{Name(_run.ActivePet).ToUpperInvariant()} - {hazard}", new Vector2(petRect.Center.X, petRect.Y + 48f), 0.68f, new Color(255, 203, 139));
+        Center($"{pet.Name.ToUpperInvariant()} - {hazard}", new Vector2(petRect.Center.X, petRect.Y + 48f), 0.68f, new Color(255, 203, 139));
     }
     private void DrawSatisfactionAndPrompt(bool dodge)
     {
@@ -518,9 +523,9 @@ public class Game1 : Game
     {
         Center("Run Summary", new Vector2(640, 115), 1.45f, new Color(255, 203, 139));
         Text($"Forced Retreats: {_run.ForcedRetreats}", new Vector2(420, 260), Color.White);
-        Text($"Mossling sessions: {_run.CompletedSessions(PetKind.Baseline)}", new Vector2(420, 310), Color.White);
-        Text($"Nibbleclaw sessions: {_run.CompletedSessions(PetKind.Attacker)}", new Vector2(420, 360), Color.White);
-        Text($"Blinkbun sessions: {_run.CompletedSessions(PetKind.Trickster)}", new Vector2(420, 410), Color.White);
+        Text($"{PetCatalog.Get(PetKind.Baseline).Name} sessions: {_run.CompletedSessions(PetKind.Baseline)}", new Vector2(420, 310), Color.White);
+        Text($"{PetCatalog.Get(PetKind.Attacker).Name} sessions: {_run.CompletedSessions(PetKind.Attacker)}", new Vector2(420, 360), Color.White);
+        Text($"{PetCatalog.Get(PetKind.Trickster).Name} sessions: {_run.CompletedSessions(PetKind.Trickster)}", new Vector2(420, 410), Color.White);
         Button(Button(585), "Back to Menu", true);
     }
     private void Pet(Vector2 c, PetKind pet)
@@ -609,11 +614,6 @@ public class Game1 : Game
         for (int y = 0; y < size; y++) for (int x = 0; x < size; x++) pixels[y * size + x] = Vector2.Distance(new Vector2(x,y), new Vector2(r)) <= r ? Color.White : Color.Transparent;
         result.SetData(pixels); return result;
     }
-    private int Segment() => (int)(_angle / (MathF.PI / 2)) % 4;
-    private static int ActionIndex(PetKind pet) => pet switch { PetKind.Baseline => 0, PetKind.Attacker => 1, _ => 2 };
-    private static string Action(PetKind pet) => pet switch { PetKind.Baseline => "Feed", PetKind.Attacker => "Play", _ => "Pet" };
-    private static string Name(PetKind pet) => pet switch { PetKind.Baseline => "Mossling", PetKind.Attacker => "Nibbleclaw", _ => "Blinkbun" };
-    private static string Pattern(PetKind pet) => pet switch { PetKind.Baseline => "Steady wheel.", PetKind.Attacker => "Attacks after two successes.", _ => "Marker teleports once." };
     private static Vector2 Dir(float a) => new(MathF.Cos(a), MathF.Sin(a));
     private static float Wrap(float a, float b)
     {
