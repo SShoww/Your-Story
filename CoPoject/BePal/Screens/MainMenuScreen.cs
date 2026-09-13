@@ -30,7 +30,7 @@ public sealed class MainMenuScreen : IScreen
             if (_context.IsButtonClicked(ScreenContext.ButtonRect(250)))
             {
                 _context.Run = new PrototypeRun();
-                _context.Manager.ShowHome("Day 1 begins. Click the pet to begin.");
+                _context.Manager.ShowPrologue();
             }
             else if (_context.IsButtonClicked(ScreenContext.ButtonRect(330)))
             {
@@ -48,16 +48,16 @@ public sealed class MainMenuScreen : IScreen
         if (_showHelp)
         {
             _context.DrawCenterText(spriteBatch, "How to Play", new Vector2(640, 105), 1.35f, new Color(255, 203, 139));
-            _context.DrawText(spriteBatch, "Click the pet at home. Press Space on its preferred Care Action.", new Vector2(180, 220), Color.White);
-            _context.DrawText(spriteBatch, "Attacks use a gold Dodge Zone. Three Care successes complete a session.", new Vector2(180, 280), Color.White);
-            _context.DrawText(spriteBatch, "Three sessions unlock a Survival Log entry. Zero Health forces a retreat.", new Vector2(180, 340), Color.White);
+            _context.DrawText(spriteBatch, "Explore 4 walls with [<] and [>] arrows. Check Wall 2 pantry for dietary clues.", new Vector2(180, 220), Color.White);
+            _context.DrawText(spriteBatch, "Click the pet on Wall 1 to begin care. Press Space on its preferred Care Action.", new Vector2(180, 280), Color.White);
+            _context.DrawText(spriteBatch, "Attacks use a gold Dodge Zone. End Day unlocks at Wall 4 after 1 session.", new Vector2(180, 340), Color.White);
             _context.DrawButton(spriteBatch, ScreenContext.ButtonRect(570), "Back", true);
         }
         else
         {
             _context.DrawCenterText(spriteBatch, "BePal", new Vector2(640, 120), 1.8f, new Color(255, 203, 139));
-            _context.DrawCenterText(spriteBatch, "Pet-care timing prototype", new Vector2(640, 175), 0.85f, Color.LightGray);
-            _context.DrawButton(spriteBatch, ScreenContext.ButtonRect(250), "Start Prototype", true);
+            _context.DrawCenterText(spriteBatch, "Abnormal Creature Daycare Simulation", new Vector2(640, 175), 0.85f, Color.LightGray);
+            _context.DrawButton(spriteBatch, ScreenContext.ButtonRect(250), "Start Daycare", true);
             _context.DrawButton(spriteBatch, ScreenContext.ButtonRect(330), "How to Play", true);
             _context.DrawButton(spriteBatch, ScreenContext.ButtonRect(410), "Quit", true);
         }
