@@ -2,100 +2,99 @@
 
 **Date:** 2026-09-13  
 **Target Branch:** `Develop`  
-**Current Status:** All GDD, Agile, ADR, and CONTEXT documentation fully synchronized and verified with passing unit tests (7/7). Ready for Milestone 1 implementation.
+**Current Status:** Sprint 2 (`TECH-03`) and Sprint 3 (`TECH-05`, `US-15`, `US-20`) fully implemented, verified with 28 passing unit tests (28/28), validated with automated 22-frame screenshot harness (01–08 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
 
 ---
 
-## 1. Context & Design Decisions Summary
+## 1. Summary of Completed Work
 
-During this session, we conducted an in-depth design distillation (`grill-me`) based on user wireframes and narrative design notes, establishing the following core system improvements:
+### 1.1. Gitflow Integration & Milestone Merges
+- **PR #15 (Merged into `Develop`):** `refactor(screens): implement IScreen hierarchy and ScreenManager`
+  - Completed `TECH-03` (Issue #13 closed).
+  - Decomposed screen logic from `Game1.cs` into `IScreen`, `ScreenManager`, `ScreenContext`, and initial modular screens.
+- **PR #16 (Merged into `Develop`):** `feat(sprint-3): implement dialogue box, 4-wall shelter room, and narrative screens`
+  - Created feature branch `feature/sprint-3-narrative-shelter` off `Develop`.
+  - Implemented `TECH-05`, `US-20`, and `US-15`.
+  - Verified local build (0 warnings, 0 errors), 28 unit tests, and screenshot harness.
+  - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
 
-### Key Architectural & Gameplay Decisions
-1. **Narrative & Progression Flow:**
-   - **Day 1:** Full prologue sequence (dream/shop opening preparation $\rightarrow$ mystery package arrives at doorstep $\rightarrow$ unboxing reveals Mossling).
-   - **Days 2–5:** Doorstep morning delivery sequence with new daily abnormal pet before entering the shelter.
-2. **Samsara Room-Style 4-Wall Panoramic Shelter:**
-   - Shelter room is divided into 4 navigable panoramic walls with left/right rotation controls (`[◄ Left]` and `[Right ►]`):
-     - **Wall 1 (Pet Zone):** Active pet bed/cat tree with ambient behavior cues; clicking pet opens prompt `[YES]/[NO]` to initiate care.
-     - **Wall 2 (Prep & Pantry):** Food shelves, sink, and trash providing inspectable clues on dietary preferences.
-     - **Wall 3 (Study Desk):** Desk with clickable Survival Log notebook and mystery research notes.
-     - **Wall 4 (Front Door):** Entrance door, window, and clock/calendar for the `[End Day]` action.
-3. **Unified Dialogue & Inspection System (`DialogueBox`):**
-   - Reusable dialogue component with typewriter effect, click-to-fast-reveal, `NEXT =>` button, and `[YES]/[NO]` prompt buttons.
-   - Used uniformly across Prologue, Doorstep arrival, room item inspection, and pet confirmation.
-   - Text is architected in **English first**.
-4. **Flexible Care Progression (Risk vs. Reward):**
-   - Completing 1 Pet-Care Session unlocks the `[End Day]` button on Wall 4 / HUD.
-   - The player can safely end the day or risk additional care sessions on the active pet to gather Survival Log entries before nightfall.
-5. **2-Phase Care Loop:**
-   - **Phase 1 (Deduction & Dynamic Wheel):** Read pet Behavior Cues (e.g. grumbling belly, trembling fur, dilated pupils) in real-time, time the Wheel Marker on a dynamic wheel featuring erratic speeds and a central golden **Sweet Spot** ($\pm 15^\circ$ awarding +2 Satisfaction).
-   - **Phase 2 (Tactile Care Mini-Games):** Correct Phase 1 deduction transitions into a tactile micro-game (2–3 seconds):
-     - **Feed:** Hold-to-pour pouring mechanic to hit a safe line.
-     - **Pet:** Mouse stroke interaction within gentle speed thresholds.
-     - **Play:** Reflex catch timing challenge as pet pounces.
-     - **Observe:** Focus lens inspection to spot anomalies.
-   - **Consequence Rules:**
-     - Phase 1 wrong deduction = immediate pet aggression (-1 HP or Dodge QTE).
-     - Phase 2 execution failure = +0 Satisfaction (no HP loss; fair and non-punitive).
-     - Phase 2 execution success = +1 Satisfaction (+2 if Phase 1 hit Sweet Spot).
-6. **Day Conclusion & Transition:**
-   - Ending the day or Forced Retreat (0 HP) routes to a **Daily Summary Report Card** (Papers, Please style), followed by a fade-to-black night rest and morning doorstep arrival.
+### 1.2. Architecture & Subsystems Implemented
+1. **Unified `DialogueBox` Subsystem (`TECH-05` / `BePal.UI.DialogueBox`):**
+   - Typewriter character reveal animation with configurable characters-per-second speed (`TypewriterSpeed = 38f`).
+   - Spacebar and mouse click instant fast-reveal / skip (`SkipTypewriter()`).
+   - Dynamic line wrapping with font measurement abstraction (`WrapText(string, float, Func<string, float>)`) enabling headless testability.
+   - `NEXT =>` button and `SKIP >>` button indicator.
+   - Choice prompt mode with `[YES]` and `[NO]` buttons and keyboard hotkeys (`Y` / `N`).
+   - Pure domain queue logic tested headlessly in `BePal.Tests/UI/DialogueBoxTests.cs` (8 unit tests).
 
----
+2. **4-Wall Panoramic Shelter Navigation Engine (`US-20` / `BePal.Screens.PanoramicRoomScreen`):**
+   - Samsara Room-style 360-degree rotation across 4 connected shelter walls with `[◄]` and `[►]` buttons and `A`/`D` or Arrow keys.
+   - **Wall 1 (Pet Zone):** Active pet habitat frame, real-time ambient behavior cue banner (e.g. grumbling belly for Mossling), pet click confirmation dialogue prompt (`Care for [Name]? [YES]/[NO]`), and care initiation.
+   - **Wall 2 (Prep & Pantry):** Inspectable Pantry Shelves (dietary clues and root feed), Water Basin (clean spring water), and Disposal Bin (rejected synthetic kibble).
+   - **Wall 3 (Study Desk):** Inspectable Survival Log desk (opens `SurvivalLogScreen`) and Notice Board (confidential facility daycare protocol memorandum).
+   - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door (locked from within), Porch Window (foggy perimeter), Shift Clock & Calendar (day and session monitor), and prominent `[End Day Shift]` button (enabled when `Run.CanEndDay` is fulfilled).
+   - Domain navigation model tested headlessly in `BePal.Tests/Screens/PanoramicRoomTests.cs` (5 unit tests).
 
-## 2. Updated Artifacts & References
+3. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
+   - `NarrativeScripts.cs` providing narrative text in English first.
+   - **Day 1 Prologue (`PrologueScreen`):** Daycare introduction $\rightarrow$ door chime $\rightarrow$ wooden delivery crate with yellow hazard tape $\rightarrow$ unboxing Mossling. Includes "Skip Intro >>" button.
+   - **Days 2–5 Morning Delivery (`DoorstepScreen`):** Porch arrival scene before entering shelter with dynamic crate manifests for Nibbleclaw (Hazard Lv 2, claws) and Blinkbun (Hazard Lv 3, ozone/teleportation). Includes "Enter Shelter >>" button.
+   - Tested in `BePal.Tests/Screens/NarrativeScreenTests.cs` (4 unit tests).
 
-All architectural and game design documentation has been updated to reflect these decisions:
-
-- **ADR:**
-  - `docs/adr/0002-four-wall-room-and-two-phase-care-architecture.md` (Newly created)
-  - `docs/adr/0001-screen-and-care-qte-architecture.md` (Existing baseline)
-- **Domain Vocabulary:**
-  - `CONTEXT.md` (Added 4-Wall Panoramic Shelter, 2-Phase Care Loop, Behavior Cue, Golden Sweet Spot, Tactile Care Mini-Game, Daily Summary Report, Unified Dialogue Box)
-- **Game Design Documents (GDD):**
-  - `BEPAL/Docs/GDD/00-concept.md` (Updated Starting Point, Narrative Goal, Samsara Room reference)
-  - `BEPAL/Docs/GDD/01-core-loop.md` (Updated daily loop Mermaid diagram, scene breakdown, controls)
-  - `BEPAL/Docs/GDD/02-scope-features.md` (Updated feature priorities to Must-Have)
-  - `BEPAL/Docs/GDD/03-mechanics.md` (Updated state machine, 4-wall navigation, 2-phase care rules)
-  - `BEPAL/Docs/GDD/04-class-diagram.md` (Added `DialogueBox`, `PanoramicRoomScreen`, `ICareMiniGame` hierarchy)
-  - `BEPAL/Docs/GDD/05-asset-list.md` (Added 4-wall backgrounds, dialogue UI, mini-game props, audio SFX)
-- **Agile & Backlog Planning:**
-  - `BEPAL/Docs/Agile/01-product-backlog.md` (Updated Traceability Matrix and Sprint 3 & 4 tasks; total 128 SP)
-  - `BEPAL/Docs/Agile/02-sprint-backlog.md` (Updated Sprint 3 & 4 tables and capacity matrix)
-  - `BEPAL/Docs/Agile/03-kanban-board.md` (Updated role workflows, Kanban board, task tracking table)
-  - `BEPAL/Docs/Agile/04-Kanban-for-Obsidian.md` (Fixed Obsidian Kanban plugin formatting and synced cards)
-  - `BEPAL/Docs/Agile/sprint-plan-02.md` (Marked completed technical tasks as Done)
+4. **Automated Visual Regression QA Pipeline:**
+   - Headless `--screenshot` runner extended to 22 frames in `Game1.cs`.
+   - Generates canonical visual regression captures in `screenshots/`:
+     - `01_menu.png`: Main Menu view
+     - `02_home.png`: 4-Wall Shelter Wall 1 (Pet Zone) with behavior cues and navigation arrows
+     - `03_care_qte.png`: Dynamic Care QTE wheel with floating feedback tags
+     - `04_dodge_qte.png`: Warning Dodge QTE state with golden dodge zone
+     - `05_survival_log.png`: Survival Log book overlay
+     - `06_summary.png`: Run Summary report
+     - `07_prologue.png`: Day 1 Prologue Crate unboxing view
+     - `08_doorstep.png`: Morning doorstep courier crate arrival view
 
 ---
 
-## 3. Codebase State & Verification
+## 2. Codebase Health & Verification
 
+- **Branch:** `Develop` (Up to date with `origin/Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes 7/7 tests (`dotnet test CoPoject/CoPoject.slnx`).
-- **Screenshot Harness:** Automated 18-frame visual test runs and completes cleanly (`dotnet run --project CoPoject/BePal -- --screenshot`).
+- **Test Suite:** `CoPoject/BePal.Tests` passes 28/28 tests (`dotnet test CoPoject/CoPoject.slnx`):
+  - `PrototypeRunTests.cs`: 7 tests
+  - `DialogueBoxTests.cs`: 8 tests
+  - `PanoramicRoomTests.cs`: 5 tests
+  - `NarrativeScreenTests.cs`: 4 tests
+  - `HarmType`, `PetCatalog`, `ActionPattern` domain tests: 4 tests
+- **Visual Regression:** `dotnet run --project CoPoject/BePal -- --screenshot` completes cleanly in ~4s.
 
 ---
 
-## 4. Immediate Next Steps for Next Session
+## 3. Immediate Next Steps for Next Session
 
-The next agent should begin **Sprint 3 / Milestone 1** implementation:
+The next session will focus on **Sprint 4 / Milestone 2 (2-Phase Care Mini-Games & Release)**:
 
-1. **Implement `DialogueBox` Subsystem (`TECH-05` / `T-23`):**
-   - Create `DialogueBox.cs` supporting typewriter character reveal, click/Spacebar fast reveal, `NEXT =>` button, and `[YES]/[NO]` prompt buttons.
-   - Text rendering using `PrototypeFont.spritefont` with proper line wrapping.
-2. **Implement `PrologueScreen.cs` and `DoorstepScreen.cs` (`US-15` / `T-10`):**
-   - Connect the Day 1 prologue narrative (Intro $\rightarrow$ Mystery Box $\rightarrow$ Open Mossling).
-   - Wire transitions into `ScreenManager`.
-3. **Implement `PanoramicRoomScreen.cs` (`US-20` / `T-24`):**
-   - 4-wall panoramic navigation with left/right rotation arrows.
-   - Object inspection hitboxes on Wall 2 (Pantry), Wall 3 (Survival Log desk), Wall 4 (Front Door).
-   - Pet click confirmation prompt on Wall 1 to enter `CareQteScreen`.
+1. **Implement Dynamic Wheel with Sweet Spots (`US-21`):**
+   - Add central golden Sweet Spot ($\pm 15^\circ$) inside each action quadrant awarding +2 Satisfaction.
+   - Integrate real-time Behavior Cues into `CareQteScreen.cs` deduced from `PetDefinition`.
+   - Implement species-specific needle dynamics (Nibbleclaw acceleration, Blinkbun erratic teleportation).
+2. **Implement Tactile Care Mini-Games Subsystem (`US-22`):**
+   - Create `ICareMiniGame` interface under `CoPoject/BePal/Screens/MiniGames/`.
+   - Implement 4 tactile micro-games (2–3 seconds duration):
+     - `FeedMiniGame`: Hold-and-release spacebar to pour feed into a target line.
+     - `PetMiniGame`: Gentle mouse stroke interaction within speed limits.
+     - `PlayMiniGame`: Reflex catch timing when pet pounces.
+     - `ObserveMiniGame`: Focus lens positioning over anomalous spots.
+   - Enforce Consequence Rules: Success = +1/+2 Satisfaction; Failure = +0 Satisfaction (no HP penalty).
+3. **Implement Daily Summary Report Card & Night Rest (`US-23`):**
+   - Replace placeholder summary with a Papers, Please-style daily shift report card.
+   - Fade to black night rest transition recovering HP to 3 before triggering `DoorstepScreen`.
 
 ---
 
-## 5. Suggested Skills for Next Agent
+## 4. Gitflow Reminders for Next Agent
 
-- `tdd`: Use test-driven development when building stateful components (e.g. `DialogueBox` text queue / typewriter timing and `PanoramicRoomScreen` wall index wrapping).
-- `karpathy-guidelines`: Adhere to surgical, minimal, non-overengineered changes when extending MonoGame screens and UI components.
-- `to-issues`: Use if breaking down Sprint 3 and Sprint 4 backlog items into trackable GitHub CLI issues.
+- **Always branch off `Develop`** using `feature/<topic>` (e.g. `feature/two-phase-care-minigames`).
+- **Do not commit directly to `main` or `Develop`**.
+- Merge back into `Develop` via Pull Request with `--no-ff`.
+- Maintain 0 build warnings, 100% pass rate on `dotnet test`, and green screenshot harness before creating PR.
