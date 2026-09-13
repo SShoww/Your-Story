@@ -142,6 +142,16 @@ public class Game1 : Game
         else if (_playtestFrame == 18)
         {
             SaveScreenshot("screenshots/06_summary.png");
+            _screenManager.ShowPrologue();
+        }
+        else if (_playtestFrame == 20)
+        {
+            SaveScreenshot("screenshots/07_prologue.png");
+            _screenManager.ShowDoorstep();
+        }
+        else if (_playtestFrame == 22)
+        {
+            SaveScreenshot("screenshots/08_doorstep.png");
             Exit();
         }
     }
