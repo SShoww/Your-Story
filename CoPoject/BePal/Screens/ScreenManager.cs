@@ -36,9 +36,12 @@ public sealed class ScreenManager
         _screens.Push(screen);
     }
 
-    public IScreen? PopScreen()
+    public void PopScreen()
     {
-        return _screens.Count > 1 ? _screens.Pop() : null;
+        if (_screens.Count > 1)
+        {
+            _screens.Pop();
+        }
     }
 
     public void ShowMenu()
@@ -46,10 +49,26 @@ public sealed class ScreenManager
         SetScreen(new MainMenuScreen(Context));
     }
 
+    public void ShowPrologue()
+    {
+        SetScreen(new PrologueScreen(Context));
+    }
+
+    public void ShowDoorstep()
+    {
+        SetScreen(new DoorstepScreen(Context));
+    }
+
     public void ShowHome(string? message = null)
     {
         if (message != null) Context.Message = message;
-        SetScreen(new HomeScreen(Context));
+        SetScreen(new PanoramicRoomScreen(Context, 0));
+    }
+
+    public void ShowRoom(int initialWall = 0, string? message = null)
+    {
+        if (message != null) Context.Message = message;
+        SetScreen(new PanoramicRoomScreen(Context, initialWall));
     }
 
     public void BeginCare()
@@ -81,16 +100,16 @@ public sealed class ScreenManager
 
     public void Fail(string message)
     {
-        if (Context.Run.TakeDamage())
+        Context.Run.TakeDamage();
+        if (Context.Run.Health <= 0)
         {
-            AdvanceDay("Forced Retreat. You recovered.");
-            return;
+            AdvanceDay("Forced retreat! You collapsed and were rushed to safety.");
         }
-
-        if (CurrentScreen is CareQteScreen care) care.ResetQte();
-        else if (CurrentScreen is DodgeQteScreen dodge) dodge.ResetQte();
-
-        Context.Message = message;
+        else
+        {
+            Context.Message = message;
+            SetScreen(new PanoramicRoomScreen(Context, 0));
+        }
     }
 
     public void AdvanceDay(string message)
@@ -98,13 +117,13 @@ public sealed class ScreenManager
         if (Context.Run.IsComplete)
         {
             ShowSummary();
+            return;
         }
-        else
-        {
-            Context.ResetPetReaction();
-            Context.Message = $"{message} Day {Context.Run.DayNumber} begins.";
-            SetScreen(new HomeScreen(Context));
-        }
+
+        Context.ResetPetReaction();
+        Context.Run.EndDay();
+        Context.Message = $"Day {Context.Run.DayNumber} begins. {message}";
+        ShowDoorstep();
     }
 
     public void Update(GameTime gameTime)
