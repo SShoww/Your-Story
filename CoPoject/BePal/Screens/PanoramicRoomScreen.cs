@@ -115,7 +115,6 @@ public sealed class PanoramicRoomScreen : IScreen
         }
         else if (_context.IsButtonClicked(EndDayButtonRect) && _context.Run.CanEndDay)
         {
-            _context.Run.EndDay();
             _context.Manager.AdvanceDay("You ended the day safely.");
         }
         else if (_context.IsButtonClicked(SurvivalLogButtonRect))
@@ -181,7 +180,6 @@ public sealed class PanoramicRoomScreen : IScreen
         {
             if (_context.Run.CanEndDay)
             {
-                _context.Run.EndDay();
                 _context.Manager.AdvanceDay("You ended the day safely.");
             }
             else

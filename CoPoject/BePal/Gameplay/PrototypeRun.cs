@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace BePal.Gameplay;
@@ -21,7 +22,10 @@ public sealed class PrototypeRun
     public int SessionsToday { get; private set; }
     public int ForcedRetreats { get; private set; }
 
-    public PetKind ActivePet => DaySchedule[DayNumber - 1];
+    public PetKind ActivePet => IsComplete
+        ? DaySchedule[^1]
+        : DaySchedule[Math.Clamp(DayNumber - 1, 0, DaySchedule.Length - 1)];
+
     public bool IsComplete => DayNumber > DaySchedule.Length;
     public bool CanEndDay => SessionsToday > 0;
 

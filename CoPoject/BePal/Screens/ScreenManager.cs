@@ -100,10 +100,18 @@ public sealed class ScreenManager
 
     public void Fail(string message)
     {
-        Context.Run.TakeDamage();
-        if (Context.Run.Health <= 0)
+        bool forcedRetreat = Context.Run.TakeDamage();
+        if (forcedRetreat)
         {
-            AdvanceDay("Forced retreat! You collapsed and were rushed to safety.");
+            if (Context.Run.IsComplete)
+            {
+                ShowSummary();
+                return;
+            }
+
+            Context.ResetPetReaction();
+            Context.Message = $"Day {Context.Run.DayNumber} begins. Forced retreat! You collapsed and were rushed to safety.";
+            ShowDoorstep();
         }
         else
         {
@@ -114,14 +122,15 @@ public sealed class ScreenManager
 
     public void AdvanceDay(string message)
     {
+        Context.ResetPetReaction();
+        Context.Run.EndDay();
+
         if (Context.Run.IsComplete)
         {
             ShowSummary();
             return;
         }
 
-        Context.ResetPetReaction();
-        Context.Run.EndDay();
         Context.Message = $"Day {Context.Run.DayNumber} begins. {message}";
         ShowDoorstep();
     }
