@@ -1,7 +1,7 @@
 ---
 type: gdd-scope
-version: 0.2
-date: 2026-09-11
+version: 0.3
+date: 2026-09-13
 ---
 
 # BePal — Scope & Feature List
@@ -10,37 +10,39 @@ date: 2026-09-11
 
 1. **Cozy Aesthetics with Uncanny Hardcore Mechanics:** บรรยากาศบ้านและศูนย์พักพิงที่อบอุ่นนุ่มนวล แต่แฝงไปด้วยสัตว์เลี้ยงที่มีสรีระหรือพฤติกรรมผิดปกติ (Uncanny) และอันตรายถึงชีวิต
 2. **Observation & Consequential Interaction:** แก่นการเล่นเน้นการสังเกตและลองผิดลองถูกที่มีผลลัพธ์ตามมาอย่างชัดเจน—ทุกการกระทำที่ผิดพลาดจะถูกลงโทษด้วยดาเมจ และทุกการกระทำที่ถูกต้องจะนำไปสู่ข้อมูลใน Survival Log
-3. **Wheel-based Care & Dodge QTE:** ระบบการดูแลสัตว์ผ่านวงล้อ 4 ตัวเลือก พร้อมจังหวะสกิลเช็คที่ปรับเปลี่ยนตามพฤติกรรมสัตว์ เช่น เข็มวาร์ปสุ่มตำแหน่ง หรือการโจมตีสวนกลับที่ต้องหลบใน Dodge Zone สีทอง
+3. **Samsara Room 4-Wall Exploration:** ห้องพักสัตว์ 4 ทิศ (Wall 1–4) หมุนสำรวจ ซ้าย-ขวา เพื่ออ่านเบาะแสของกิน ตรวจสอบสมุดบันทึก หรือเตรียมตัวดูแล
+4. **2-Phase Care Loop with Tactile Mini-Games:** ไม่ใช่แค่กด Spacebar ดูวงล้อ แต่เป็นการอ่านภาษากาย กะจังหวะ Sweet Spot และลงมือดูแลจริงผ่านมินิเกม 4 รูปแบบ (เทอาหาร, ลูบตัว, เล่นของเล่น, ส่องแว่นขยาย)
 
 ## Feature List & Priorities
 
 | # | Feature | Priority | รายละเอียด / Acceptance Criteria |
 | --- | --- | --- | --- |
-| 1 | **Care QTE Wheel System** | **Must** | วงล้อ 4 ตัวเลือก (Feed, Play, Pet, Observe) เข็มหมุนวนตรวจจับตำแหน่ง และกดยืนยันด้วย Spacebar |
-| 2 | **Pet Behavior & Action Patterns** | **Must** | สัตว์เลี้ยง 3 ชนิดแรก (Mossling, Nibbleclaw, Blinkbun) ที่มีรูปแบบพฤติกรรมและเงื่อนไขความชอบต่างกัน |
-| 3 | **Dodge QTE Challenge** | **Must** | เมื่อสัตว์เข้าสู่สถานะจู่โจม วงล้อจะเปลี่ยนเป็น Dodge QTE ที่มี Dodge Zone สีทอง หากกดพลาดจะเสีย Health |
-| 4 | **Health & Forced Retreat** | **Must** | ผู้เล่นมี Health 3 หน่วย หากหมดจะเกิด Forced Retreat จบวันฉุกเฉินและฟื้นฟู Health ในวันถัดไป |
-| 5 | **Survival Log System** | **Must** | สมุดบันทึกข้อมูลพฤติกรรมสัตว์ ปลดล็อก Action Pattern แบบสมบูรณ์เมื่อดูแลสัตว์ตัวนั้นสำเร็จครบ 3 Sessions |
-| 6 | **Daily Progression (Game Day 1–5)** | **Must** | วงจรการเล่น 5 วัน มีตารางสัตว์ประจำวัน (Day Schedule) และหน้าสรุป Run Summary เมื่อจบเกม |
-| 7 | **Core UI & Screen Flow** | **Must** | หน้าจอ Main Menu, Help Screen, Main Pet Room, QTE Overlay, Survival Log Overlay, Run Summary |
-| 8 | **Hazard & Harm Classification** | **Should** | แสดงข้อมูลหน้าห้อง: Hazard Level (ระดับ 1–3), Harm Type (Physical / Mental), และ Care Requirement |
-| 9 | **Audio Feedback & BGM** | **Should** | เสียง SFX ตอนกด QTE ถูก/ผิด, เสียงเข็มวาร์ป, เสียงเตือน Dodge, และเพลงบรรเลง BGM สไตล์ Cozy |
-| 10 | **Arrival / Unboxing Scene** | **Could** | ฉากรับกล่องพัสดุปริศนาหน้าบ้านในแต่ละวันพร้อมข้อความบรรยายสั้นๆ (Typewriter effect) |
-| 11 | **Caretaker Daily Upgrades** | **Could** | ระบบพัฒนาความสามารถตัวละครเมื่อจบวัน (ขยายช่องเข็มสำเร็จ, เพิ่มแถบเลือด/ความทนทาน) |
-| 12 | **Save / Load System** | **Could** | บันทึกความคืบหน้าของวันและข้อมูล Survival Log ลงไฟล์ JSON |
+| 1 | **Day 1 Prologue & Story Intro** | **Must** | ฉากเล่าเรื่องเปิดร้าน แนะนำตัวละคร รับกล่องพัสดุปริศนา และเปิดกล่องพบ Mossling ผ่าน Unified Dialogue Box |
+| 2 | **4-Wall Panoramic Shelter Room** | **Must** | ระบบห้อง 4 ทิศ (Wall 1 Pet, Wall 2 Pantry, Wall 3 Desk, Wall 4 Door) หมุนมุมมองซ้าย-ขวา พร้อมจุดคลิกสำรวจสิ่งของหาเบาะแส |
+| 3 | **Unified Dialogue & Inspection System** | **Must** | กล่องข้อความสไตล์ Visual Novel: Typewriter effect, คลิกกล่องเพื่อแสดงข้อความเต็มทันที, ปุ่ม Next และรองรับ Prompt `[YES] / [NO]` |
+| 4 | **2-Phase Care Loop (Deduction & Mini-Games)** | **Must** | **Phase 1:** สังเกต Behavior Cues + หมุน Dynamic Wheel พร้อม Sweet Spot สีทอง<br>**Phase 2:** มินิเกมสัมผัสจริง 4 รูปแบบ (Feed: เทอาหาร, Pet: ลูบตัว, Play: จับของเล่น, Observe: ส่องเลนส์) |
+| 5 | **Pet Behavior & Action Patterns** | **Must** | สัตว์เลี้ยง 3 ชนิด (Mossling, Nibbleclaw, Blinkbun) พร้อม Dynamic Cues และรูปแบบความชอบที่ผู้เล่นต้องอนุมาน |
+| 6 | **Dodge QTE Challenge** | **Must** | เมื่อสัตว์เข้าสู่สถานะโจมตี วงล้อจะเปลี่ยนเป็น Dodge QTE ที่มี Dodge Zone สีทอง หากกดพลาดจะเสีย Health |
+| 7 | **Health, Forced Retreat & Risk/Reward** | **Must** | Health 3 หน่วย ดูแลสำเร็จ 1 ครั้งปลดล็อกปุ่ม [End Day] ผู้เล่นเลือกได้ว่าจะจบวันหรือเสี่ยงดูแลต่อเพื่อปลด Log หาก HP=0 เกิด Forced Retreat |
+| 8 | **Daily Summary Report Card** | **Must** | หน้าสรุปผลประจำวันสไตล์ Papers, Please สรุปจำนวน Session สำเร็จ, ข้อมูล Log ใหม่ และสถานะร่างกาย ก่อนเข้าสู่ฉากพักผ่อนกลางคืน |
+| 9 | **Doorstep Arrival Scene (Days 2–5)** | **Must** | ฉากรับพัสดุกล่องใหม่หน้าประตูในทุกเช้าก่อนเข้าสู่ห้องดูแล |
+| 10 | **Survival Log System** | **Must** | สมุดบันทึกข้อมูลพฤติกรรมสัตว์ ปลดล็อก Action Pattern แบบสมบูรณ์เมื่อดูแลสัตว์ตัวนั้นสำเร็จครบ 3 Sessions |
+| 11 | **Audio Feedback & BGM** | **Should** | เสียง SFX ตอนพิมพ์ดีด, เสียงเทอาหาร, เสียงลูบตัว, เสียง QTE ถูก/ผิด, และเพลงบรรเลง BGM Cozy |
+| 12 | **Hazard & Harm Classification** | **Should** | แสดงข้อมูล Hazard Level (1–3), Harm Type (Physical/Mental) บนสมุดและหน้าจอ |
+| 13 | **Caretaker Daily Upgrades** | **Could** | ระบบพัฒนาความสามารถตัวละครเมื่อจบวัน (ขยาย Safe Zone, เพิ่มความทนทาน) |
+| 14 | **Save / Load System** | **Could** | บันทึกความคืบหน้าของวันและข้อมูล Survival Log ลงไฟล์ JSON |
 
 ## Out of Scope — สิ่งที่ไม่ทำในเฟสนี้
 
 - **No Weapon Arsenal / Combat Mechanics:** ไม่มีการใช้อาวุธ ดาบ หรือปืนใดๆ ทั้งสิ้น—ปฏิสัมพันธ์กับสัตว์ทำผ่านการดูแลและหลบหลีกเท่านั้น
-- **No Free-roam Platforming:** ไม่มีระบบกระโดดหรือเดินสำรวจฉากแพลตฟอร์ม—เป็นระบบ Point-and-Click บริหารจัดการในห้อง
-- **No Complex Multi-frame Animations:** ไม่ทำแอนิเมชันความละเอียดสูงหลายเฟรม เพื่อควบคุมภาระงานศิลป์ (ใช้ Sprite อารมณ์หลัก: Idle, Happy, Angry, Attack)
-- **No Pure Horror / Blood Splatter:** หลีกเลี่ยงภาพเลือดสาดหรือความสยองขวัญสุดโต่ง เพื่อรักษาแก่น "Cozy yet Dangerous"
+- **No Free-roam Platforming:** ไม่มีระบบเดินกระโดดแบบ Platformer—เป็น Point-and-Click บริหารจัดการในห้อง 4 ทิศ
+- **No Complex Multi-frame Animations:** ใช้ Sprite แสดงอารมณ์หลัก (Idle, Happy, Angry, Cues) ผสม Procedural Transform/Shake
+- **No Pure Horror / Blood Splatter:** หลีกเลี่ยงภาพเลือดสาดเพื่อรักษาแก่น "Cozy yet Dangerous"
 
 ## Risks & Mitigation
 
-| ความเสี่ยง                                | ผลกระทบ                          | แนวทางป้องกันและแก้ไข                                                                            |
-| ----------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **ภาระงานด้าน Art และ Sprite ไม่ทันเวลา** | เกมขาดความหลากหลายทางภาพ         | นำเทคนิค Procedural Shape / Color Tint มาช่วยเสริม และใช้ Sprite Sheet อารมณ์หลัก 3-4 ท่า        |
-| **ระบบ QTE เล่นยากหรือน่าเบื่อเกินไป**    | ผู้เล่นรู้สึกหงุดหงิดหรือไม่สนุก | ปรับขนาดของ Hitbox และความเร็วการหมุนของเข็มให้ตอบสนองดี และเพิ่มลูกเล่นอย่าง Teleporting Marker |
-| **ระยะเวลาพัฒนาจำกัด**                    | ฟีเจอร์หลุดจาก Scope             | ยึดมั่นตามเกณฑ์ Must-Have ก่อนเสมอ เลื่อนระบบ Upgrade และ Save/Load เป็นเฟสเสริม                 |
-
+| ความเสี่ยง | ผลกระทบ | แนวทางป้องกันและแก้ไข |
+| --- | --- | --- |
+| **ภาระงานด้านภาพฉาก 4 ทิศ** | งาน Art ส่งช้า | ออกแบบ Perspective ภายในห้องให้เรียบง่าย วาดเป็น 4 มุมต่อเนื่องกัน และใช้ Placeholder ชัดเจนระหว่างพัฒนา |
+| **Mini-Game 4 แบบใช้เวลาขัดเกลานาน** | Pacing ของเกมสะดุด | ออกแบบฟิสิกส์และการควบคุมของ Mini-game ให้เรียบง่ายและกระชับ (เล่นไม่เกิน 2–3 วินาทีต่อรอบ) |
+| **ความซับซ้อนของการเปลี่ยนสถานะหน้าจอ** | เกิดบั๊กในการเปลี่ยน Scene | รวมศูนย์การจัดการผ่าน `ScreenManager` และใช้ `DialogueBox` เป็นตัวกลางในการทริกเกอร์เหตุการณ์ |

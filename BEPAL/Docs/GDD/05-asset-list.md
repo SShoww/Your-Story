@@ -38,11 +38,15 @@ project: BePal
 
 | รหัส Asset | ชื่อไฟล์ | คำอธิบาย & บรรยากาศ | ขนาด | สถานะ |
 | --- | --- | --- | --- | --- |
-| **BG-01** | `bg/bg_main_pet_room.png` | **ห้องพักพิงสัตว์ (Main Room):** ห้องสไตล์ Daycare อบอุ่น มีเบาะนอน ชามอาหาร หน้าต่างมีแดดส่อง | 1280×720 | 🔲 Not Started |
-| **BG-02** | `bg/bg_doorstep_morning.png` | **ชานเรือนหน้าบ้าน (Porch):** ฉากตอนเช้าสำหรับเปิดกล่องพัสดุปริศนา มีแสงแดดอ่อนๆ ยามเช้า | 1280×720 | 🔲 Not Started |
-| **BG-03** | `bg/bg_qte_vignette.png` | **ขอบมืดรอบจอ (Vignette Overlay):** เงาสีดำ/น้ำเงินเข้มขอบจอ เพื่อขับเน้นวงล้อ QTE กลางจอ | 1280×720 | 🔲 Not Started |
-| **BG-04** | `bg/bg_danger_vignette.png` | **ขอบแดงเตือนภัย (Danger Overlay):** แถบสีแดงเลือดกระพริบเบาๆ รอบจอขณะเข้าสู่สถานะ Attack / Dodge | 1280×720 | 🔲 Not Started |
-
+| **BG-01A** | `bg/bg_wall1_pet.png` | **Wall 1 (Pet Zone):** ผนังโซนสัตว์เลี้ยง มีคอนโดแมว เบาะนอน ถาดรอง และพื้นที่สัตว์พักผ่อน | 1280×720 | 🔲 Not Started |
+| **BG-01B** | `bg/bg_wall2_pantry.png` | **Wall 2 (Prep & Pantry):** ผนังครัว/ชั้นเตรียมอาหาร มีชั้นวางขวดอาหาร ถังขยะ อ่างล้าง | 1280×720 | 🔲 Not Started |
+| **BG-01C** | `bg/bg_wall3_desk.png` | **Wall 3 (Study Desk):** ผนังโต๊ะทำงานวิจัย มีโคมไฟ สมุด Survival Log กระดานแปะโน้ต | 1280×720 | 🔲 Not Started |
+| **BG-01D** | `bg/bg_wall4_door.png` | **Wall 4 (Front Door):** ผนังประตูหน้าร้าน มีหน้าต่างมองเห็นข้างนอก ปฏิทิน/นาฬิกาจบวัน | 1280×720 | 🔲 Not Started |
+| **BG-02** | `bg/bg_prologue_intro.png` | **ฉากแนะนำตัวละคร (Prologue):** บรรยากาศหน้าร้านเปิดใหม่พร้อมตัวละครโบกมือต้อนรับ | 1280×720 | 🔲 Not Started |
+| **BG-03** | `bg/bg_doorstep_morning.png` | **ชานเรือนหน้าบ้าน (Porch):** ฉากตอนเช้าสำหรับเปิดกล่องพัสดุปริศนา มีแสงแดดอ่อนๆ ยามเช้า | 1280×720 | 🔲 Not Started |
+| **BG-04** | `bg/bg_daily_summary.png` | **ฉากใบรายงานประจำวัน (Daily Summary):** โต๊ะมืดพร้อมแผ่นกระดาษรายงานผลสไตล์ Papers, Please | 1280×720 | 🔲 Not Started |
+| **BG-05** | `bg/bg_qte_vignette.png` | **ขอบมืดรอบจอ (Vignette Overlay):** เงาสีดำ/น้ำเงินเข้มขอบจอ เพื่อขับเน้นวงล้อ QTE กลางจอ | 1280×720 | 🔲 Not Started |
+| **BG-06** | `bg/bg_danger_vignette.png` | **ขอบแดงเตือนภัย (Danger Overlay):** แถบสีแดงเลือดกระพริบเบาๆ รอบจอขณะเข้าสู่สถานะ Attack / Dodge | 1280×720 | 🔲 Not Started |
 ---
 
 ### 1.3 ป้ายแอ็กชันวงล้อ QTE สไตล์ Death Spiral (Scrap-Paper Badges)
@@ -90,8 +94,28 @@ project: BePal
 | **MENU-02** | `ui/buttons/btn_primary_normal.png` | ปุ่มมาตรฐาน (CARE, END DAY, SURVIVAL LOG) สไตล์ไม้หรือการ์ดอบอุ่น | 260×60 | 🔲 Not Started |
 | **MENU-03** | `ui/buttons/btn_primary_hover.png` | ปุ่มมาตรฐานสถานะ Hover (เรืองแสงขอบสีทอง) | 260×60 | 🔲 Not Started |
 | **MENU-04** | `ui/buttons/btn_close_icon.png` | ปุ่มปิดหน้าต่างกากบาท (X) สำหรับปิด Survival Log | 44×44 | 🔲 Not Started |
+### 1.7 กล่องข้อความและระบบบทสนทนา (Dialogue & Inspection UI)
+
+| รหัส Asset | ชื่อไฟล์ | คำอธิบาย | ขนาด | สถานะ |
+| --- | --- | --- | --- | --- |
+| **DIA-01** | `ui/dialogue/frame_dialogue_box.png` | กรอบกล่องข้อความด้านล่าง สไตล์การ์ด Cozy ขอบมน รองรับ Typewriter text | 980×160 | 🔲 Not Started |
+| **DIA-02** | `ui/dialogue/btn_dialogue_next.png` | ปุ่มลูกศร `NEXT =>` สำหรับไปข้อความถัดไป | 110×40 | 🔲 Not Started |
+| **DIA-03** | `ui/dialogue/btn_choice_yes.png` | ปุ่มตัวเลือก `[ YES ]` สำหรับยืนยันการดูแลสัตว์ | 100×40 | 🔲 Not Started |
+| **DIA-04** | `ui/dialogue/btn_choice_no.png` | ปุ่มตัวเลือก `[ NO ]` สำหรับปฏิเสธ/กลับห้อง | 100×40 | 🔲 Not Started |
+| **DIA-05** | `ui/nav/btn_arrow_left.png` | ปุ่มลูกศรหมุนห้องไปทางซ้าย `[◄ Left]` | 50×80 | 🔲 Not Started |
+| **DIA-06** | `ui/nav/btn_arrow_right.png` | ปุ่มลูกศรหมุนห้องไปทางขวา `[Right ►]` | 50×80 | 🔲 Not Started |
 
 ---
+
+### 1.8 อุปกรณ์มินิเกมสัมผัสจริง (Tactile Mini-Game Props)
+
+| รหัส Asset | ชื่อไฟล์ | คำอธิบาย | ขนาด | สถานะ |
+| --- | --- | --- | --- | --- |
+| **MG-01** | `props/mg_feed_bowl.png` | ชามอาหารสัตว์พร้อมแถบขีด Safe Line สีเขียว | 200×160 | 🔲 Not Started |
+| **MG-02** | `props/mg_feed_bottle.png` | ขวดเทสารอาหาร/ยาเหลว (Hold Space to pour) | 120×180 | 🔲 Not Started |
+| **MG-03** | `props/mg_pet_hand.png` | ไอคอนเคอร์เซอร์รูปมือลูบสัมผัสขนสัตว์ | 64×64 | 🔲 Not Started |
+| **MG-04** | `props/mg_play_toy.png` | ของเล่นห้อยแกว่ง (ลูกบอลหญ้า / กิ่งไม้เรืองแสง) | 90×90 | 🔲 Not Started |
+| **MG-05** | `props/mg_observe_lens.png` | กรอบเลนส์แว่นขยายส่องสังเกตจุดผิดปกติ | 160×160 | 🔲 Not Started |
 
 ## 🔊 2. รายการเสียง SFX & BGM สำหรับ ภูมิ (Pooh)
 
@@ -105,8 +129,13 @@ project: BePal
 | **SFX-06** | `sfx_dodge_success.wav` | เสียง Swoosh หลบพ้นการโจมตีใน Dodge Zone | SFX (0.3s) | 🔲 Not Started |
 | **SFX-07** | `sfx_session_complete.wav`| เสียง Chime ดนตรีสั้นเมื่อ Satisfaction เต็ม 3 แต้มจบ Session | SFX (0.8s) | 🔲 Not Started |
 | **SFX-08** | `sfx_box_open.wav` | เสียงเปิดฝากล่องกระดาษลังรับสัตว์ใหม่หน้าบ้าน | SFX (0.4s) | 🔲 Not Started |
+| **SFX-09** | `sfx_typewriter_click.wav` | เสียงแป้นพิมพ์ดีดตอนข้อความตัวอักษรวิ่งขึ้นใน DialogueBox | SFX (0.05s) | 🔲 Not Started |
+| **SFX-10** | `sfx_liquid_pour.wav` | เสียงเทของเหลวลงชามอาหาร (Feed Mini-Game) | SFX (Loop) | 🔲 Not Started |
+| **SFX-11** | `sfx_pet_purr.wav` | เสียงครางพอใจเมื่อลูบตัวสัตว์อย่างนุ่มนวล (Pet Mini-Game) | SFX (0.6s) | 🔲 Not Started |
+| **SFX-12** | `sfx_lens_focus.wav` | เสียงเลนส์หมุนโฟกัสจับจุดผิดปกติ (Observe Mini-Game) | SFX (0.3s) | 🔲 Not Started |
 | **BGM-01** | `music/bgm_shelter_cozy.mp3` | ดนตรี Acoustic / Lofi อบอุ่น ฟังสบายในห้องหลัก (Seamless Loop) | BGM (~2 min) | 🔲 Not Started |
 | **BGM-02** | `music/bgm_qte_suspense.mp3` | ดนตรีตึงเครียดเบาๆ แฝงความลึกลับระหว่าง Care/Dodge QTE | BGM (~1.5 min) | 🔲 Not Started |
+| **BGM-03** | `music/bgm_night_ambience.mp3` | เสียงบรรยากาศกลางคืน (เสียงลม/ฝน/นาฬิกา) ช่วงพักผ่อน | BGM (~1 min) | 🔲 Not Started |
 
 ---
 

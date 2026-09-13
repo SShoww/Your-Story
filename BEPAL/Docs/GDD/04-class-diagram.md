@@ -1,14 +1,14 @@
 ---
 type: gdd-class-diagram
-version: 0.2
-date: 2026-09-11
+version: 0.3
+date: 2026-09-13
 ---
 
 # Class Diagram — BePal Architecture
 
 ## Architecture Overview
 
-โครงสร้างคลาสของ BePal ออกแบบตามหลักการแยกหน้าที่ (Separation of Concerns) สอดคล้องกับแนวทางใน `AGENTS.md` และ `CONTEXT.md` โดยแยกชั้นการจัดการหน้าจอ (Screens) ออกจากตรรกะการบริหารและการเล่น (Gameplay & Domain Models)
+โครงสร้างคลาสของ BePal ออกแบบตามหลักการแยกหน้าที่ (Separation of Concerns) สอดคล้องกับแนวทางใน `AGENTS.md` และ `CONTEXT.md` โดยแยกชั้นการจัดการหน้าจอ (Screens), ระบบกล่องข้อความ (Dialogue), มินิเกมสัมผัส (Mini-Games) ออกจากตรรกะและสถานะของเกม (Gameplay & Domain Models)
 
 ```mermaid
 classDiagram
@@ -23,48 +23,136 @@ classDiagram
         +Draw(GameTime)
     }
 
+    class ScreenManager {
+        -Stack~IScreen~ _screens
+        +ScreenContext Context
+        +PushScreen(IScreen)
+        +PopScreen()
+        +SetScreen(IScreen)
+        +ShowPrologue()
+        +ShowDoorstep()
+        +ShowRoom()
+        +BeginCare()
+        +BeginDodge()
+        +ShowDailySummary()
+    }
+
     class IScreen {
         <<interface>>
-        +Update(GameTime, InputState)
-        +Draw(SpriteBatch)
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
     }
 
-    class MainMenuScreen {
-        +Update(GameTime, InputState)
+    class DialogueBox {
+        -Queue~string~ _dialogueLines
+        -string _currentLine
+        -float _charTimer
+        -int _revealedChars
+        -bool _isFullTextRevealed
+        -bool _showPrompt
+        +bool IsFinished
+        +Update(GameTime, MouseState)
         +Draw(SpriteBatch)
+        +SetDialogue(IEnumerable~string~)
+        +SetPrompt(string question, Action onYes, Action onNo)
+        +SkipTypewriter()
     }
 
-    class HomeScreen {
-        -PetDefinition _activePet
-        +Update(GameTime, InputState)
-        +Draw(SpriteBatch)
+    class PrologueScreen {
+        -DialogueBox _dialogueBox
+        -int _sceneIndex
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
+    }
+
+    class DoorstepScreen {
+        -DialogueBox _dialogueBox
+        -bool _boxOpened
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
+    }
+
+    class PanoramicRoomScreen {
+        -int _currentWallIndex
+        -DialogueBox _dialogueBox
+        -List~InspectableItem~ _wallItems
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
+        +RotateLeft()
+        +RotateRight()
+        +OnPetClicked()
+        +OnEndDayClicked()
     }
 
     class CareQteScreen {
         -float _angle
-        -float _qteTimer
-        -bool _teleported
-        +Update(GameTime, InputState)
+        -float _needleSpeed
+        -BehaviorCue _activeCue
+        -bool _isPhase2Active
+        -ICareMiniGame _activeMiniGame
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
+        +ResolvePhase1(CareAction chosen)
+        +StartPhase2(CareAction action)
+    }
+
+    class ICareMiniGame {
+        <<interface>>
+        +bool IsFinished
+        +bool IsSuccess
+        +Update(GameTime, KeyboardState, MouseState)
         +Draw(SpriteBatch)
-        +ResolveConfirmation()
+        +Reset()
+    }
+
+    class FeedMiniGame {
+        -float _fillLevel
+        -float _targetMin
+        -float _targetMax
+        +Update(GameTime, KeyboardState, MouseState)
+        +Draw(SpriteBatch)
+    }
+
+    class PetMiniGame {
+        -Vector2 _lastMousePos
+        -float _strokeProgress
+        -float _maxSafeSpeed
+        +Update(GameTime, KeyboardState, MouseState)
+        +Draw(SpriteBatch)
+    }
+
+    class PlayMiniGame {
+        -Vector2 _toyPos
+        -Vector2 _velocity
+        +Update(GameTime, KeyboardState, MouseState)
+        +Draw(SpriteBatch)
+    }
+
+    class ObserveMiniGame {
+        -Vector2 _lensPos
+        -Vector2 _targetAnomalyPos
+        -float _focusTime
+        +Update(GameTime, KeyboardState, MouseState)
+        +Draw(SpriteBatch)
     }
 
     class DodgeQteScreen {
         -float _angle
-        -float _dodgeZoneAngle
-        +Update(GameTime, InputState)
-        +Draw(SpriteBatch)
-        +CheckDodgeSuccess() bool
+        -float _dodgeCenter
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
+        +ResolveDodge()
+    }
+
+    class DailySummaryScreen {
+        -PrototypeRun _run
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
     }
 
     class SurvivalLogScreen {
-        +Update(GameTime, InputState)
-        +Draw(SpriteBatch)
-    }
-
-    class SummaryScreen {
-        +Update(GameTime, InputState)
-        +Draw(SpriteBatch)
+        +Update(GameTime)
+        +Draw(GameTime, SpriteBatch)
     }
 
     class PrototypeRun {
@@ -76,7 +164,7 @@ classDiagram
         +PetKind ActivePet
         +bool CanEndDay
         +bool IsComplete
-        +RecordCareSuccess()
+        +RecordCareSuccess(int amount)
         +CompleteSession()
         +TakeDamage() bool
         +EndDay()
@@ -91,50 +179,36 @@ classDiagram
         +HarmType HarmType
         +ActionPattern Pattern
         +CareAction PreferredAction
+        +BehaviorCue[] AvailableCues
     }
 
-    class ActionPattern {
-        +CareAction[] Steps
-        +bool HasDodgeAttack
-        +int AttackAtSatisfaction
-        +bool HasTeleportingMarker
+    class BehaviorCue {
+        +CareAction TargetAction
+        +string RoomDescription
+        +string RealTimeVisualCue
     }
 
-    class CareAction {
-        <<enumeration>>
-        Feed
-        Play
-        Pet
-        Observe
-    }
-
-    class HarmType {
-        <<enumeration>>
-        Physical
-        Mental
-    }
-
-    class PetKind {
-        <<enumeration>>
-        Baseline
-        Attacker
-        Trickster
-    }
-
-    Game1 --> PrototypeRun
-    Game1 --> IScreen
-    MainMenuScreen ..|> IScreen
-    HomeScreen ..|> IScreen
+    Game1 --> ScreenManager
+    ScreenManager --> IScreen
+    PrologueScreen ..|> IScreen
+    DoorstepScreen ..|> IScreen
+    PanoramicRoomScreen ..|> IScreen
     CareQteScreen ..|> IScreen
     DodgeQteScreen ..|> IScreen
+    DailySummaryScreen ..|> IScreen
     SurvivalLogScreen ..|> IScreen
-    SummaryScreen ..|> IScreen
-    HomeScreen --> PrototypeRun
+
+    PrologueScreen --> DialogueBox
+    DoorstepScreen --> DialogueBox
+    PanoramicRoomScreen --> DialogueBox
+    CareQteScreen --> ICareMiniGame
+    FeedMiniGame ..|> ICareMiniGame
+    PetMiniGame ..|> ICareMiniGame
+    PlayMiniGame ..|> ICareMiniGame
+    ObserveMiniGame ..|> ICareMiniGame
+
+    PanoramicRoomScreen --> PrototypeRun
     CareQteScreen --> PrototypeRun
-    DodgeQteScreen --> PrototypeRun
     PrototypeRun --> PetDefinition
-    PetDefinition --> PetKind
-    PetDefinition --> HarmType
-    PetDefinition --> ActionPattern
-    ActionPattern --> CareAction
+    PetDefinition --> BehaviorCue
 ```

@@ -25,10 +25,12 @@ _Avoid_: Object bar, happiness bar
 A pet-specific, fixed and repeating sequence that determines its Care QTE behaviour and may include attacks.
 _Avoid_: Pet rule, behaviour pattern
 
-**Care QTE**:
-A wheel-based challenge in which the player selects the action required by the current Action Pattern to gain Satisfaction.
-_Avoid_: Skill check, normal QTE
+**2-Phase Care Loop**:
+The structure of pet-care interaction divided into Phase 1 (Deduction via Behavior Cues and Dynamic Wheel) and Phase 2 (Tactile Care Mini-Game).
 
+**Care QTE**:
+The Phase 1 wheel-based challenge in which the player reads Behavior Cues and selects the action required by the current Action Pattern to gain Satisfaction or advance to Phase 2.
+_Avoid_: Skill check, normal QTE
 **Care Action**:
 One of the four actions selectable in a Care QTE:
 - **Feed (Appetite)**: Providing sustenance and monitoring dietary reaction.
@@ -57,13 +59,21 @@ The marked safe area of a Dodge QTE wheel.
 The moving indicator on a Care QTE wheel that determines the currently selected action.
 _Avoid_: Arrow, needle
 
+**Golden Sweet Spot**:
+The narrow golden arc ($\pm 15^\circ$) centered inside an action quadrant on the Care QTE wheel that awards bonus Satisfaction (+2) when timed precisely.
+
+**Behavior Cue**:
+An observable visual or auditory indicator (e.g. grumbling stomach, dilated pupils, trembling fur) displayed in the shelter room or during Care QTE that signals the pet's current need.
+
+**Tactile Care Mini-Game**:
+A short (2–3 second) tactile micro-interaction in Phase 2 confirming proper care execution: Feed (Hold-to-pour), Pet (Mouse stroke), Play (Reflex catch), or Observe (Focus lens).
+
 **Teleporting Marker**:
 An Action Pattern modifier in which the Wheel Marker jumps once to a random wheel position during each Care QTE before continuing to move.
 
 **QTE Confirmation**:
 The Spacebar input used to submit a Care QTE or Dodge QTE attempt.
 _Avoid_: Click to confirm
-
 **Health (HP)**:
 The player's damage resource; each Game Day provides Health, and failed Care QTEs or missed Dodge QTEs deplete it.
 
@@ -74,8 +84,15 @@ The daily allowance of care interactions available to the player per Game Day.
 A record of discovered pet behaviour that documents pet preferences, harm types, and action patterns after repeated Pet-Care Sessions.
 _Avoid_: Journal, notebook
 
-**End-of-Day Summary**:
-The daily debriefing screen that records discoveries, tracks retreat counts, and transitions to the next day.
+**Daily Summary Report**:
+The daily debriefing screen (report card style) presented at the conclusion of a Game Day (or Forced Retreat) that logs newly recorded discoveries, tracks retreat counts, and transitions to night rest before the next day.
+_Avoid_: Scoreboard, win screen
+
+**4-Wall Panoramic Shelter**:
+The 360-degree navigable pet care room inspired by *Samsara Room*, rotatable via left/right arrows across Wall 1 (Pet Zone), Wall 2 (Prep & Pantry), Wall 3 (Study Desk), and Wall 4 (Front Door).
+
+**Unified Dialogue Box**:
+The typewriter-driven dialogue and inspection textbox component used consistently across Prologue, Doorstep arrival, room item inspection, and pet care confirmation prompts.
 
 **Game Day**:
 One unit of the run in which the player must complete at least one Pet-Care Session with the Active Pet before ending the day; additional sessions are optional, unless a Forced Retreat ends the day early.

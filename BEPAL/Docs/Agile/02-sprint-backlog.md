@@ -21,9 +21,9 @@ project: BePal
 | --- | --- | --- | --- | --- |
 | **Sprint 1** | 2026-09-01 — 2026-09-14 | **MVP Core Loop:** ระบบวงล้อ Care QTE, สัตว์โจมตี Dodge QTE, เลือด 3 หน่วย, และ Survival Log | **29 SP** | ✅ **Done** |
 | **Sprint 2** | 2026-09-15 — 2026-09-28 | **Deepening & Systems Polish:** วงล้อ Death Spiral QTE, เสียง SFX, แยก Domain Models, และ Unit Test | **45 SP** | 🔄 **Active** |
-| **Sprint 3** | 2026-09-29 — 2026-10-12 | **Atmosphere & Narrative:** เพลง BGM, ฉากเปิดกล่องพัสดุหน้าบ้าน, บทสนทนา Typewriter, และ Sprite สัตว์ | **25 SP** | 🔲 **Draft** |
-| **Sprint 4** | 2026-10-13 — 2026-10-26 | **Progression & Release:** ระบบ Save/Load (JSON), อัปเกรดตัวละคร, ปรับ Balance, และ Release Candidate | **21 SP** | 🔲 **Draft** |
-| **Total** | **8 สัปดาห์ (ตลอดเทอม)** | **BePal Full Prototype & Game Release** | **120 SP** | - |
+| **Sprint 3** | 2026-09-29 — 2026-10-12 | **Atmosphere, Narrative & 4-Wall Shelter:** บทนำ Prologue, ระบบห้อง 4 ทิศ (Samsara Room), และ DialogueBox | **28 SP** | 🔲 **Draft** |
+| **Sprint 4** | 2026-10-13 — 2026-10-26 | **2-Phase Care Mini-Games & Release:** Dynamic Wheel Sweet Spot, มินิเกม 4 แบบ, Daily Report และบทสรุป | **26 SP** | 🔲 **Draft** |
+| **Total** | **8 สัปดาห์ (ตลอดเทอม)** | **BePal Full Prototype & Game Release** | **128 SP** | - |
 
 ```mermaid
 gantt
@@ -35,12 +35,12 @@ gantt
     Death Spiral QTE & MonoGame.Extended :active, s2_1, 2026-09-15, 7d
     Domain Models & BePal.Tests        :active, s2_2, 2026-09-15, 10d
     SFX Audio Staging & Balance Tuning :active, s2_3, 2026-09-20, 8d
-    section Sprint 3 : Atmosphere (25 SP)
-    Mystery Box Dialogue & BGM Music   :s3_1, 2026-09-29, 10d
-    Dedicated Pet Sprites (3 Species)  :s3_2, 2026-09-29, 14d
-    section Sprint 4 : Release (21 SP)
-    Caretaker Upgrades & Save/Load JSON:s4_1, 2026-10-13, 8d
-    Final QA, Balance Tuning & Polish  :s4_2, 2026-10-19, 7d
+    section Sprint 3 : Narrative & Shelter (28 SP)
+    Prologue, Doorstep & DialogueBox   :s3_1, 2026-09-29, 10d
+    4-Wall Panoramic Shelter (Samsara Room):s3_2, 2026-09-29, 14d
+    section Sprint 4 : Mini-Games & Release (26 SP)
+    2-Phase Care Mini-Games & Sweet Spot:s4_1, 2026-10-13, 8d
+    Daily Summary Report & Final Release QA:s4_2, 2026-10-19, 7d
 ```
 
 ---
@@ -82,33 +82,33 @@ gantt
 
 ---
 
-## 4. Sprint 3: Atmosphere, Narrative & Artwork (เตรียมความพร้อม 🔲)
-**ระยะเวลา:** 2026-09-29 — 2026-10-12 | **Estimated Velocity:** 25 SP | **Status:** 🔲 Planned
+## 4. Sprint 3: Atmosphere, Narrative & 4-Wall Shelter (เตรียมความพร้อม 🔲)
+**ระยะเวลา:** 2026-09-29 — 2026-10-12 | **Estimated Velocity:** 28 SP | **Status:** 🔲 Planned
 
 | ID | User Story / Task | ผู้รับผิดชอบหลัก | MoSCoW | SP | Status | คำอธิบายความรับผิดชอบ |
 | --- | --- | --- | --- | --- | --- | --- |
-| **US-13** | Distinct Pet Species Sprites (8 Frames) | เดียร์ (2D Art Lead) | Should Have | 6 | 🔲 Backlog | เดียร์วาด Nibbleclaw และ Blinkbun ครบ 4 ท่า |
-| **US-14** | Atmospheric Cozy & Tension BGM | ภูมิ (Pooh / Audio) | Should Have | 4 | 🔲 Backlog | ภูมิจัดหาและตั้งค่า Loop เพลง 2 เพลงลง Staging |
-| **US-15** | Mystery Box Dialogue Script (Days 1–5) | ภูมิ (Pooh / Design) | Should Have | 4 | 🔲 Backlog | ภูมิเขียนบทบรรยายเปิดกล่องพัสดุและ Lore |
-| **ART-02** | Environment Backgrounds (Room & Porch) | เดียร์ (2D Art Lead) | Should Have | 4 | 🔲 Backlog | เดียร์วาดห้อง Daycare อบอุ่น และชานเรือนหน้าบ้าน |
-| **DES-02** | Species 2 & 3 Unique Action Patterns | ซุง (Game Designer) | Should Have | 3 | 🔲 Backlog | ซุงออกแบบแพทเทิร์นของ Nibbleclaw และ Blinkbun |
-| **TECH-05** | Typewriter Dialogue Scene Engine | โชว์ (Lead Prog) | Should Have | 4 | 🔲 Backlog | โชว์สร้างระบบแสดงตัวอักษรและฉากเปิดกล่อง |
-| **รวม** | **Sprint 3 Velocity** | - | - | **25** | - | โชว์: 4 SP, ซุง: 3 SP, ภูมิ: 8 SP, เดียร์: 10 SP |
+| **US-15** | Prologue & Daily Doorstep Narrative Scripts | ภูมิ (Pooh / Design) | Must Have | 4 | 🔲 Backlog | ภูมิเขียนบทนำ Day 1 และบทพัสดุมาส่ง Day 2–5 ภาษาอังกฤษ |
+| **TECH-05** | Unified DialogueBox Subsystem | โชว์ (Lead Prog) | Must Have | 4 | 🔲 Backlog | โชว์สร้างระบบข้อความพิมพ์ดีด, fast-reveal, prompt `[YES]/[NO]` |
+| **ART-02** | 4-Wall Panoramic Shelter Backgrounds & Porch | เดียร์ (2D Art Lead) | Must Have | 5 | 🔲 Backlog | เดียร์วาดภาพห้อง 4 ทิศ (Wall 1–4) และชานเรือนหน้าบ้าน |
+| **US-20** | 4-Wall Panoramic Shelter Navigation Engine | โชว์ (Lead Prog) | Must Have | 5 | 🔲 Backlog | โชว์พัฒนา `PanoramicRoomScreen` หมุนซ้าย-ขวา 4 ทิศและคลิกสำรวจของ |
+| **US-13** | Distinct Pet Species Sprites (Nibbleclaw & Blinkbun) | เดียร์ (2D Art Lead) | Should Have | 4 | 🔲 Backlog | เดียร์วาด Nibbleclaw และ Blinkbun ครบ 4 ท่าหลัก |
+| **DES-02** | Behavior Cues & Inspectable Clues Design | ซุง (Game Designer) | Should Have | 3 | 🔲 Backlog | ซุงออกแบบภาษากายสัตว์ (Cues) และ Clues คำบอกใบ้ในห้อง |
+| **US-14** | Atmospheric Cozy & Tension BGM | ภูมิ (Pooh / Audio) | Should Have | 3 | 🔲 Backlog | ภูมิจัดหาและตั้งค่า Loop เพลง 2 เพลงลง Staging |
+| **รวม** | **Sprint 3 Velocity** | - | - | **28** | - | โชว์: 9 SP, ซุง: 3 SP, ภูมิ: 7 SP, เดียร์: 9 SP |
 
 ---
 
-## 5. Sprint 4: Progression, Upgrades & Release (เตรียมความพร้อม 🔲)
-**ระยะเวลา:** 2026-10-13 — 2026-10-26 | **Estimated Velocity:** 21 SP | **Status:** 🔲 Planned
+## 5. Sprint 4: 2-Phase Care Mini-Games & Release (เตรียมความพร้อม 🔲)
+**ระยะเวลา:** 2026-10-13 — 2026-10-26 | **Estimated Velocity:** 26 SP | **Status:** 🔲 Planned
 
 | ID | User Story / Task | ผู้รับผิดชอบหลัก | MoSCoW | SP | Status | คำอธิบายความรับผิดชอบ |
 | --- | --- | --- | --- | --- | --- | --- |
-| **US-16** | Narrative Lore Secret Origin & Ending | ภูมิ (Pooh / Design) | Could Have | 4 | 🔲 Backlog | ภูมิเขียนบทสรุปเนื้อเรื่องตอนจบของศูนย์วิจัย |
-| **US-17** | Caretaker Progression Upgrades Design | ซุง (Game Designer) | Could Have | 4 | 🔲 Backlog | ซุงออกแบบต้นไม้อัปเกรดตัวละครตอนจบวัน |
-| **US-18** | Save / Load JSON Persistence Engine | โชว์ (Lead Prog) | Could Have | 4 | 🔲 Backlog | ซุงสเปกข้อมูล โชว์เขียนโค้ดเซฟลงไฟล์ JSON |
-| **US-19** | Interactive Developer Debug Overlay | โชว์ (Lead Prog) | Nice to Have | 3 | 🔲 Backlog | โชว์พัฒนา HUD สำหรับดีบักมุมและความเร็วเข็ม |
-| **ART-03** | Story Props (Boxes) & Survival Log Book | เดียร์ (2D Art Lead) | Could Have | 3 | 🔲 Backlog | เดียร์วาดกล่อง 3 สเต็ป และกรอบสมุดบันทึก |
-| **QA-02** | Final Release Balance QA & Polish | ภูมิ (Pooh / Design) | Could Have | 3 | 🔲 Backlog | ภูมิทดสอบลูปเต็ม 5 วัน ตรวจสอบความสมดุลรอบสุดท้าย |
-| **รวม** | **Sprint 4 Velocity** | - | - | **21** | - | โชว์: 7 SP, ซุง: 4 SP, ภูมิ: 7 SP, เดียร์: 3 SP |
+| **US-21** | Dynamic Wheel with Sweet Spots & Cue Integration | โชว์ & ซุง | Must Have | 6 | 🔲 Backlog | โชว์ (4 SP) & ซุง (2 SP): ระบบเข็ม Sweet Spot +2 และเชื่อม Cues |
+| **US-22** | Tactile Care Mini-Games Subsystem (4 Actions) | โชว์ & เดียร์ | Must Have | 8 | 🔲 Backlog | โชว์ (5 SP) & เดียร์ (3 SP): มินิเกม Feed, Pet, Play, Observe พร้อม Props |
+| **US-23** | Daily Summary Report Card & Night Rest | โชว์ & ซุง | Must Have | 5 | 🔲 Backlog | โชว์ (3 SP) & ซุง (2 SP): ใบรายงานประจำวันสไตล์ Papers, Please และฉากมืด |
+| **US-16** | Narrative Lore Secret Origin & Ending | ภูมิ (Pooh / Design) | Should Have | 4 | 🔲 Backlog | ภูมิเขียนบทสรุปเนื้อเรื่องตอนจบของศูนย์วิจัยใน Run Summary |
+| **QA-02** | End-to-End Playtesting & Final Balance QA | ภูมิ (Pooh / Design) | Should Have | 3 | 🔲 Backlog | ภูมิทดสอบลูปเต็ม 5 วัน ตรวจสอบความสมดุลรอบสุดท้าย |
+| **รวม** | **Sprint 4 Velocity** | - | - | **26** | - | โชว์: 12 SP, ซุง: 4 SP, ภูมิ: 7 SP, เดียร์: 3 SP |
 
 ---
 
@@ -116,13 +116,13 @@ gantt
 
 ตารางสรุป Story Points แยกตามสมาชิกและ Sprint โดยตัวเลขรวมทั้งแนวตั้งและแนวนอนเท่ากับ **120 SP** ทุกประการ:
 
-| สมาชิก                          | บทบาท (Role)              | Sprint 1 (Done) | Sprint 2 (Active) | Sprint 3 (Draft) | Sprint 4 (Draft) | รวมทั้งโปรเจกต์ (SP) |
-| ------------------------------- | ------------------------- | --------------- | ----------------- | ---------------- | ---------------- | -------------------- |
-| **วศิน (โชว์)**                 | **Lead Programmer**       | 14 SP           | 25 SP             | 4 SP             | 7 SP             | **50 SP**            |
-| **ปีย์ตะวัน (ซุง)**             | **Game Designer**         | 15 SP           | 6 SP              | 3 SP             | 4 SP             | **28 SP**            |
-| **ภูมิพัฒน์ (ภูมิ / Pooh)**     | **Flex (Design & Audio)** | 0 SP            | 7 SP              | 8 SP             | 7 SP             | **22 SP**            |
-| **ธัญญรัตน์ (เดียร์)**          | **2D Art & UI Lead**      | 0 SP            | 7 SP              | 10 SP            | 3 SP             | **20 SP**            |
-| **รวม Story Points ต่อ Sprint** | -                         | **29 SP**       | **45 SP**         | **25 SP**        | **21 SP**        | **120 SP**           |
+| สมาชิก | บทบาท (Role) | Sprint 1 (Done) | Sprint 2 (Active) | Sprint 3 (Draft) | Sprint 4 (Draft) | รวมทั้งโปรเจกต์ (SP) |
+| --- | --- | --- | --- | --- | --- | --- |
+| **วศิน (โชว์)** | **Lead Programmer** | 14 SP | 25 SP | 9 SP | 12 SP | **60 SP** |
+| **ปีย์ตะวัน (ซุง)** | **Game Designer** | 15 SP | 6 SP | 3 SP | 4 SP | **28 SP** |
+| **ภูมิพัฒน์ (ภูมิ / Pooh)** | **Flex (Design & Audio)** | 0 SP | 7 SP | 7 SP | 7 SP | **21 SP** |
+| **ธัญญรัตน์ (เดียร์)** | **2D Art & UI Lead** | 0 SP | 7 SP | 9 SP | 3 SP | **19 SP** |
+| **รวม Story Points ต่อ Sprint** | - | **29 SP** | **45 SP** | **28 SP** | **26 SP** | **128 SP** |
 
 ---
 

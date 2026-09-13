@@ -23,10 +23,10 @@
 | 7 | **ART-01** | As a player, I want styled scrap-paper action badges along the circular track | เดียร์ (2D Art Lead) | Should Have | 3 | 🔄 In Progress |
 | 8 | **DES-01** | As a designer, I want a mathematical balance sheet for needle speed, sector spans, and dead zones | ซุง (Game Designer) | Should Have | 3 | 🔄 In Progress |
 | 9 | **QA-01** | As a QA tester, I want to verify the mechanical rhythm, timing feel, and difficulty curve of QTEs | ภูมิ (Pooh / Design) | Should Have | 3 | 🔄 In Progress |
-| 10 | **TECH-01** | As an architect, I want core gameplay models decoupled from MonoGame render loops | โชว์ (Lead Prog) | Should Have | 3 | 🔄 In Progress |
-| 11 | **TECH-02** | As a developer, I want an automated xUnit test suite covering damage, sessions, and day cycles | โชว์ (Lead Prog) | Should Have | 4 | 🔲 Todo |
-| 12 | **TECH-03** | As a developer, I want screen logic partitioned into independent classes | โชว์ (Lead Prog) | Should Have | 5 | 🔲 Todo |
-| 13 | **TECH-04** | As a developer, I want a clean build without MGCB version mismatch warnings | โชว์ (Lead Prog) | Should Have | 2 | 🔲 Todo |
+| 10 | **TECH-01** | As an architect, I want core gameplay models decoupled from MonoGame render loops | โชว์ (Lead Prog) | Should Have | 3 | ✅ Done |
+| 11 | **TECH-02** | As a developer, I want an automated xUnit test suite covering damage, sessions, and day cycles | โชว์ (Lead Prog) | Should Have | 4 | ✅ Done |
+| 12 | **TECH-03** | As a developer, I want screen logic partitioned into independent classes | โชว์ (Lead Prog) | Should Have | 5 | 🔄 In Progress |
+| 13 | **TECH-04** | As a developer, I want a clean build without MGCB version mismatch warnings | โชว์ (Lead Prog) | Should Have | 2 | ✅ Done |
 
 ## Status Legend
 - 🔲 Todo
