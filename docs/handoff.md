@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-13  
 **Target Branch:** `Develop`  
-**Current Status:** Sprint 2 (`TECH-03`) and Sprint 3 (`TECH-05`, `US-15`, `US-20`) fully implemented, verified with 28 passing unit tests (28/28), validated with automated 22-frame screenshot harness (01–08 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
+**Current Status:** Sprint 2 (`TECH-03`), Sprint 3 (`TECH-05`, `US-15`, `US-20`), and Day Cycle Logic Bugfix (`PR #17`) fully implemented, verified with 32 passing unit tests (32/32), validated with automated 22-frame screenshot harness (01–08 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
 
 ---
 
@@ -16,6 +16,13 @@
   - Created feature branch `feature/sprint-3-narrative-shelter` off `Develop`.
   - Implemented `TECH-05`, `US-20`, and `US-15`.
   - Verified local build (0 warnings, 0 errors), 28 unit tests, and screenshot harness.
+  - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
+- **PR #17 (Merged into `Develop`):** `fix(gameplay): resolve day skipping, forced retreat routing, and ActivePet bounds`
+  - Created feature branch `feature/prototype-run-day-cycle-fix` off `Develop`.
+  - Resolved double day advance on End Day button (was skipping Day 1 $\rightarrow$ 3 $\rightarrow$ 5).
+  - Fixed forced retreat routing in `ScreenManager.Fail()` using `TakeDamage()` boolean return.
+  - Added bounds-safe `Math.Clamp` on `PrototypeRun.ActivePet` preventing Day 6+ `IndexOutOfRangeException`.
+  - Updated `sprint-plan-02.md` with completed Sprint 2 tasks.
   - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
 
 ### 1.2. Architecture & Subsystems Implemented
@@ -32,7 +39,7 @@
    - **Wall 1 (Pet Zone):** Active pet habitat frame, real-time ambient behavior cue banner (e.g. grumbling belly for Mossling), pet click confirmation dialogue prompt (`Care for [Name]? [YES]/[NO]`), and care initiation.
    - **Wall 2 (Prep & Pantry):** Inspectable Pantry Shelves (dietary clues and root feed), Water Basin (clean spring water), and Disposal Bin (rejected synthetic kibble).
    - **Wall 3 (Study Desk):** Inspectable Survival Log desk (opens `SurvivalLogScreen`) and Notice Board (confidential facility daycare protocol memorandum).
-   - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door (locked from within), Porch Window (foggy perimeter), Shift Clock & Calendar (day and session monitor), and prominent `[End Day Shift]` button (enabled when `Run.CanEndDay` is fulfilled).
+   - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door (locked from within), Porch Window (foggy perimeter), Shift Clock & Calendar (day and session monitor), and prominent `[End Day Shift]` button (safely enabled once `Run.CanEndDay` is fulfilled).
    - Domain navigation model tested headlessly in `BePal.Tests/Screens/PanoramicRoomTests.cs` (5 unit tests).
 
 3. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
@@ -60,8 +67,8 @@
 - **Branch:** `Develop` (Up to date with `origin/Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes 28/28 tests (`dotnet test CoPoject/CoPoject.slnx`):
-  - `PrototypeRunTests.cs`: 7 tests
+- **Test Suite:** `CoPoject/BePal.Tests` passes 32/32 tests (`dotnet test CoPoject/CoPoject.slnx`):
+  - `PrototypeRunTests.cs`: 11 tests (including Day 5 completion, full 5-day cycle simulation, and clamped ActivePet)
   - `DialogueBoxTests.cs`: 8 tests
   - `PanoramicRoomTests.cs`: 5 tests
   - `NarrativeScreenTests.cs`: 4 tests
