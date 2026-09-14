@@ -51,6 +51,12 @@ public class Game1 : Game
             SaveScreenshot);
 
         _screenManager = new ScreenManager(context);
+        bool auto = Array.Exists(_args, a => a is "--screenshot" or "--playtest") ||
+                    Environment.GetEnvironmentVariable("BEPAL_SCREENSHOT") == "1";
+        if (auto)
+        {
+            _screenManager.TransitionsEnabled = false;
+        }
         _screenManager.ShowMenu();
     }
 
@@ -152,6 +158,13 @@ public class Game1 : Game
         else if (_playtestFrame == 22)
         {
             SaveScreenshot("screenshots/08_doorstep.png");
+            // Enable transitions to capture the animated diagonal stripe wipe in action
+            _screenManager.TransitionsEnabled = true;
+            _screenManager.ShowHome();
+        }
+        else if (_playtestFrame == 27)
+        {
+            SaveScreenshot("screenshots/09_transition.png");
             Exit();
         }
     }
