@@ -27,7 +27,7 @@ public sealed class ScreenManager
     /// Default is 0.85s for a visible, cinematic diagonal stripe wipe.
     /// </summary>
     public float TransitionDuration { get; set; } = 0.85f;
-
+    public Func<Point, Point>? ScreenToVirtual { get; set; }
     public ScreenManager(ScreenContext context)
     {
         Context = context;
@@ -213,9 +213,13 @@ public sealed class ScreenManager
 
         KeyboardState keyboard = Keyboard.GetState();
         MouseState mouse = Mouse.GetState();
+        if (ScreenToVirtual != null)
+        {
+            Point p = ScreenToVirtual(mouse.Position);
+            mouse = new MouseState(p.X, p.Y, mouse.ScrollWheelValue, mouse.LeftButton, mouse.MiddleButton, mouse.RightButton, mouse.XButton1, mouse.XButton2);
+        }
         Context.Keyboard = keyboard;
         Context.Mouse = mouse;
-
         if (Context.IsKeyPressed(Keys.F12))
         {
             string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
