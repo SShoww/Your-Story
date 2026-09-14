@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-14  
 **Target Branch:** `Develop`  
-**Current Status:** Sprint 2 (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`), Sprint 3 (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 45 passing unit tests (45/45), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
+**Current Status:** Sprint 2 (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`), early Sprint 3 integration (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 45 passing unit tests (45/45), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards. Roadmap consolidated to 3 Sprints (2 weeks per sprint, final deadline before October 12, 2026).
 
 ---
 
@@ -36,6 +36,8 @@
   - Added optional duration parameter to `SetScreen(screen, useTransition, duration)`.
   - Increased default transition duration from 0.45s to 0.85s for cinematic, deliberate presentation.
   - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
+- **PR #20 (Merged into `Develop`):** `docs(bepal): update AGENTS.md, class diagram, kanban board, and handoff for scene transitions`
+  - Updated architecture docs, class diagrams, and guidelines to reflect transition engine.
 
 ### 1.2. Architecture & Subsystems Implemented
 1. **Scene Transition Subsystem (`StripeWipeTransition` / `ScreenManager`):**
@@ -101,19 +103,23 @@
 
 ## 3. Immediate Next Steps for Next Session
 
-The next session will focus on **Sprint 4 / Milestone 2 (2-Phase Care Mini-Games & Release)**:
+The roadmap has been consolidated into **3 Sprints total** (2 weeks per sprint, 6 weeks total), concluding with Sprint 3 ending on **2026-10-11** (before the **October 12, 2026** project deadline).
 
-1. **Implement Dynamic Wheel with Sweet Spots (`US-21`):**
+The next session will execute the remaining deliverables of **Sprint 3 (Shelter Atmosphere, 2-Phase Care Mini-Games & Final Release)**:
+
+1. **Implement Dynamic Wheel with Sweet Spots (`US-21` — 6 SP):**
    - Add central golden Sweet Spot ($\pm 15^\circ$) inside each action quadrant awarding +2 Satisfaction.
    - Integrate real-time Behavior Cues into `CareQteScreen.cs` deduced from `PetDefinition`.
    - Implement species-specific needle dynamics (Nibbleclaw acceleration, Blinkbun erratic teleportation).
-2. **Implement Tactile Care Mini-Games Subsystem (`US-22`):**
+2. **Implement Tactile Care Mini-Games Subsystem (`US-22` — 8 SP):**
    - Create `ICareMiniGame` interface under `CoPoject/BePal/Screens/MiniGames/`.
    - Implement 4 tactile micro-games (2–3 seconds duration): Feed, Pet, Play, Observe.
    - Enforce Consequence Rules: Success = +1/+2 Satisfaction; Failure = +0 Satisfaction (no HP penalty).
-3. **Implement Daily Summary Report Card & Night Rest (`US-23`):**
+3. **Implement Daily Summary Report Card & Night Rest (`US-23` — 5 SP):**
    - Replace placeholder summary with a Papers, Please-style daily shift report card.
    - Night rest transition recovering HP to 3 before triggering `DoorstepScreen`.
+4. **Narrative Lore Ending & Final QA (`US-16`, `QA-02` — 7 SP):**
+   - Secret origin story resolution on Day 5 and end-to-end regression validation prior to the Oct 12 deadline.
 
 ---
 
@@ -121,5 +127,5 @@ The next session will focus on **Sprint 4 / Milestone 2 (2-Phase Care Mini-Games
 
 - **Always branch off `Develop`** using `feature/<topic>`.
 - **Do not commit directly to `main` or `Develop`**.
-- Merge back into `Develop` via Pull Request with `--no-ff`.
-- Maintain 0 build warnings, 100% pass rate on `dotnet test`, and green screenshot harness before creating PR.
+- Merge back into `Develop` via Pull Request or local non-fast-forward merge (`--no-ff`).
+- Maintain 0 build warnings, 100% pass rate on `dotnet test`, and green screenshot harness before completing feature merges.
