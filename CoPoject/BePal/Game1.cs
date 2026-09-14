@@ -16,17 +16,20 @@ public class Game1 : Game
     private SpriteBatch _batch = null!;
     private ScreenManager _screenManager = null!;
     private AudioManager? _audioManager;
+    private RenderTarget2D _renderTarget = null!;
     private readonly string[] _args;
     private int _playtestFrame;
-
     public ScreenManager ScreenManager => _screenManager;
 
     public Game1(string[]? args = null)
     {
         _args = args ?? Array.Empty<string>();
         _graphics = new GraphicsDeviceManager(this);
-        _graphics.PreferredBackBufferWidth = 1280;
-        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+        _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+        _graphics.HardwareModeSwitch = false;
+        _graphics.IsFullScreen = true;
+        Window.IsBorderless = true;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -56,6 +59,19 @@ public class Game1 : Game
             _audioManager);
 
         _screenManager = new ScreenManager(context);
+        _renderTarget = new RenderTarget2D(
+            GraphicsDevice,
+            1280,
+            720,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.PreserveContents);
+
+        _screenManager.ScreenToVirtual = screenPos =>
+            ViewportScaler.ScreenToVirtual(screenPos, GetDestinationRectangle());
+
         bool auto = Array.Exists(_args, a => a is "--screenshot" or "--playtest") ||
                     Environment.GetEnvironmentVariable("BEPAL_SCREENSHOT") == "1";
         if (auto)
@@ -68,6 +84,7 @@ public class Game1 : Game
 
     protected override void UnloadContent()
     {
+        _renderTarget.Dispose();
         _audioManager?.Dispose();
         base.UnloadContent();
     }
@@ -80,7 +97,9 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        GraphicsDevice.SetRenderTarget(_renderTarget);
         GraphicsDevice.Clear(new Color(18, 20, 30));
+
         Vector2 shakeOffset = _screenManager.Context.ShakeTime > 0
             ? new Vector2(
                 ((float)_random.NextDouble() * 2 - 1) * _screenManager.Context.ShakeAmount,
@@ -91,19 +110,34 @@ public class Game1 : Game
         _screenManager.Draw(gameTime, _batch);
         _batch.End();
 
+        GraphicsDevice.SetRenderTarget(null);
+        GraphicsDevice.Clear(Color.Black);
+
+        Rectangle dest = GetDestinationRectangle();
+        _batch.Begin(samplerState: SamplerState.LinearClamp);
+        _batch.Draw(_renderTarget, dest, Color.White);
+        _batch.End();
+
         base.Draw(gameTime);
         CheckPlaytestAndScreenshot();
+    }
+
+    private Rectangle GetDestinationRectangle()
+    {
+        return ViewportScaler.CalculateDestinationRectangle(
+            GraphicsDevice.PresentationParameters.BackBufferWidth,
+            GraphicsDevice.PresentationParameters.BackBufferHeight);
     }
 
     public void SaveScreenshot(string path)
     {
         string? dir = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-        int w = GraphicsDevice.PresentationParameters.BackBufferWidth;
-        int h = GraphicsDevice.PresentationParameters.BackBufferHeight;
+        int w = _renderTarget.Width;
+        int h = _renderTarget.Height;
         using Texture2D target = new(GraphicsDevice, w, h);
         Color[] data = new Color[w * h];
-        GraphicsDevice.GetBackBufferData(data);
+        _renderTarget.GetData(data);
         target.SetData(data);
         using FileStream fs = File.Create(path);
         target.SaveAsPng(fs, w, h);
