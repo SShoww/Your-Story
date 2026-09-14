@@ -19,6 +19,16 @@ public class StripeWipeTransitionTests
     }
 
     [Fact]
+    public void Constructor_DefaultDuration_IsCinematicZeroPointEightFiveSeconds()
+    {
+        var transition = new StripeWipeTransition();
+
+        Assert.Equal(0.85f, transition.Duration);
+        Assert.Equal(0f, transition.Progress);
+        Assert.True(transition.IsActive);
+    }
+
+    [Fact]
     public void Constructor_InitialState_ProgressIsZeroAndActive()
     {
         var transition = new StripeWipeTransition(duration: 0.5f);
