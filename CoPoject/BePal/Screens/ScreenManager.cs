@@ -14,10 +14,13 @@ namespace BePal.Screens;
 public sealed class ScreenManager
 {
     private readonly Stack<IScreen> _screens = new();
-    public ScreenContext Context { get; }
+    private StripeWipeTransition? _activeTransition;
 
+    public ScreenContext Context { get; }
     public IScreen? CurrentScreen => _screens.Count > 0 ? _screens.Peek() : null;
     public int StackCount => _screens.Count;
+    public StripeWipeTransition? ActiveTransition => _activeTransition;
+    public bool TransitionsEnabled { get; set; } = true;
 
     public ScreenManager(ScreenContext context)
     {
@@ -27,8 +30,50 @@ public sealed class ScreenManager
 
     public void SetScreen(IScreen screen)
     {
+        SetScreen(screen, TransitionsEnabled);
+    }
+
+    public void SetScreen(IScreen screen, bool useTransition)
+    {
+        if (!useTransition || _screens.Count == 0)
+        {
+            _activeTransition = null;
+            _screens.Clear();
+            _screens.Push(screen);
+            return;
+        }
+
+        IScreen outgoingScreen = _activeTransition != null && _activeTransition.ToScreen != null
+            ? _activeTransition.ToScreen
+            : CurrentScreen!;
+
         _screens.Clear();
-        _screens.Push(screen);
+        _screens.Push(outgoingScreen);
+
+        _activeTransition = new StripeWipeTransition(
+            fromScreen: outgoingScreen,
+            toScreen: screen,
+            duration: 0.45f,
+            onMidpoint: () =>
+            {
+                _screens.Clear();
+                _screens.Push(screen);
+            },
+            onComplete: () =>
+            {
+                _activeTransition = null;
+            });
+    }
+
+    public void CompleteTransition()
+    {
+        if (_activeTransition == null) return;
+        if (_activeTransition.ToScreen != null)
+        {
+            _screens.Clear();
+            _screens.Push(_activeTransition.ToScreen);
+        }
+        _activeTransition = null;
     }
 
     public void PushScreen(IScreen screen)
@@ -162,6 +207,22 @@ public sealed class ScreenManager
         Context.Keyboard = keyboard;
         Context.Mouse = mouse;
 
+        if (Context.IsKeyPressed(Keys.F12))
+        {
+            string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            Context.SaveScreenshotAction($"screenshots/bepal_{stamp}.png");
+            Context.SpawnTag("SCREENSHOT CAPTURED", new Color(24, 45, 65), Color.White);
+        }
+
+        if (_activeTransition != null && _activeTransition.IsActive)
+        {
+            _activeTransition.Update(dt);
+            // Block input to underlying screen during active transition
+            Context.PreviousKeyboard = keyboard;
+            Context.PreviousMouse = mouse;
+            return;
+        }
+
         if (Context.IsKeyPressed(Keys.Escape))
         {
             if (CurrentScreen is MainMenuScreen or SummaryScreen)
@@ -179,13 +240,6 @@ public sealed class ScreenManager
             }
         }
 
-        if (Context.IsKeyPressed(Keys.F12))
-        {
-            string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            Context.SaveScreenshotAction($"screenshots/bepal_{stamp}.png");
-            Context.SpawnTag("SCREENSHOT CAPTURED", new Color(24, 45, 65), Color.White);
-        }
-
         CurrentScreen?.Update(gameTime);
 
         Context.PreviousKeyboard = keyboard;
@@ -194,20 +248,26 @@ public sealed class ScreenManager
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        if (CurrentScreen == null) return;
-
-        if (CurrentScreen.IsOverlay && _screens.Count > 1)
+        if (CurrentScreen != null)
         {
-            IScreen[] stackArray = _screens.ToArray();
-            Array.Reverse(stackArray);
-            foreach (IScreen screen in stackArray)
+            if (CurrentScreen.IsOverlay && _screens.Count > 1)
             {
-                screen.Draw(gameTime, spriteBatch);
+                IScreen[] stackArray = _screens.ToArray();
+                Array.Reverse(stackArray);
+                foreach (IScreen screen in stackArray)
+                {
+                    screen.Draw(gameTime, spriteBatch);
+                }
+            }
+            else
+            {
+                CurrentScreen.Draw(gameTime, spriteBatch);
             }
         }
-        else
+
+        if (_activeTransition != null && (_activeTransition.IsActive || _activeTransition.Progress < 1f))
         {
-            CurrentScreen.Draw(gameTime, spriteBatch);
+            _activeTransition.Draw(spriteBatch, Context.Pixel, 1280, 720);
         }
     }
 }
