@@ -13,7 +13,7 @@ namespace BePal.Screens;
 /// </summary>
 public sealed class StripeWipeTransition
 {
-    public float Duration { get; set; } = 0.45f;
+    public float Duration { get; set; } = 0.85f;
     public float Elapsed { get; private set; }
     public float Progress => Math.Clamp(Duration > 0f ? Elapsed / Duration : 1f, 0f, 1f);
 
@@ -39,7 +39,7 @@ public sealed class StripeWipeTransition
     public StripeWipeTransition(
         IScreen? fromScreen = null,
         IScreen? toScreen = null,
-        float duration = 0.45f,
+        float duration = 0.85f,
         Action? onMidpoint = null,
         Action? onComplete = null)
     {

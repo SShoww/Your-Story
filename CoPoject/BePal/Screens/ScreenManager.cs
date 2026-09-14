@@ -22,6 +22,12 @@ public sealed class ScreenManager
     public StripeWipeTransition? ActiveTransition => _activeTransition;
     public bool TransitionsEnabled { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the default duration (in seconds) for scene transitions.
+    /// Default is 0.85s for a visible, cinematic diagonal stripe wipe.
+    /// </summary>
+    public float TransitionDuration { get; set; } = 0.85f;
+
     public ScreenManager(ScreenContext context)
     {
         Context = context;
@@ -30,10 +36,10 @@ public sealed class ScreenManager
 
     public void SetScreen(IScreen screen)
     {
-        SetScreen(screen, TransitionsEnabled);
+        SetScreen(screen, TransitionsEnabled, TransitionDuration);
     }
 
-    public void SetScreen(IScreen screen, bool useTransition)
+    public void SetScreen(IScreen screen, bool useTransition, float? duration = null)
     {
         if (!useTransition || _screens.Count == 0)
         {
@@ -50,10 +56,12 @@ public sealed class ScreenManager
         _screens.Clear();
         _screens.Push(outgoingScreen);
 
+        float transitionDuration = duration ?? TransitionDuration;
+
         _activeTransition = new StripeWipeTransition(
             fromScreen: outgoingScreen,
             toScreen: screen,
-            duration: 0.45f,
+            duration: transitionDuration,
             onMidpoint: () =>
             {
                 _screens.Clear();
