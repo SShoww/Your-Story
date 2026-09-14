@@ -1,8 +1,8 @@
 # Sprint 2 Plan — Deepening, Death Spiral QTE & Systems Polish
 
-**Sprint Goal:** พัฒนาและขัดเกลาระบบเกมเพลย์เชิงลึก: วงล้อ Care QTE สไตล์ Death Spiral พร้อมป้ายกระดาษฉีก, ระบบเสียง SFX ประกอบการเล่น, แยกสถาปัตยกรรม Pure C# Domain Models และติดตั้งระบบทดสอบอัตโนมัติ Unit Test (`BePal.Tests`)
+**Sprint Goal:** พัฒนาและขัดเกลาระบบเกมเพลย์เชิงลึก: วงล้อ Care QTE สไตล์ Death Spiral พร้อมป้ายกระดาษฉีก, ระบบเสียง SFX ประกอบการเล่น, แยกสถาปัตยกรรม Pure C# Domain Models และติดตั้งระบบทดสอบอัตโนมัติ Unit Test (`BePal.Tests`)  
 **ระยะเวลา:** 2026-09-15 — 2026-09-28  
-**Status:** 🔄 Active (Technical Enablers 100% Done; Audio & Art Staging ongoing)
+**Status:** 🔄 Active (Technical Enablers 100% Done; Audio & Art Staging ongoing)  
 **Team:**
 - วศิน ศรีวรกุล (โชว์) — Lead Programmer
 - ปีย์ตะวัน แห่งหาญ (ซุง) — Game Designer
@@ -90,7 +90,7 @@
 
 ### TECH-02 — Automated Unit Testing (`BePal.Tests`) [4 SP]
 - [x] สร้างโปรเจกต์ `CoPoject/BePal.Tests` (xUnit, .NET 8) และผูกเข้ากับ `CoPoject.slnx` [owner:: โชว์] [estimate:: 1] [status:: done]
-- [x] เขียน Unit Tests ครอบคลุมการคำนวณ Health, การเกิด Forced Retreat, การบันทึก Session และการปลดล็อก Survival Log (32 tests) [owner:: โชว์] [estimate:: 3] [status:: done]
+- [x] เขียน Unit Tests ครอบคลุมการคำนวณ Health, การเกิด Forced Retreat, การบันทึก Session และการปลดล็อก Survival Log (45 tests) [owner:: โชว์] [estimate:: 3] [status:: done]
 
 ### TECH-03 — Modular Screen Hierarchy (`IScreen`) [5 SP]
 - [x] ออกแบบอินเทอร์เฟซ `IScreen` และตัวจัดการ `ScreenManager` ตามสถาปัตยกรรม ADR-0001 [owner:: โชว์] [estimate:: 2] [status:: done]
@@ -115,7 +115,7 @@
   1. แก้ปัญหาการกด [End Day] แล้วข้ามวันเบิ้ล (1 $\rightarrow$ 3 $\rightarrow$ 5) จากการเรียก `EndDay()` ซ้ำซ้อนระหว่างหน้าจอกับ Manager
   2. แก้ปัญหา Forced Retreat เมื่อเลือดหมดแล้วไม่ตัดเข้า Doorstep เนื่องจากตัวแปรเลือดถูกรีเซ็ตก่อนตรวจเงื่อนไข
   3. แก้ปัญหา `IndexOutOfRangeException` ใน `ActivePet` เมื่อครบ 5 วันด้วยการใช้ Clamping
-  4. เพิ่มเทสต์จำลองลูป 5 วันเต็มใน `PrototypeRunTests.cs` (ผ่านครบ 32/32 เทสต์)
+  4. เพิ่มเทสต์จำลองลูป 5 วันเต็มใน `PrototypeRunTests.cs` (ผ่านครบ 45/45 เทสต์ในระบบ)
 - **Blocked:** ไม่มี
 
 ---
@@ -132,3 +132,4 @@
 - [[BEPAL/Docs/Agile/03-kanban-board|Kanban Board]]
 - [[BEPAL/Docs/Agile/04-Kanban-for-Obsidian|Obsidian Interactive Kanban]]
 - [[BEPAL/Docs/Agile/sprint-plan-01|Sprint 1 Plan]]
+- [[BEPAL/Docs/Agile/sprint-plan-03|Sprint 3 Plan]]

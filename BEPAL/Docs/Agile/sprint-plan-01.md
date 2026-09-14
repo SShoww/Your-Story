@@ -1,7 +1,7 @@
 # Sprint 1 Plan — MVP Core Gameplay & Care QTE
 
-**Sprint Goal:** พัฒนาแก่นการเล่น MVP ให้สมบูรณ์: ระบบวงล้อ Care QTE 4 ตัวเลือก, กลไกสัตว์โจมตีและ Dodge QTE, ระบบ Health / Forced Retreat, และสมุดบันทึก Survival Log
-**ระยะเวลา:** 2026-09-01 — 2026-09-14
+**Sprint Goal:** พัฒนาแก่นการเล่น MVP ให้สมบูรณ์: ระบบวงล้อ Care QTE 4 ตัวเลือก, กลไกสัตว์โจมตีและ Dodge QTE, ระบบ Health / Forced Retreat, และสมุดบันทึก Survival Log  
+**ระยะเวลา:** 2026-09-01 — 2026-09-14  
 **Team:**
 - วศิน ศรีวรกุล (โชว์) — Lead Programmer
 - ปีย์ตะวัน แห่งหาญ (ซุง) — Game Designer
@@ -66,3 +66,5 @@
 - [[BEPAL/Docs/Agile/01-product-backlog|Product Backlog]]
 - [[BEPAL/Docs/Agile/02-sprint-backlog|Sprint Backlog]]
 - [[BEPAL/Docs/Agile/03-kanban-board|Kanban Board]]
+- [[BEPAL/Docs/Agile/sprint-plan-02|Sprint 2 Plan]]
+- [[BEPAL/Docs/Agile/sprint-plan-03|Sprint 3 Plan]]
