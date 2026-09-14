@@ -1,7 +1,7 @@
 ---
 type: agile-kanban
-version: 3.0
-date: 2026-09-13
+version: 3.1
+date: 2026-09-14
 project: BePal
 ---
 
@@ -83,8 +83,9 @@ kanban
     [Concept & GDD 00-05 Master Documentation - ทั้งทีม]
     [ADR 0001 & 0002 Architecture Records - โชว์ & ซุง]
     [Pure C# Domain Models Extraction - โชว์]
-    [Setup BePal.Tests xUnit Test Suite 7 Tests - โชว์]
+    [Setup BePal.Tests xUnit Test Suite 45 Tests - โชว์]
     [Basic Survival Log Screen - โชว์]
+    [Stripe Wipe Scene Transitions Engine & QA Capture - โชว์]
 ```
 
 ---
@@ -98,7 +99,8 @@ kanban
 | **Done** | T-03 | ADR Architecture Records (0001 & 0002) | โชว์ & ซุง | 3 | บันทึกสถาปัตยกรรม IScreen และ 4-Wall / 2-Phase Care |
 | **Done** | T-04 | Basic Survival Log Screen | โชว์ | 3 | ปลดล็อกและแสดงผลพฤติกรรมสัตว์เมื่อผ่าน 3 รอบ |
 | **Done** | T-14 | Domain Models Extraction | โชว์ | 3 | โชว์แยก `CareAction`, `PetDefinition`, `ActionPattern` เป็น Pure C# |
-| **Done** | T-17 | Setup `BePal.Tests` Project | โชว์ | 4 | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม 7 กรณีทดสอบ |
+| **Done** | T-17 | Setup `BePal.Tests` Project | โชว์ | 4 | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม 45 กรณีทดสอบ |
+| **Done** | T-32 | Stripe Wipe Scene Transitions | โชว์ | 3 | โชว์พัฒนาระบบสลับฉาก Venetian Blinds ทแยงมุม พร้อม xUnit 45 Tests และภาพ 09_transition.png (PR #18, #19) |
 | **Review / Testing** | T-05 | Death Spiral QTE System | โชว์ | 5 | วงล้อ 4 Sectors, เข็มหมุน, Dodge Zone, Floating Tags |
 | **Review / Testing** | T-06 | Playtest Screenshot Pipeline | โชว์ | 3 | คำสั่ง `--screenshot` และปุ่ม `F12` บันทึกภาพ PNG ทันที |
 | **Review / Testing** | T-07 | HUD Badges & Health Alignment | โชว์ & เดียร์ | 2 | แสดง HEALTH 3.0, DAY, และข้อมูลสัตว์ไม่ทับขอบกล่อง |

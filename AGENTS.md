@@ -19,13 +19,28 @@ The codebase enforces separation of concerns between the MonoGame engine lifecyc
 CoPoject/BePal/
 ├── Program.cs             # Application entry point
 ├── Game1.cs               # Graphics host, input polling, QTE math, screen rendering
+├── Screens/               # IScreen hierarchy, ScreenManager, transitions, and views
+│   ├── IScreen.cs         # Modular screen lifecycle interface
+│   ├── ScreenManager.cs   # Stack management, scene transitions, and input gating
+│   ├── StripeWipeTransition.cs # Diagonal Venetian-blinds scene transition
+│   ├── MainMenuScreen.cs  # Title screen and help overlay
+│   ├── PanoramicRoomScreen.cs # 4-Wall Samsara Room habitat navigation
+│   ├── CareQteScreen.cs   # Radial Care QTE wheel with 4 action sectors
+│   ├── DodgeQteScreen.cs  # Evasive Dodge QTE mini-game
+│   ├── PrologueScreen.cs  # Day 1 delivery crate unboxing sequence
+│   ├── DoorstepScreen.cs  # Morning courier crate delivery sequence
+│   ├── SurvivalLogScreen.cs # Research discovery journal overlay
+│   └── SummaryScreen.cs   # Run debriefing and shift report
 ├── Gameplay/
 │   ├── PetKind.cs         # Abnormal pet taxonomy (Baseline, Attacker, Trickster)
-│   └── PrototypeRun.cs    # Pure domain model: day progression, HP, sessions, log unlock
+│   ├── PrototypeRun.cs    # Pure domain model: day progression, HP, sessions, log unlock
+│   ├── PetCatalog.cs      # Pet definitions and species registry
+│   ├── ActionPattern.cs   # Timing profiles and preferred actions
+│   └── HarmType.cs        # Hazard classification (Physical, Mental)
+├── UI/
+│   └── DialogueBox.cs     # Typewriter narrative display and choice prompts
 └── Content/               # Fonts and 2D sprite textures compiled via Content.mgcb
 ```
-
-As specified in `docs/adr/0001-screen-and-care-qte-architecture.md`, UI views currently coordinated via the `Screen` enum (`Menu`, `Help`, `Home`, `Log`, `Care`, `Dodge`, `Summary`) are designed to be decomposed into dedicated `IScreen` classes (`MainMenuScreen`, `HomeScreen`, `CareQteScreen`, `DodgeQteScreen`, `SurvivalLogScreen`, `SummaryScreen`).
 
 ### Key Modules & Subsystems
 
@@ -40,23 +55,34 @@ As specified in `docs/adr/0001-screen-and-care-qte-architecture.md`, UI views cu
    - Triggers `Forced Retreat` when damage reduces Health to 0, immediately restoring Health to 3 and advancing the day.
    - Unlocks pet entries in the Survival Log once 3 Pet-Care Sessions are completed for that pet.
 
-3. **Care QTE Subsystem**:
+3. **Screen Management & Modular Views (`Screens/`)**:
+   - `ScreenManager` coordinates screen lifecycle (`SetScreen`, `PushScreen`, `PopScreen`).
+   - Modal screens (such as `SurvivalLogScreen`) specify `IsOverlay => true` and render on top of underlying shelter views.
+
+4. **Scene Transition Subsystem (`Screens/StripeWipeTransition.cs`)**:
+   - Two-phase geometric Venetian-blinds diagonal stripe wipe transition matching high-contrast graphic aesthetics.
+   - **Phase 1 (Sweep In / Cover):** Alternating horizontal slats sweep across from left to right with bottom-leading diagonal slant, fully occluding the outgoing screen at midpoint.
+   - **Midpoint Screen Swap:** Outgoing screen is replaced by incoming screen while 100% occluded.
+   - **Phase 2 (Sweep Out / Reveal):** Slats clear from left to right with top-leading diagonal slant and smoothstep easing, revealing the incoming screen.
+   - Configurable via `ScreenManager.TransitionDuration` (default `0.85f` seconds) and dynamic parameter overrides in `SetScreen()`. User input to underlying screens is gated during active transitions.
+
+5. **Care QTE Subsystem (`Screens/CareQteScreen.cs`)**:
    - Radial wheel divided into 4 sectors corresponding to the 4 Care Actions: **Feed (Appetite)**, **Play (Recreation)**, **Pet (Intimacy)**, and **Observe (Observation)**.
    - Needle marker rotates continuously at $2.2 \text{ rad/s}$ (`_angle = (_angle + 2.2f * dt) % Tau`).
    - Spacebar input (`QTE Confirmation`) evaluates marker proximity to action centers ($\pm\pi/6$ hit tolerance). Matching the pet's preferred action gives +1 Satisfaction; mismatch or dead-zone hit inflicts -1 HP.
 
-4. **Pet Variations & Hazard Mechanics**:
+6. **Pet Variations & Hazard Mechanics**:
    - **Mossling (`PetKind.Baseline`)**: Hazard Lv 1 (Physical harm). Prefers Feed. Steady wheel rotation.
    - **Nibbleclaw (`PetKind.Attacker`)**: Hazard Lv 2 (Aggressive). Prefers Play. Triggers a Dodge QTE attack after 2 Care successes.
    - **Blinkbun (`PetKind.Trickster`)**: Hazard Lv 3 (Teleporting). Prefers Pet. Marker teleports to a random wheel angle once per Care QTE.
 
-5. **Dodge QTE Subsystem**:
+7. **Dodge QTE Subsystem (`Screens/DodgeQteScreen.cs`)**:
    - Triggered when aggressive pets attack. The wheel changes to a warning state with a golden **Dodge Zone** centered at $1.5\pi$ (span $\pi/3$, tolerance $\pm\pi/6$).
    - Pressing Spacebar while inside the zone evades the attack; failure inflicts -1 HP.
 
-6. **Automated Playtest & Screenshot Pipeline**:
+8. **Automated Playtest & Screenshot Pipeline**:
    - Built-in headless verification runner activated with `--screenshot`, `--playtest`, or `BEPAL_SCREENSHOT=1`.
-   - Steps through 18 discrete frames across all screens and writes canonical PNG captures (`01_menu.png` through `06_summary.png`) to `screenshots/`.
+   - Steps through 27 discrete frames across all screens and writes canonical PNG captures (`01_menu.png` through `09_transition.png`) to `screenshots/`.
 
 ### Data Flow
 
@@ -65,7 +91,8 @@ User Input (Keyboard / Mouse)
            │
            ▼
 Game1.Update(GameTime)
-   ├── Screen Bounds / Radial QTE Angle Check
+   ├── ScreenManager Transition Check (gates input if transition active)
+   ├── Active Screen Update & Radial QTE Angle Check
    ├── QTE Confirmation (Spacebar)
    │        │
    │        ▼
@@ -80,25 +107,30 @@ Game1.Update(GameTime)
            │
            ▼
 Game1.Draw(GameTime)
-   └── SpriteBatch Render Pass (HUD, Pet, Track, Needle, Tags)
+   ├── SpriteBatch Render Pass (HUD, Pet, Track, Needle, Tags)
+   └── StripeWipeTransition Overlay Render Pass (when active)
 ```
 
 ## Key Directories
 
 - `CoPoject/`: Solution root containing `CoPoject.slnx`.
 - `CoPoject/BePal/`: Primary game executable project (`BePal.csproj`).
+  - `Screens/`: Modular screens, `ScreenManager`, and `StripeWipeTransition`.
   - `Gameplay/`: Pure domain models, entities, and state rules decoupled from MonoGame (`PrototypeRun.cs`, `PetKind.cs`).
+  - `UI/`: Reusable UI components (`DialogueBox.cs`).
   - `Content/`: Asset sources and pipeline configs (`Content.mgcb`, `PrototypeFont.spritefont`, `pet/` textures).
   - `pipeline-references/`: Precompiled MonoGame.Extended pipeline assemblies for build-time asset processing.
   - `.config/`: Tool manifest (`dotnet-tools.json`) pinning `dotnet-mgcb` CLI tools.
+- `CoPoject/BePal.Tests/`: Unit test suite (45 tests, .NET 8 xUnit) covering domain logic, navigation, transitions, and UI.
 - `BEPAL/Docs/`: Game design documentation and agile planning.
   - `GDD/`: Concept, mechanics, core loop, class diagrams, and asset flow (`01-core-loop.md`, `04-class-diagram.md`).
   - `Agile/`: Sprint plans, sprint backlogs, kanban setup, and MoSCoW breakdowns.
 - `docs/`: Repository governance and architectural documentation.
   - `gitflow-workflow.md`: Complete Gitflow branching, PR, and release specification.
-  - `adr/`: Architectural Decision Records (`0001-screen-and-care-qte-architecture.md`).
+  - `handoff.md`: Cross-session developer progress and delivery tracker.
+  - `adr/`: Architectural Decision Records (`0001-screen-and-care-qte-architecture.md`, `0002-four-wall-room-and-two-phase-care-architecture.md`).
   - `agents/`: Domain guidelines, GitHub issue tracking conventions, and triage labels.
-- `screenshots/`: Playtest artifacts and automated visual test captures (`01_menu.png` - `06_summary.png`).
+- `screenshots/`: Playtest artifacts and automated visual test captures (`01_menu.png` - `09_transition.png`).
 
 ## Development Commands
 
@@ -124,7 +156,7 @@ dotnet run --project CoPoject/BePal -- --screenshot
 
 ### Test
 ```powershell
-# Execute test suite (once test project CoPoject/BePal.Tests is present)
+# Execute complete unit test suite (45 tests)
 dotnet test CoPoject/CoPoject.slnx
 ```
 
@@ -149,6 +181,7 @@ This repository strictly follows the [Atlassian Gitflow Workflow](https://www.at
    - **`hotfix/v<version>`**: Branch from `main` to address critical production issues. Merge into both `main` (with tag) and `Develop`. Delete branch.
 3. **Pre-Merge Validation**:
    - Must build with 0 errors: `dotnet build CoPoject/CoPoject.slnx`
+   - Must pass all unit tests: `dotnet test CoPoject/CoPoject.slnx`
    - Must pass screenshot harness: `dotnet run --project CoPoject/BePal -- --screenshot`
 
 ### Issue Tracking via GitHub CLI (`gh`) & MCP
@@ -173,9 +206,9 @@ gh issue create --title "..." --body "..."
 - Use `#nullable enable` when introducing new classes and annotate reference types properly.
 
 ### Naming Conventions
-- **Types & Methods**: `PascalCase` (`PrototypeRun`, `RecordCareSuccess`, `PetKind`).
-- **Parameters & Local Variables**: `camelCase` (`gameTime`, `actionIdx`, `dodgeCenter`).
-- **Private Fields**: `_camelCase` (`_graphics`, `_run`, `_angle`, `_tags`).
+- **Types & Methods**: `PascalCase` (`PrototypeRun`, `RecordCareSuccess`, `PetKind`, `StripeWipeTransition`).
+- **Parameters & Local Variables**: `camelCase` (`gameTime`, `actionIdx`, `dodgeCenter`, `normY`).
+- **Private Fields**: `_camelCase` (`_graphics`, `_run`, `_angle`, `_tags`, `_activeTransition`).
 - **Constants & Action Arrays**: `PascalCase` or `UPPERCASE` (`Actions`, `ActionNeeds`, `Tau`).
 
 ### Domain Vocabulary (Mandatory)
@@ -208,57 +241,13 @@ Adhere strictly to canonical terms defined in `CONTEXT.md` (avoid synonyms):
 ### Dependency Injection & Modularization
 - `Game1` is the composition root. When introducing new subsystems or decomposing screens into `IScreen`, inject dependencies via constructors or through MonoGame's `Game.Services` container (`IServiceProvider`).
 
-## Important Files
-
-| File Path | Description |
-| --- | --- |
-| `CoPoject/CoPoject.slnx` | Solution definition organizing the projects |
-| `CoPoject/BePal/BePal.csproj` | Main project file (.NET 8, `WinExe`, package references, tool restore target) |
-| `CoPoject/BePal/Program.cs` | Application entry point |
-| `CoPoject/BePal/Game1.cs` | MonoGame engine lifecycle, screen rendering, QTE logic, and playtest harness |
-| `CoPoject/BePal/Gameplay/PrototypeRun.cs` | Core simulation state: days, health, satisfaction, retreats, log unlocking |
-| `CoPoject/BePal/Gameplay/PetKind.cs` | Pet enumeration (`Baseline`, `Attacker`, `Trickster`) |
-| `CoPoject/BePal/Content/Content.mgcb` | Content pipeline asset build definitions |
-| `CoPoject/BePal/.config/dotnet-tools.json` | .NET tool manifest declaring `dotnet-mgcb` 3.8.4 |
-| `CONTEXT.md` | Domain glossary and ubiquitous language definitions |
-| `docs/gitflow-workflow.md` | Complete Atlassian Gitflow Workflow standard and repository branching rules |
-| `docs/adr/0001-screen-and-care-qte-architecture.md` | ADR for screen decomposition and Care QTE architecture |
-| `docs/agents/issue-tracker.md` | GitHub CLI conventions for issue and PRD tracking |
-| `docs/agents/triage-labels.md` | Triage label mappings (`needs-triage`, `ready-for-agent`, etc.) |
-| `BEPAL/Docs/GDD/01-core-loop.md` | Core daily gameplay loop flowcharts and specifications |
-| `BEPAL/Docs/GDD/04-class-diagram.md` | Class diagrams and planned screen interface architecture |
-
-## Runtime/Tooling Preferences
-
-- **Runtime Target**: .NET 8.0 SDK (`<TargetFramework>net8.0</TargetFramework>`).
-- **Application Type**: DesktopGL cross-platform Windows/Linux/macOS desktop application (`<OutputType>WinExe</OutputType>`).
-- **Package Manager**: NuGet via the standard `dotnet` CLI.
-- **Tooling Constraints**:
-  - Solution uses XML-based `.slnx` format.
-  - The project restores .NET local tools (`dotnet tool restore`) via an MSBuild target `RestoreDotnetTools` before resolving packages.
-  - MonoGame.Extended pipeline DLL is loaded from `pipeline-references/MonoGame.Extended.Content.Pipeline.dll`.
-  - Issue tracker workflows rely on `gh` CLI or GitHub MCP server tools.
-
 ## Testing & QA
 
 ### Test Strategy & Structure
-- Place automated unit tests in a dedicated project: `CoPoject/BePal.Tests` (targeting `net8.0`).
-- Use **xUnit** or **NUnit** with FluentAssertions or standard asserts.
-- Test domain logic headlessly: because classes under `Gameplay/` (e.g. `PrototypeRun`) have zero MonoGame/graphics dependencies, test all game rules, day advances, damage calculations, and session unlocks without a graphics device or window.
-
-### Test Naming Convention
-Follow the `UnitOfWork_StateUnderTest_ExpectedBehavior` pattern:
-```csharp
-[Fact]
-public void TakeDamage_WhenHealthReachesZero_ForcesRetreatAndRestoresHealth()
-
-[Fact]
-public void CompleteSession_WhenCalled_IncrementsSessionsTodayAndResetsSatisfaction()
-
-[Fact]
-public void IsLogUnlocked_WhenCompletedSessionsUnderThree_ReturnsFalse()
-```
+- Place automated unit tests in dedicated project: `CoPoject/BePal.Tests` (targeting `net8.0`).
+- Use **xUnit** with standard asserts.
+- Test domain logic headlessly: because classes under `Gameplay/`, `UI/`, and transition math (`StripeWipeTransition`) have zero MonoGame/graphics device dependencies, test all game rules, day advances, damage calculations, session unlocks, and transition bounds without a graphics device or window.
 
 ### Automated Visual Regression QA
-- Execute `dotnet run --project CoPoject/BePal -- --screenshot` to run the 18-frame automated playtest.
-- Inspect the output in `screenshots/` (`01_menu.png` through `06_summary.png`) to verify UI layout, HUD text, dynamic pet emotion sprites, and screen transitions without manual playthrough.
+- Execute `dotnet run --project CoPoject/BePal -- --screenshot` to run the automated playtest.
+- Inspect the output in `screenshots/` (`01_menu.png` through `09_transition.png`) to verify UI layout, HUD text, dynamic pet emotion sprites, narrative screens, and scene transitions without manual playthrough.
