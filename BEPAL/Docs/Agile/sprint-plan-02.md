@@ -2,7 +2,7 @@
 
 **Sprint Goal:** พัฒนาและขัดเกลาระบบเกมเพลย์เชิงลึก: วงล้อ Care QTE สไตล์ Death Spiral พร้อมป้ายกระดาษฉีก, ระบบเสียง SFX ประกอบการเล่น, แยกสถาปัตยกรรม Pure C# Domain Models และติดตั้งระบบทดสอบอัตโนมัติ Unit Test (`BePal.Tests`)  
 **ระยะเวลา:** 2026-09-15 — 2026-09-28  
-**Status:** 🔄 Active (Technical Enablers 100% Done; Audio & Art Staging ongoing)  
+**Status:** 🔄 Active (Technical Enablers & Audio Engine 100% Done; Audio & Art Staging ongoing)  
 **Team:**
 - วศิน ศรีวรกุล (โชว์) — Lead Programmer
 - ปีย์ตะวัน แห่งหาญ (ซุง) — Game Designer
@@ -20,7 +20,7 @@
 | 3   | **US-09**            | As a player, I want clear indication of Hazard Level (1–3) and Harm Type (Physical/Mental)             | ซุง (Game Designer)  | Should Have | 3             | ✅ Done         |
 | 4   | **US-10**            | As a developer/QA, I want an automated test harness to capture high-res PNG screenshots of all screens | โชว์ (Lead Prog)     | Should Have | 3             | ✅ Done         |
 | 5   | **US-11**            | As a player, I want audio feedback for confirmations, successes, misses, teleport, and alarms          | ภูมิ (Pooh / Audio)  | Should Have | 4             | 🔄 In Progress |
-| 6   | **US-12**            | As a player, I want sound effects to trigger reliably on corresponding gameplay actions                | โชว์ (Lead Prog)     | Should Have | 3             | 🔲 Todo        |
+| 6   | **US-12**            | As a player, I want sound effects to trigger reliably on corresponding gameplay actions                | โชว์ (Lead Prog)     | Should Have | 3             | ✅ Done         |
 | 7   | **ART-01**           | As a player, I want styled scrap-paper action badges along the circular track                          | เดียร์ (2D Art Lead) | Should Have | 3             | 🔄 In Progress |
 | 8   | **DES-01**           | As a designer, I want a mathematical balance sheet for needle speed, sector spans, and dead zones      | ซุง (Game Designer)  | Should Have | 3             | 🔄 In Progress |
 | 9   | **QA-01**            | As a QA tester, I want to verify the mechanical rhythm, timing feel, and difficulty curve of QTEs      | ภูมิ (Pooh / Design) | Should Have | 3             | 🔄 In Progress |
@@ -37,7 +37,7 @@
 - ❌ Blocked
 
 ## Workload Summary (45 SP Total)
-- **วศิน (โชว์):** 25 SP (US-08: 5, US-10: 3, US-12: 3, TECH-01: 3, TECH-02: 4, TECH-03: 5, TECH-04: 2) — *22 SP Done, 3 SP Todo (Audio)*
+- **วศิน (โชว์):** 25 SP (US-08: 5, US-10: 3, US-12: 3, TECH-01: 3, TECH-02: 4, TECH-03: 5, TECH-04: 2) — *25 SP Done (100% Completed!)*
 - **ปีย์ตะวัน (ซุง):** 6 SP (US-09: 3, DES-01: 3) — *3 SP Done, 3 SP In Progress*
 - **ภูมิพัฒน์ (ภูมิ):** 7 SP (US-11: 4, QA-01: 3) — *In Progress*
 - **ธัญญรัตน์ (เดียร์):** 7 SP (US-07: 4, ART-01: 3) — *4 SP Done, 3 SP In Progress*
@@ -69,8 +69,8 @@
 - [ ] ตัดต่อ, ปรับแต่งความถี่ และ Normalize ระดับเสียง `.wav` คุณภาพสูงลง Staging Folder [owner:: ภูมิ] [estimate:: 2] [status:: in-progress]
 
 ### US-12 — Audio Engine Integration into MonoGame [3 SP]
-- [ ] สร้างระบบจัดการเสียง `AudioManager` รองรับการเล่นเสียง SFX ผ่าน `SoundEffectInstance` [owner:: โชว์] [estimate:: 2] [status:: todo]
-- [ ] เชื่อมต่อการเล่นเสียง SFX ให้สัมพันธ์กับการกด Spacebar ยืนยัน, ทายถูก, โดนดาเมจ, และหลบพ้น [owner:: โชว์] [estimate:: 1] [status:: todo]
+- [x] สร้างระบบจัดการเสียง `AudioManager` และอินเทอร์เฟซ `IAudioService` รองรับการสังเคราะห์เสียง Procedural Fallback [owner:: โชว์] [estimate:: 2] [status:: done]
+- [x] เชื่อมต่อการเล่นเสียง SFX ให้สัมพันธ์กับการกด Spacebar ยืนยัน, ทายถูก, โดนดาเมจ, หลบพ้น, วาร์ป, และเปิดกล่อง [owner:: โชว์] [estimate:: 1] [status:: done]
 
 ### ART-01 — Death Spiral UI Scrap Badges (6 Badges) [3 SP]
 - [ ] วาดป้ายกระดาษฉีก 4 แอ็กชันหลัก: FEED (เขียว), PLAY (ฟ้า), PET (ชมพู), OBSERVE (ม่วง) ขนาด 128×52 px [owner:: เดียร์] [estimate:: 2] [status:: in-progress]
@@ -90,7 +90,7 @@
 
 ### TECH-02 — Automated Unit Testing (`BePal.Tests`) [4 SP]
 - [x] สร้างโปรเจกต์ `CoPoject/BePal.Tests` (xUnit, .NET 8) และผูกเข้ากับ `CoPoject.slnx` [owner:: โชว์] [estimate:: 1] [status:: done]
-- [x] เขียน Unit Tests ครอบคลุมการคำนวณ Health, การเกิด Forced Retreat, การบันทึก Session และการปลดล็อก Survival Log (45 tests) [owner:: โชว์] [estimate:: 3] [status:: done]
+- [x] เขียน Unit Tests ครอบคลุมการคำนวณ Health, การเกิด Forced Retreat, การบันทึก Session และการปลดล็อก Survival Log (51 tests) [owner:: โชว์] [estimate:: 3] [status:: done]
 
 ### TECH-03 — Modular Screen Hierarchy (`IScreen`) [5 SP]
 - [x] ออกแบบอินเทอร์เฟซ `IScreen` และตัวจัดการ `ScreenManager` ตามสถาปัตยกรรม ADR-0001 [owner:: โชว์] [estimate:: 2] [status:: done]
@@ -116,6 +116,11 @@
   2. แก้ปัญหา Forced Retreat เมื่อเลือดหมดแล้วไม่ตัดเข้า Doorstep เนื่องจากตัวแปรเลือดถูกรีเซ็ตก่อนตรวจเงื่อนไข
   3. แก้ปัญหา `IndexOutOfRangeException` ใน `ActivePet` เมื่อครบ 5 วันด้วยการใช้ Clamping
   4. เพิ่มเทสต์จำลองลูป 5 วันเต็มใน `PrototypeRunTests.cs` (ผ่านครบ 45/45 เทสต์ในระบบ)
+- **Blocked:** ไม่มี
+
+### 2026-09-14 (Audio Engine System & Integration)
+- **เมื่อวาน:** รวมระบบ Scene Transitions (`PR #18`, `PR #19`) และอัปเดตเอกสารปรับลดเหลือ 3 Sprints
+- **วันนี้:** พัฒนาระบบ `IAudioService` และ `AudioManager` (`US-12`), สร้างระบบ Procedural Synthetic Audio Fallback รองรับการเล่นเสียงโดยไม่ต้องพึ่งพาไฟล์ภายนอก, ป้องกันปัญหา Hardware crash ในโหมด Headless, และเขียน Unit Tests ครอบคลุม 51/51 เทสต์ผ่าน 100%
 - **Blocked:** ไม่มี
 
 ---

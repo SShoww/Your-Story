@@ -27,6 +27,7 @@ public sealed class DoorstepScreen : IScreen
     {
         _context = context;
         _dialogueBox.TypewriterSpeed = 38f;
+        _context.Audio.PlayBoxOpen();
 
         PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
         _dialogueBox.StartDialogue(

@@ -27,6 +27,7 @@ public sealed class PrologueScreen : IScreen
     {
         _context = context;
         _dialogueBox.TypewriterSpeed = 38f;
+        _context.Audio.PlayBoxOpen();
         _dialogueBox.StartDialogue(
             "DAYCARE PROLOGUE - DAY 1",
             NarrativeScripts.GetPrologueLines(),

@@ -134,6 +134,7 @@ public sealed class ScreenManager
 
     public void BeginDodge()
     {
+        Context.Audio.PlayWarning();
         Context.SetPetReaction(Context.PetAngry, 0.75f);
         Context.TriggerShake(0.3f, 8f);
         Context.SpawnTag("WARNING: ATTACK INCOMING!", new Color(60, 15, 20), new Color(255, 200, 70));

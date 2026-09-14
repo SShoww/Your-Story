@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using BePal.Audio;
 using BePal.Gameplay;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,7 +11,7 @@ using MonoGame.Extended;
 namespace BePal.Screens;
 
 /// <summary>
-/// Encapsulates shared rendering assets, domain state, input state, and UI helpers across screens.
+/// Encapsulates shared rendering assets, domain state, input state, audio, and UI helpers across screens.
 /// </summary>
 public sealed class ScreenContext
 {
@@ -18,6 +19,7 @@ public sealed class ScreenContext
 
     public ScreenManager Manager { get; internal set; } = null!;
     public PrototypeRun Run { get; set; } = new();
+    public IAudioService Audio { get; set; }
 
     public SpriteFont Font { get; }
     public Texture2D Pixel { get; }
@@ -50,7 +52,8 @@ public sealed class ScreenContext
         Texture2D petHappy,
         Texture2D petAngry,
         Action exitGame,
-        Action<string> saveScreenshotAction)
+        Action<string> saveScreenshotAction,
+        IAudioService? audio = null)
     {
         Font = font;
         Pixel = pixel;
@@ -61,6 +64,7 @@ public sealed class ScreenContext
         PetImage = petIdle;
         ExitGame = exitGame;
         SaveScreenshotAction = saveScreenshotAction;
+        Audio = audio ?? NullAudioService.Instance;
     }
 
     public void SetPetReaction(Texture2D texture, float duration)
@@ -72,80 +76,87 @@ public sealed class ScreenContext
     public void ResetPetReaction()
     {
         PetImage = PetIdle;
-        ReactionTime = 0;
+        ReactionTime = 0f;
     }
 
-    public void TriggerShake(float time = 0.22f, float amount = 8f)
+    public void TriggerShake(float duration, float amount = 8f)
     {
-        ShakeTime = time;
+        ShakeTime = duration;
         ShakeAmount = amount;
     }
 
-    public void SpawnTag(string text, Color bg, Color fg, Vector2? pos = null)
+    public void SpawnTag(string text, Color bg, Color textClr)
     {
-        float rot = ((float)_random.NextDouble() - 0.5f) * 0.18f;
+        Vector2 pos = new(640f + (float)(_random.NextDouble() * 30 - 15), 320f + (float)(_random.NextDouble() * 20 - 10));
         Tags.Add(new FloatingTag
         {
             Text = text,
-            Position = pos ?? new Vector2(640, 235),
+            Position = pos,
             BgColor = bg,
-            TextColor = fg,
-            Lifetime = 0.85f,
-            MaxLifetime = 0.85f,
-            Rotation = rot
+            TextColor = textClr
         });
     }
 
-    public void ClearTags() => Tags.Clear();
-
     public bool IsKeyPressed(Keys key) => Keyboard.IsKeyDown(key) && PreviousKeyboard.IsKeyUp(key);
 
-    public bool IsButtonClicked(Rectangle bounds) =>
-        Mouse.LeftButton == ButtonState.Pressed &&
-        PreviousMouse.LeftButton == ButtonState.Released &&
-        bounds.Contains(Mouse.Position);
-
-    public static Rectangle ButtonRect(int y) => new(490, y, 300, 60);
-
-    public void DrawText(SpriteBatch batch, string text, Vector2 pos, Color color) =>
-        batch.DrawString(Font, text, pos, color);
-
-    public void DrawCenterText(SpriteBatch batch, string text, Vector2 pos, float scale, Color color) =>
-        batch.DrawString(Font, text, pos - Font.MeasureString(text) * scale / 2f, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-
-    public void DrawButton(SpriteBatch batch, Rectangle bounds, string label, bool enabled)
+    public bool IsButtonClicked(Rectangle rect)
     {
-        Color bg = enabled ? new Color(90, 116, 168) : new Color(71, 74, 85);
-        Color border = enabled ? new Color(255, 203, 139) : Color.Gray;
-        Color textCol = enabled ? Color.White : Color.LightGray;
+        Point p = Mouse.Position;
+        return rect.Contains(p) &&
+               Mouse.LeftButton == ButtonState.Released &&
+               PreviousMouse.LeftButton == ButtonState.Pressed;
+    }
 
-        batch.Draw(Pixel, bounds, bg);
-        batch.DrawRectangle(new RectangleF(bounds.X, bounds.Y, bounds.Width, bounds.Height), border, 2f);
-        DrawCenterText(batch, label, bounds.Center.ToVector2(), 0.8f, textCol);
+    public static Rectangle ButtonRect(int y) => new(490, y, 300, 58);
+
+    public void DrawButton(SpriteBatch batch, Rectangle rect, string text, bool enabled = true)
+    {
+        bool hover = enabled && rect.Contains(Mouse.Position);
+        Color fill = !enabled ? new Color(42, 45, 58) : hover ? new Color(85, 95, 125) : new Color(60, 68, 92);
+        Color border = !enabled ? new Color(70, 75, 92) : hover ? Color.White : new Color(170, 185, 220);
+
+        batch.FillRectangle(rect, fill);
+        batch.DrawRectangle(rect, border, 2f);
+        DrawCenterText(batch, text, new Vector2(rect.Center.X, rect.Center.Y), 0.88f, enabled ? Color.White : Color.Gray);
+    }
+
+    public void DrawText(SpriteBatch batch, string text, Vector2 pos, Color clr, float scale = 0.8f)
+    {
+        batch.DrawString(Font, text, pos, clr, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+    }
+
+    public void DrawCenterText(SpriteBatch batch, string text, Vector2 center, float scale, Color clr)
+    {
+        Vector2 size = Font.MeasureString(text) * scale;
+        Vector2 pos = new(center.X - size.X / 2f, center.Y - size.Y / 2f);
+        batch.DrawString(Font, text, pos, clr, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 
     public void DrawHUD(SpriteBatch batch)
     {
-        // Health Badge Top-Left (Death Spiral style)
-        RectangleF hpRect = new(36, 20, 260, 70);
-        batch.FillRectangle(hpRect, new Color(22, 25, 38));
-        batch.DrawRectangle(hpRect, new Color(255, 100, 110), 2f);
-        string hearts = "";
-        for (int i = 1; i <= 3; i++) hearts += i <= Run.Health ? "[X] " : "[ ] ";
-        DrawCenterText(batch, $"HEALTH {Run.Health}.0", new Vector2(hpRect.Center.X, hpRect.Y + 20f), 0.85f, Color.White);
-        DrawCenterText(batch, $"LIVES: {hearts.Trim()}", new Vector2(hpRect.Center.X, hpRect.Y + 48f), 0.72f, new Color(255, 140, 140));
-
-        // Pet Info Top-Right
-        RectangleF petRect = new(860, 20, 384, 70);
-        batch.FillRectangle(petRect, new Color(22, 25, 38));
-        batch.DrawRectangle(petRect, new Color(255, 203, 139), 2f);
         PetDefinition pet = PetCatalog.Get(Run.ActivePet);
-        string hazard = pet.Kind switch
+        string hazard = pet.HazardLevel switch
         {
-            PetKind.Baseline => $"Hazard Lv {pet.HazardLevel} ({pet.HarmType})",
-            PetKind.Attacker => $"Hazard Lv {pet.HazardLevel} (Aggressive)",
-            _ => $"Hazard Lv {pet.HazardLevel} (Teleporting)"
+            1 => "Lv 1 (Safe)",
+            2 => "Lv 2 (Aggressive)",
+            3 => "Lv 3 (Trickster)",
+            _ => "Unknown"
         };
+
+        // Left Panel: Health status
+        RectangleF healthRect = new(40, 24, 250, 72);
+        batch.FillRectangle(healthRect, new Color(12, 14, 20, 220));
+        batch.DrawRectangle(healthRect, new Color(185, 75, 90), 2f);
+
+        DrawText(batch, $"HEALTH: {Run.Health} / 3", new Vector2(56, 36), new Color(255, 120, 130), 0.85f);
+        string hearts = new string('O', Math.Clamp(Run.Health, 0, 3)).PadRight(3, '-');
+        DrawText(batch, $"LIVES: [ {hearts} ]", new Vector2(56, 62), Color.LightGray, 0.72f);
+
+        // Right Panel: Day & Pet Status
+        RectangleF petRect = new(990, 24, 250, 72);
+        batch.FillRectangle(petRect, new Color(12, 14, 20, 220));
+        batch.DrawRectangle(petRect, new Color(75, 120, 185), 2f);
+
         DrawCenterText(batch, $"DAY {Run.DayNumber} / 5", new Vector2(petRect.Center.X, petRect.Y + 20f), 0.85f, Color.White);
         DrawCenterText(batch, $"{pet.Name.ToUpperInvariant()} - {hazard}", new Vector2(petRect.Center.X, petRect.Y + 48f), 0.68f, new Color(255, 203, 139));
     }

@@ -59,6 +59,7 @@ public sealed class CareQteScreen : IScreen
         {
             _angle = (float)_random.NextDouble() * Tau;
             _teleported = true;
+            _context.Audio.PlayTeleport();
             _context.TriggerShake(0.18f, 5f);
             _context.SpawnTag("MARKER TELEPORTED!", new Color(45, 25, 55), new Color(230, 160, 255));
             _context.Message = "The marker teleported!";
@@ -66,6 +67,7 @@ public sealed class CareQteScreen : IScreen
 
         if (_context.IsKeyPressed(Keys.Space))
         {
+            _context.Audio.PlayConfirm();
             ResolveCare();
         }
     }
@@ -86,6 +88,7 @@ public sealed class CareQteScreen : IScreen
         CareAction? action = GetHoveredAction();
         if (action == null)
         {
+            _context.Audio.PlayFail();
             _context.TriggerShake(0.24f, 9f);
             _context.SetPetReaction(_context.PetAngry, 0.65f);
             _context.SpawnTag("MISSED! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
@@ -102,23 +105,27 @@ public sealed class CareQteScreen : IScreen
 
             if (activePet.Pattern.HasDodgeAttack && _context.Run.Satisfaction == activePet.Pattern.AttackThreshold)
             {
+                _context.Audio.PlaySuccess();
                 _context.Manager.BeginDodge();
             }
             else if (_context.Run.Satisfaction >= 3)
             {
                 _context.Run.CompleteSession();
+                _context.Audio.PlaySessionComplete();
                 _context.SetPetReaction(_context.PetHappy, 1.2f);
                 _context.SpawnTag("SESSION COMPLETE!", new Color(25, 45, 60), new Color(255, 230, 130));
                 _context.Manager.ShowHome("Session complete! Satisfaction is full.");
             }
             else
             {
+                _context.Audio.PlaySuccess();
                 ResetQte();
                 _context.Message = "Correct action! Keep going.";
             }
         }
         else
         {
+            _context.Audio.PlayFail();
             _context.TriggerShake(0.24f, 9f);
             _context.SetPetReaction(_context.PetAngry, 0.65f);
             string chosen = action.Value.ToString();
