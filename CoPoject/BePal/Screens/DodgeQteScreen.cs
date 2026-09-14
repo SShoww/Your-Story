@@ -37,6 +37,7 @@ public sealed class DodgeQteScreen : IScreen
 
         if (_context.IsKeyPressed(Keys.Space))
         {
+            _context.Audio.PlayConfirm();
             ResolveDodge();
         }
     }
@@ -52,6 +53,7 @@ public sealed class DodgeQteScreen : IScreen
     {
         if (CheckDodgeSuccess())
         {
+            _context.Audio.PlayDodgeSuccess();
             _context.ResetPetReaction();
             _context.SpawnTag("DODGED!", new Color(50, 42, 12), new Color(255, 220, 80));
             _context.Message = "Attack evaded! One final care action remains.";
@@ -59,6 +61,7 @@ public sealed class DodgeQteScreen : IScreen
         }
         else
         {
+            _context.Audio.PlayFail();
             _context.TriggerShake(0.35f, 13f);
             _context.SetPetReaction(_context.PetAngry, 0.75f);
             _context.SpawnTag("HIT BY ATTACK! -1 HP", new Color(65, 10, 15), new Color(255, 70, 70));

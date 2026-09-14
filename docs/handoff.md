@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-14  
 **Target Branch:** `Develop`  
-**Current Status:** Sprint 2 (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`), early Sprint 3 integration (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 45 passing unit tests (45/45), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards. Roadmap consolidated to 3 Sprints (2 weeks per sprint, final deadline before October 12, 2026).
+**Current Status:** Sprint 2 Technical Enablers & Audio Engine System (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`, `US-12`), early Sprint 3 integration (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 51 passing unit tests (51/51), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards. Roadmap consolidated to 3 Sprints (2 weeks per sprint, final deadline before October 12, 2026).
 
 ---
 
@@ -38,9 +38,30 @@
   - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
 - **PR #20 (Merged into `Develop`):** `docs(bepal): update AGENTS.md, class diagram, kanban board, and handoff for scene transitions`
   - Updated architecture docs, class diagrams, and guidelines to reflect transition engine.
+- **Branch `feature/audio-engine-system` (Current):** `feat(audio): implement audio engine system with procedural fallback (US-12)`
+  - Completed `US-12` (Audio Engine Integration into MonoGame).
+  - Implemented `IAudioService`, `AudioManager`, `NullAudioService`, and `SoundEffectType`.
+  - Procedural synthetic audio fallback generating in-memory 16-bit PCM waveforms so sound is audible immediately even without pre-compiled WAV assets.
+  - Headless/CI tolerance preventing crashes when audio hardware is absent.
+  - Wired into `CareQteScreen`, `DodgeQteScreen`, `ScreenManager`, `PrologueScreen`, and `DoorstepScreen`.
+  - Added 6 unit tests in `AudioServiceTests.cs` bringing total test suite to 51/51 passing tests.
 
 ### 1.2. Architecture & Subsystems Implemented
-1. **Scene Transition Subsystem (`StripeWipeTransition` / `ScreenManager`):**
+1. **Audio Engine Subsystem (`US-12` / `BePal.Audio`):**
+   - Service abstraction via `IAudioService` covering canonical GDD-05 sound cues:
+     - `Confirm`: Spacebar confirmation
+     - `Success`: Care action match (+1 Satisfaction)
+     - `Fail`: Mismatch or dead zone (-1 HP)
+     - `Teleport`: Blinkbun erratic needle jump
+     - `Warning`: Pet attack alert siren
+     - `DodgeSuccess`: Evading attack in Dodge Zone
+     - `SessionComplete`: Care round complete (3 Satisfaction)
+     - `BoxOpen`: Unboxing courier crate
+     - `Typewriter`: Text typewriter tick
+   - Procedural in-memory tone synthesis (sine/square waveforms with attack/release envelopes) allowing full gameplay audio feedback prior to asset compilation.
+   - Hardware detection and `NullAudioService` fallback ensuring headless testability without OpenAL crashes.
+
+2. **Scene Transition Subsystem (`StripeWipeTransition` / `ScreenManager`):**
    - Geometric diagonal Venetian-blinds wipe sweeping horizontal white slats across dark backing.
    - **Phase 1 (Sweep In / Cover):** Slats enter from bottom-left to top-right, achieving 100% occlusion at midpoint.
    - **Midpoint Screen Swap:** Outgoing screen is swapped for incoming screen at 100% occlusion.
@@ -48,15 +69,14 @@
    - Configurable `TransitionDuration` (0.85s default) and input gating to prevent accidental double-clicks.
    - Unit-tested headlessly across 13 test cases in `BePal.Tests/Screens/StripeWipeTransitionTests.cs`.
 
-2. **Unified `DialogueBox` Subsystem (`TECH-05` / `BePal.UI.DialogueBox`):**
+3. **Unified `DialogueBox` Subsystem (`TECH-05` / `BePal.UI.DialogueBox`):**
    - Typewriter character reveal animation with configurable characters-per-second speed (`TypewriterSpeed = 38f`).
    - Spacebar and mouse click instant fast-reveal / skip (`SkipTypewriter()`).
    - Dynamic line wrapping with font measurement abstraction (`WrapText(string, float, Func<string, float>)`) enabling headless testability.
-   - `NEXT =>` button and `SKIP >>` button indicator.
    - Choice prompt mode with `[YES]` and `[NO]` buttons and keyboard hotkeys (`Y` / `N`).
    - Pure domain queue logic tested headlessly in `BePal.Tests/UI/DialogueBoxTests.cs` (8 unit tests).
 
-3. **4-Wall Panoramic Shelter Navigation Engine (`US-20` / `BePal.Screens.PanoramicRoomScreen`):**
+4. **4-Wall Panoramic Shelter Navigation Engine (`US-20` / `BePal.Screens.PanoramicRoomScreen`):**
    - Samsara Room-style 360-degree rotation across 4 connected shelter walls with `[◄]` and `[►]` buttons and `A`/`D` or Arrow keys.
    - **Wall 1 (Pet Zone):** Active pet habitat frame, real-time ambient behavior cue banner, pet click confirmation dialogue prompt, and care initiation.
    - **Wall 2 (Prep & Pantry):** Inspectable Pantry Shelves, Water Basin, and Disposal Bin.
@@ -64,24 +84,15 @@
    - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door, Porch Window, Shift Clock & Calendar, and prominent `[End Day Shift]` button.
    - Domain navigation model tested headlessly in `BePal.Tests/Screens/PanoramicRoomTests.cs` (5 unit tests).
 
-4. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
+5. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
    - `NarrativeScripts.cs` providing narrative text in English first.
    - **Day 1 Prologue (`PrologueScreen`):** Daycare introduction $\rightarrow$ door chime $\rightarrow$ wooden delivery crate with yellow hazard tape $\rightarrow$ unboxing Mossling. Includes "Skip Intro >>" button.
    - **Days 2–5 Morning Delivery (`DoorstepScreen`):** Porch arrival scene before entering shelter with dynamic crate manifests for Nibbleclaw and Blinkbun. Includes "Enter Shelter >>" button.
    - Tested in `BePal.Tests/Screens/NarrativeScreenTests.cs` (4 unit tests).
 
-5. **Automated Visual Regression QA Pipeline:**
+6. **Automated Visual Regression QA Pipeline:**
    - Headless `--screenshot` runner extended to 27 frames in `Game1.cs`.
-   - Generates canonical visual regression captures in `screenshots/`:
-     - `01_menu.png`: Main Menu view
-     - `02_home.png`: 4-Wall Shelter Wall 1 (Pet Zone) with behavior cues and navigation arrows
-     - `03_care_qte.png`: Dynamic Care QTE wheel with floating feedback tags
-     - `04_dodge_qte.png`: Warning Dodge QTE state with golden dodge zone
-     - `05_survival_log.png`: Survival Log book overlay
-     - `06_summary.png`: Run Summary report
-     - `07_prologue.png`: Day 1 Prologue Crate unboxing view
-     - `08_doorstep.png`: Morning doorstep courier crate arrival view
-     - `09_transition.png`: Diagonal Venetian-blinds scene transition capture mid-sweep
+   - Generates canonical visual regression captures in `screenshots/` (01–09 PNG captures).
 
 ---
 
@@ -90,12 +101,13 @@
 - **Branch:** `Develop` (Up to date with `origin/Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes 45/45 tests (`dotnet test CoPoject/CoPoject.slnx`):
+- **Test Suite:** `CoPoject/BePal.Tests` passes 51/51 tests (`dotnet test CoPoject/CoPoject.slnx`):
   - `PrototypeRunTests.cs`: 11 tests
   - `DialogueBoxTests.cs`: 8 tests
   - `PanoramicRoomTests.cs`: 5 tests
   - `NarrativeScreenTests.cs`: 4 tests
   - `StripeWipeTransitionTests.cs`: 13 tests
+  - `AudioServiceTests.cs`: 6 tests
   - `HarmType`, `PetCatalog`, `ActionPattern` domain tests: 4 tests
 - **Visual Regression:** `dotnet run --project CoPoject/BePal -- --screenshot` completes cleanly in ~4s.
 
@@ -105,21 +117,16 @@
 
 The roadmap has been consolidated into **3 Sprints total** (2 weeks per sprint, 6 weeks total), concluding with Sprint 3 ending on **2026-10-11** (before the **October 12, 2026** project deadline).
 
-The next session will execute the remaining deliverables of **Sprint 3 (Shelter Atmosphere, 2-Phase Care Mini-Games & Final Release)**:
+With Sprint 2 programming complete (Show: 25/25 SP Done), the immediate next steps are:
 
-1. **Implement Dynamic Wheel with Sweet Spots (`US-21` — 6 SP):**
-   - Add central golden Sweet Spot ($\pm 15^\circ$) inside each action quadrant awarding +2 Satisfaction.
-   - Integrate real-time Behavior Cues into `CareQteScreen.cs` deduced from `PetDefinition`.
-   - Implement species-specific needle dynamics (Nibbleclaw acceleration, Blinkbun erratic teleportation).
-2. **Implement Tactile Care Mini-Games Subsystem (`US-22` — 8 SP):**
-   - Create `ICareMiniGame` interface under `CoPoject/BePal/Screens/MiniGames/`.
-   - Implement 4 tactile micro-games (2–3 seconds duration): Feed, Pet, Play, Observe.
-   - Enforce Consequence Rules: Success = +1/+2 Satisfaction; Failure = +0 Satisfaction (no HP penalty).
-3. **Implement Daily Summary Report Card & Night Rest (`US-23` — 5 SP):**
-   - Replace placeholder summary with a Papers, Please-style daily shift report card.
-   - Night rest transition recovering HP to 3 before triggering `DoorstepScreen`.
-4. **Narrative Lore Ending & Final QA (`US-16`, `QA-02` — 7 SP):**
-   - Secret origin story resolution on Day 5 and end-to-end regression validation prior to the Oct 12 deadline.
+1. **Sprint 2 Asset Staging & Polish:**
+   - Audio team (Pooh): Export `.wav` studio sound files (`US-11`) to replace procedural tones.
+   - 2D Art team (Dear): Draw scrap-paper action badges (`ART-01`) for Feed, Play, Pet, Observe, Dodge, and Attack.
+   - Design team (Zunk): Finalize QTE Balance Matrix (`DES-01`).
+2. **Transition into Sprint 3 (Shelter Atmosphere, 2-Phase Care Mini-Games & Release):**
+   - Implement Dynamic Wheel with Sweet Spots (`US-21` — 6 SP).
+   - Implement Tactile Care Mini-Games Subsystem (`US-22` — 8 SP).
+   - Implement Daily Summary Report Card & Night Rest (`US-23` — 5 SP).
 
 ---
 

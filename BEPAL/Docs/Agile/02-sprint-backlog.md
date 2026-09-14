@@ -20,9 +20,9 @@ project: BePal
 | Sprint | ระยะเวลา | เป้าหมายหลัก (Sprint Goal) | Velocity (SP) | สถานะ |
 | --- | --- | --- | --- | --- |
 | **Sprint 1** | 2026-09-01 — 2026-09-14 | **MVP Core Loop:** ระบบวงล้อ Care QTE, สัตว์โจมตี Dodge QTE, เลือด 3 หน่วย, และ Survival Log | **29 SP** | ✅ **Done** (29/29 SP) |
-| **Sprint 2** | 2026-09-15 — 2026-09-28 | **Deepening & Systems Polish:** วงล้อ Death Spiral QTE, เสียง SFX, แยก Domain Models, และ Unit Test | **45 SP** | 🔄 **Active** (32/45 SP Done, Tech 100%) |
+| **Sprint 2** | 2026-09-15 — 2026-09-28 | **Deepening & Systems Polish:** วงล้อ Death Spiral QTE, เสียง SFX, แยก Domain Models, และ Unit Test | **45 SP** | 🔄 **Active** (35/45 SP Done, Tech & Audio 100%) |
 | **Sprint 3** | 2026-09-29 — 2026-10-11 | **Shelter Atmosphere, 2-Phase Care Mini-Games & Final Release:** ห้อง 4 ทิศ, บทนำ, มินิเกม 4 แบบ, Sweet Spot, Daily Report และปล่อยเกมสมบูรณ์ก่อน 12 ต.ค. | **54 SP** | 🔲 **Planned / Final Sprint** (13/54 SP Done ล่วงหน้าใน PR #16) |
-| **Total** | **6 สัปดาห์ (เสร็จก่อน 12 ต.ค. 2026)** | **BePal Full Prototype & Game Release** | **128 SP** | **74/128 SP Completed (58%)** |
+| **Total** | **6 สัปดาห์ (เสร็จก่อน 12 ต.ค. 2026)** | **BePal Full Prototype & Game Release** | **128 SP** | **77/128 SP Completed (60%)** |
 
 ```mermaid
 gantt
@@ -34,6 +34,7 @@ gantt
     Death Spiral QTE & MonoGame.Extended :done, s2_1, 2026-09-15, 7d
     Domain Models & BePal.Tests        :done, s2_2, 2026-09-15, 10d
     Screen Hierarchy & IScreen (PR #15):done, s2_4, 2026-09-18, 6d
+    Audio Engine Integration (US-12)   :done, s2_5, 2026-09-19, 4d
     SFX Audio Staging & Balance Tuning :active, s2_3, 2026-09-20, 8d
     section Sprint 3 : Atmosphere, Mini-Games & Release (54 SP)
     Prologue, Doorstep & DialogueBox (PR #16):done, s3_1, 2026-09-29, 4d
@@ -62,7 +63,7 @@ gantt
 ---
 
 ## 3. Sprint 2: Deepening, Death Spiral QTE & Systems (กำลังดำเนินการ 🔄)
-**ระยะเวลา:** 2026-09-15 — 2026-09-28 | **Estimated Velocity:** 45 SP | **Status:** 🔄 In Progress (32 SP Done, Technical Enablers 100% Completed)
+**ระยะเวลา:** 2026-09-15 — 2026-09-28 | **Estimated Velocity:** 45 SP | **Status:** 🔄 In Progress (35 SP Done, Technical Enablers & Audio Engine 100% Completed)
 
 | ID          | User Story / Task                        | ผู้รับผิดชอบหลัก     | MoSCoW      | SP     | Status         | คำอธิบายความรับผิดชอบ                               |
 | ----------- | ---------------------------------------- | -------------------- | ----------- | ------ | -------------- | --------------------------------------------------- |
@@ -71,15 +72,15 @@ gantt
 | **US-09**   | Hazard Level & Harm Type System Design   | ซุง (Game Designer)  | Should Have | 3      | ✅ Done         | ซุงออกแบบสเกลความอันตราย โชว์ต่อขึ้น HUD            |
 | **US-10**   | Playtest Screenshot & Capture Pipeline   | โชว์ (Lead Prog)     | Should Have | 3      | ✅ Done         | โชว์สร้างคำสั่ง `--screenshot` (27 เฟรม) และปุ่ม `F12` |
 | **US-11**   | Sound Effects Production (8 SFX)         | ภูมิ (Pooh / Audio)  | Should Have | 4      | 🔄 In Progress | ภูมิจัดหาและตัดต่อเสียง 8 เสียงลง Staging           |
-| **US-12**   | Audio Engine Integration into MonoGame   | โชว์ (Lead Prog)     | Should Have | 3      | 📋 Ready       | โชว์เขียนระบบเล่นเสียง SFX เมื่อกดยืนยัน            |
+| **US-12**   | Audio Engine Integration into MonoGame   | โชว์ (Lead Prog)     | Should Have | 3      | ✅ Done         | โชว์เขียนระบบ `IAudioService` / `AudioManager` และ Procedural Fallback |
 | **ART-01**  | Death Spiral UI Scrap Badges (6 Badges)  | เดียร์ (2D Art Lead) | Should Have | 3      | 🔄 In Progress | เดียร์วาดป้าย FEED, PLAY, PET, OBSERVE, DODGE       |
 | **DES-01**  | QTE Balance Matrix & Timing Calculations | ซุง (Game Designer)  | Should Have | 3      | 🔄 In Progress | ซุงคำนวณขนาดมุม $60^\circ$ Dead Zone และแต้ม Favor  |
 | **QA-01**   | Lead QA Playtesting & Feel Feedback      | ภูมิ (Pooh / Design) | Should Have | 3      | 🔄 In Progress | ภูมิทดสอบฟีลลิ่งจังหวะกด Spacebar ส่งให้ซุง/โชว์    |
 | **TECH-01** | Pure C# Domain Models Extraction         | โชว์ (Lead Prog)     | Should Have | 3      | ✅ Done         | โชว์แยกคลาส Pure C# Domain Models ออกจาก `Game1.cs` |
-| **TECH-02** | Automated Unit Testing (`BePal.Tests`)   | โชว์ (Lead Prog)     | Should Have | 4      | ✅ Done         | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม State (45/45 tests ผ่าน) |
+| **TECH-02** | Automated Unit Testing (`BePal.Tests`)   | โชว์ (Lead Prog)     | Should Have | 4      | ✅ Done         | โชว์สร้างโปรเจกต์ xUnit และเขียนเทสต์ครอบคลุม State (51/51 tests ผ่าน) |
 | **TECH-03** | Modular Screen Hierarchy (`IScreen`)     | โชว์ (Lead Prog)     | Should Have | 5      | ✅ Done         | โชว์แยก Screen Classes ออกจาก `Game1.cs` เป็น `IScreen` (PR #15) |
 | **TECH-04** | Content Pipeline Warning Cleanups        | โชว์ (Lead Prog)     | Should Have | 2      | ✅ Done         | โชว์คลีนอัพการอ้างอิง DLL ใน `Content.mgcb` บิลด์ 0 warnings 0 errors |
-| **รวม**     | **Sprint 2 Velocity**                    | -                    | -           | **45** | -              | โชว์: 25 SP (22 SP Done), ซุง: 6 SP (3 SP Done), ภูมิ: 7 SP, เดียร์: 7 SP (4 SP Done) |
+| **รวม**     | **Sprint 2 Velocity**                    | -                    | -           | **45** | -              | โชว์: 25 SP (25 SP Done - 100%), ซุง: 6 SP (3 SP Done), ภูมิ: 7 SP, เดียร์: 7 SP (4 SP Done) |
 
 ---
 
@@ -112,11 +113,11 @@ gantt
 
 | สมาชิก | บทบาท (Role) | Sprint 1 (Done) | Sprint 2 (Active) | Sprint 3 (Planned) | รวมทั้งโปรเจกต์ (SP) | สถานะความคืบหน้าปัจจุบัน |
 | --- | --- | --- | --- | --- | --- | --- |
-| **วศิน (โชว์)** | **Lead Programmer** | 14 SP | 25 SP | 21 SP | **60 SP** | 45 SP Done (75%) |
+| **วศิน (โชว์)** | **Lead Programmer** | 14 SP | 25 SP | 21 SP | **60 SP** | 48 SP Done (80%) |
 | **ปีย์ตะวัน (ซุง)** | **Game Designer** | 15 SP | 6 SP | 7 SP | **28 SP** | 18 SP Done (64%) |
 | **ภูมิพัฒน์ (ภูมิ / Pooh)** | **Flex (Design & Audio)** | 0 SP | 7 SP | 14 SP | **21 SP** | 4 SP Done (19%) |
 | **ธัญญรัตน์ (เดียร์)** | **2D Art & UI Lead** | 0 SP | 7 SP | 12 SP | **19 SP** | 4 SP Done (21%) |
-| **รวม Story Points ต่อ Sprint** | - | **29 SP** | **45 SP** | **54 SP** | **128 SP** | **74 SP Done (58% Total)** |
+| **รวม Story Points ต่อ Sprint** | - | **29 SP** | **45 SP** | **54 SP** | **128 SP** | **77 SP Done (60% Total)** |
 
 ---
 

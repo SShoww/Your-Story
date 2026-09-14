@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.IO;
+using BePal.Audio;
 using BePal.Gameplay;
 using BePal.Screens;
 using Microsoft.Xna.Framework;
@@ -14,6 +15,7 @@ public class Game1 : Game
     private readonly Random _random = new();
     private SpriteBatch _batch = null!;
     private ScreenManager _screenManager = null!;
+    private AudioManager? _audioManager;
     private readonly string[] _args;
     private int _playtestFrame;
 
@@ -40,6 +42,8 @@ public class Game1 : Game
         Texture2D petHappy = Content.Load<Texture2D>("pet/spr_pet_happy");
         Texture2D petAngry = Content.Load<Texture2D>("pet/spr_pet_angry");
 
+        _audioManager = new AudioManager(Content);
+
         ScreenContext context = new(
             font,
             pixel,
@@ -48,7 +52,8 @@ public class Game1 : Game
             petHappy,
             petAngry,
             Exit,
-            SaveScreenshot);
+            SaveScreenshot,
+            _audioManager);
 
         _screenManager = new ScreenManager(context);
         bool auto = Array.Exists(_args, a => a is "--screenshot" or "--playtest") ||
@@ -56,8 +61,15 @@ public class Game1 : Game
         if (auto)
         {
             _screenManager.TransitionsEnabled = false;
+            _audioManager.IsMuted = true;
         }
         _screenManager.ShowMenu();
+    }
+
+    protected override void UnloadContent()
+    {
+        _audioManager?.Dispose();
+        base.UnloadContent();
     }
 
     protected override void Update(GameTime gameTime)
@@ -107,8 +119,7 @@ public class Game1 : Game
         if (_playtestFrame == 3)
         {
             SaveScreenshot("screenshots/01_menu.png");
-            _screenManager.Context.Run = new PrototypeRun();
-            _screenManager.ShowHome("Day 1 begins. Click the pet to begin.");
+            _screenManager.ShowHome();
         }
         else if (_playtestFrame == 6)
         {
@@ -117,32 +128,27 @@ public class Game1 : Game
         }
         else if (_playtestFrame == 8)
         {
-            _screenManager.Context.ClearTags();
+            _screenManager.Context.Run.RecordCareSuccess();
             _screenManager.Context.SpawnTag("PERFECT! +1 SATISFACTION", new Color(16, 48, 28), new Color(110, 245, 150));
-            _screenManager.Context.SetPetReaction(_screenManager.Context.PetHappy, 0.75f);
         }
         else if (_playtestFrame == 9)
         {
             SaveScreenshot("screenshots/03_care_qte.png");
-            _screenManager.Context.ClearTags();
-            _screenManager.SetScreen(new DodgeQteScreen(_screenManager.Context));
-            _screenManager.Context.SetPetReaction(_screenManager.Context.PetAngry, 0.75f);
-            _screenManager.Context.Message = "Attack! Press Space in the gold Dodge Zone.";
+            _screenManager.BeginDodge();
         }
         else if (_playtestFrame == 11)
         {
-            _screenManager.Context.SpawnTag("DODGED!", new Color(50, 42, 12), new Color(255, 220, 80));
+            SaveScreenshot("screenshots/04_dodge_qte.png");
         }
         else if (_playtestFrame == 12)
         {
-            SaveScreenshot("screenshots/04_dodge_qte.png");
-            _screenManager.Context.ClearTags();
             _screenManager.ShowHome();
             _screenManager.ShowSurvivalLog();
         }
         else if (_playtestFrame == 15)
         {
             SaveScreenshot("screenshots/05_survival_log.png");
+            _screenManager.PopScreen();
             _screenManager.ShowSummary();
         }
         else if (_playtestFrame == 18)
