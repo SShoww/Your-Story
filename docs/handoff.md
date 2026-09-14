@@ -1,8 +1,8 @@
 # BePal — Session Handoff Document
 
-**Date:** 2026-09-13  
+**Date:** 2026-09-14  
 **Target Branch:** `Develop`  
-**Current Status:** Sprint 2 (`TECH-03`), Sprint 3 (`TECH-05`, `US-15`, `US-20`), and Day Cycle Logic Bugfix (`PR #17`) fully implemented, verified with 32 passing unit tests (32/32), validated with automated 22-frame screenshot harness (01–08 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
+**Current Status:** Sprint 2 (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`), Sprint 3 (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 45 passing unit tests (45/45), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards.
 
 ---
 
@@ -24,9 +24,29 @@
   - Added bounds-safe `Math.Clamp` on `PrototypeRun.ActivePet` preventing Day 6+ `IndexOutOfRangeException`.
   - Updated `sprint-plan-02.md` with completed Sprint 2 tasks.
   - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
+- **PR #18 (Merged into `Develop`):** `feat(screens): implement diagonal stripe wipe scene transitions`
+  - Created feature branch `feature/stripe-wipe-transition` off `Develop`.
+  - Implemented `StripeWipeTransition.cs` supporting geometric two-phase Venetian-blinds diagonal wipe (bottom-leading on entry, top-leading on exit) with smoothstep easing.
+  - Integrated into `ScreenManager.SetScreen()` across all screens, blocking input during active transitions.
+  - Added 12 comprehensive unit tests in `StripeWipeTransitionTests.cs`.
+  - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
+- **PR #19 (Merged into `Develop`):** `feat(screens): make transition duration configurable with 0.85s default`
+  - Created feature branch `feature/configurable-transition-duration` off `Develop`.
+  - Exposed `public float TransitionDuration { get; set; } = 0.85f;` on `ScreenManager`.
+  - Added optional duration parameter to `SetScreen(screen, useTransition, duration)`.
+  - Increased default transition duration from 0.45s to 0.85s for cinematic, deliberate presentation.
+  - Merged into `Develop` with non-fast-forward merge commit (`--no-ff`) and deleted feature branch.
 
 ### 1.2. Architecture & Subsystems Implemented
-1. **Unified `DialogueBox` Subsystem (`TECH-05` / `BePal.UI.DialogueBox`):**
+1. **Scene Transition Subsystem (`StripeWipeTransition` / `ScreenManager`):**
+   - Geometric diagonal Venetian-blinds wipe sweeping horizontal white slats across dark backing.
+   - **Phase 1 (Sweep In / Cover):** Slats enter from bottom-left to top-right, achieving 100% occlusion at midpoint.
+   - **Midpoint Screen Swap:** Outgoing screen is swapped for incoming screen at 100% occlusion.
+   - **Phase 2 (Sweep Out / Reveal):** Slats clear from top-left to bottom-right with smoothstep easing, revealing the new screen.
+   - Configurable `TransitionDuration` (0.85s default) and input gating to prevent accidental double-clicks.
+   - Unit-tested headlessly across 13 test cases in `BePal.Tests/Screens/StripeWipeTransitionTests.cs`.
+
+2. **Unified `DialogueBox` Subsystem (`TECH-05` / `BePal.UI.DialogueBox`):**
    - Typewriter character reveal animation with configurable characters-per-second speed (`TypewriterSpeed = 38f`).
    - Spacebar and mouse click instant fast-reveal / skip (`SkipTypewriter()`).
    - Dynamic line wrapping with font measurement abstraction (`WrapText(string, float, Func<string, float>)`) enabling headless testability.
@@ -34,22 +54,22 @@
    - Choice prompt mode with `[YES]` and `[NO]` buttons and keyboard hotkeys (`Y` / `N`).
    - Pure domain queue logic tested headlessly in `BePal.Tests/UI/DialogueBoxTests.cs` (8 unit tests).
 
-2. **4-Wall Panoramic Shelter Navigation Engine (`US-20` / `BePal.Screens.PanoramicRoomScreen`):**
+3. **4-Wall Panoramic Shelter Navigation Engine (`US-20` / `BePal.Screens.PanoramicRoomScreen`):**
    - Samsara Room-style 360-degree rotation across 4 connected shelter walls with `[◄]` and `[►]` buttons and `A`/`D` or Arrow keys.
-   - **Wall 1 (Pet Zone):** Active pet habitat frame, real-time ambient behavior cue banner (e.g. grumbling belly for Mossling), pet click confirmation dialogue prompt (`Care for [Name]? [YES]/[NO]`), and care initiation.
-   - **Wall 2 (Prep & Pantry):** Inspectable Pantry Shelves (dietary clues and root feed), Water Basin (clean spring water), and Disposal Bin (rejected synthetic kibble).
-   - **Wall 3 (Study Desk):** Inspectable Survival Log desk (opens `SurvivalLogScreen`) and Notice Board (confidential facility daycare protocol memorandum).
-   - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door (locked from within), Porch Window (foggy perimeter), Shift Clock & Calendar (day and session monitor), and prominent `[End Day Shift]` button (safely enabled once `Run.CanEndDay` is fulfilled).
+   - **Wall 1 (Pet Zone):** Active pet habitat frame, real-time ambient behavior cue banner, pet click confirmation dialogue prompt, and care initiation.
+   - **Wall 2 (Prep & Pantry):** Inspectable Pantry Shelves, Water Basin, and Disposal Bin.
+   - **Wall 3 (Study Desk):** Inspectable Survival Log desk and Notice Board.
+   - **Wall 4 (Front Door & Shift Control):** Heavy Oak Door, Porch Window, Shift Clock & Calendar, and prominent `[End Day Shift]` button.
    - Domain navigation model tested headlessly in `BePal.Tests/Screens/PanoramicRoomTests.cs` (5 unit tests).
 
-3. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
+4. **Narrative & Morning Delivery Sequences (`US-15` / `PrologueScreen` & `DoorstepScreen`):**
    - `NarrativeScripts.cs` providing narrative text in English first.
    - **Day 1 Prologue (`PrologueScreen`):** Daycare introduction $\rightarrow$ door chime $\rightarrow$ wooden delivery crate with yellow hazard tape $\rightarrow$ unboxing Mossling. Includes "Skip Intro >>" button.
-   - **Days 2–5 Morning Delivery (`DoorstepScreen`):** Porch arrival scene before entering shelter with dynamic crate manifests for Nibbleclaw (Hazard Lv 2, claws) and Blinkbun (Hazard Lv 3, ozone/teleportation). Includes "Enter Shelter >>" button.
+   - **Days 2–5 Morning Delivery (`DoorstepScreen`):** Porch arrival scene before entering shelter with dynamic crate manifests for Nibbleclaw and Blinkbun. Includes "Enter Shelter >>" button.
    - Tested in `BePal.Tests/Screens/NarrativeScreenTests.cs` (4 unit tests).
 
-4. **Automated Visual Regression QA Pipeline:**
-   - Headless `--screenshot` runner extended to 22 frames in `Game1.cs`.
+5. **Automated Visual Regression QA Pipeline:**
+   - Headless `--screenshot` runner extended to 27 frames in `Game1.cs`.
    - Generates canonical visual regression captures in `screenshots/`:
      - `01_menu.png`: Main Menu view
      - `02_home.png`: 4-Wall Shelter Wall 1 (Pet Zone) with behavior cues and navigation arrows
@@ -59,6 +79,7 @@
      - `06_summary.png`: Run Summary report
      - `07_prologue.png`: Day 1 Prologue Crate unboxing view
      - `08_doorstep.png`: Morning doorstep courier crate arrival view
+     - `09_transition.png`: Diagonal Venetian-blinds scene transition capture mid-sweep
 
 ---
 
@@ -67,11 +88,12 @@
 - **Branch:** `Develop` (Up to date with `origin/Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes 32/32 tests (`dotnet test CoPoject/CoPoject.slnx`):
-  - `PrototypeRunTests.cs`: 11 tests (including Day 5 completion, full 5-day cycle simulation, and clamped ActivePet)
+- **Test Suite:** `CoPoject/BePal.Tests` passes 45/45 tests (`dotnet test CoPoject/CoPoject.slnx`):
+  - `PrototypeRunTests.cs`: 11 tests
   - `DialogueBoxTests.cs`: 8 tests
   - `PanoramicRoomTests.cs`: 5 tests
   - `NarrativeScreenTests.cs`: 4 tests
+  - `StripeWipeTransitionTests.cs`: 13 tests
   - `HarmType`, `PetCatalog`, `ActionPattern` domain tests: 4 tests
 - **Visual Regression:** `dotnet run --project CoPoject/BePal -- --screenshot` completes cleanly in ~4s.
 
@@ -87,21 +109,17 @@ The next session will focus on **Sprint 4 / Milestone 2 (2-Phase Care Mini-Games
    - Implement species-specific needle dynamics (Nibbleclaw acceleration, Blinkbun erratic teleportation).
 2. **Implement Tactile Care Mini-Games Subsystem (`US-22`):**
    - Create `ICareMiniGame` interface under `CoPoject/BePal/Screens/MiniGames/`.
-   - Implement 4 tactile micro-games (2–3 seconds duration):
-     - `FeedMiniGame`: Hold-and-release spacebar to pour feed into a target line.
-     - `PetMiniGame`: Gentle mouse stroke interaction within speed limits.
-     - `PlayMiniGame`: Reflex catch timing when pet pounces.
-     - `ObserveMiniGame`: Focus lens positioning over anomalous spots.
+   - Implement 4 tactile micro-games (2–3 seconds duration): Feed, Pet, Play, Observe.
    - Enforce Consequence Rules: Success = +1/+2 Satisfaction; Failure = +0 Satisfaction (no HP penalty).
 3. **Implement Daily Summary Report Card & Night Rest (`US-23`):**
    - Replace placeholder summary with a Papers, Please-style daily shift report card.
-   - Fade to black night rest transition recovering HP to 3 before triggering `DoorstepScreen`.
+   - Night rest transition recovering HP to 3 before triggering `DoorstepScreen`.
 
 ---
 
 ## 4. Gitflow Reminders for Next Agent
 
-- **Always branch off `Develop`** using `feature/<topic>` (e.g. `feature/two-phase-care-minigames`).
+- **Always branch off `Develop`** using `feature/<topic>`.
 - **Do not commit directly to `main` or `Develop`**.
 - Merge back into `Develop` via Pull Request with `--no-ff`.
 - Maintain 0 build warnings, 100% pass rate on `dotnet test`, and green screenshot harness before creating PR.
