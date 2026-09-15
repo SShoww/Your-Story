@@ -46,6 +46,12 @@
 ### Story 6 — Survival Log
 - [x] สร้างหน้าจอ Survival Log Overlay แสดงสถานะและ Action Pattern เมื่อครบ 3 รอบ [โชว์ & ภูมิ] [4] [status:: done]
 
+### Tasks จาก Designer/UI (ภูมิพัฒน์)
+- [ ] Main Menu UI Layout [ภูมิพัฒน์] [3] [status:: todo]
+- [ ] Draw and cut out assets [ภูมิพัฒน์] [3] [status:: todo]
+- [ ] Dialogue Layout Text box & Assets [ภูมิพัฒน์] [7] [status:: todo]
+- [ ] QTE UI Layout & Assets [ภูมิพัฒน์] [7] [status:: todo]
+
 ---
 
 ## Sprint Review & Daily Notes
@@ -56,6 +62,11 @@
   - แยกโค้ดจาก `Game1.cs` ให้เป็น Modular Screens และสร้างโปรเจกต์ Unit Test
   - เพิ่มความหลากหลายของงานภาพสัตว์เลี้ยงแต่ละตัว (Mossling, Nibbleclaw, Blinkbun)
   - นำเข้าเสียงประกอบ SFX และ BGM สไตล์ Cozy
+
+### Standup Notes (ภูมิพัฒน์ - 2026-09-08)
+- **เมื่อวาน:** หา Reference สไตล์ภาพของเกม
+- **วันนี้:** ทำ Sprint-Backlog
+- **Blocked:** รอโปรแกรมเมอร์คอนเฟิร์มขนาดความละเอียดหน้าจอ (Screen Resolution) และขนาด Tile Size
 
 ---
 
