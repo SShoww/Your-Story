@@ -178,6 +178,150 @@ public class CareQteScreenTests
     }
 
     [Fact]
+    public void Teleport_TelegraphBeginsHalfSecondPrior_WithDestinationCalculated()
+    {
+        var run = new PrototypeRun();
+        run.EndDay();
+        run.EndDay();
+        var context = ScreenContext.CreateTestContext(run);
+        var screen = new CareQteScreen(context);
+
+        // Step up to just before telegraph window
+        float beforeTelegraph = screen.NextTeleportTime - CareQteScreen.TelegraphDuration - 0.05f;
+        if (beforeTelegraph > 0f)
+        {
+            screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(beforeTelegraph)));
+            Assert.False(screen.IsTelegraphing);
+        }
+
+        // Step into telegraph window
+        screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.10f)));
+
+        // Assert: IsTelegraphing is true and destination is locked
+        Assert.True(screen.IsTelegraphing);
+        Assert.True(screen.TeleportTargetAngle >= 0f && screen.TeleportTargetAngle < ShrinkingQteZone.Tau);
+    }
+
+    [Fact]
+    public void Teleport_LandingPositionIsUpstreamOfActiveSlot_WithSufficientRunway()
+    {
+        var run = new PrototypeRun();
+        run.EndDay();
+        run.EndDay();
+        var context = ScreenContext.CreateTestContext(run);
+        var screen = new CareQteScreen(context);
+
+        // Step until first teleport occurs
+        while (screen.TeleportCount == 0 && screen.QteTime < 2.5f)
+        {
+            screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.02f)));
+        }
+
+        Assert.Equal(1, screen.TeleportCount);
+        float needleAngle = screen.Angle;
+
+        // Landing angle should be upstream of an active slot (diff = slotCenter - needle > 0)
+        bool foundUpstreamSlot = false;
+        foreach (var slot in screen.Zone.Slots)
+        {
+            if (slot.CurrentSpan > 0f)
+            {
+                float diff = ShrinkingQteZone.Wrap(slot.CenterAngle, needleAngle);
+                if (diff >= 0.5f && diff <= 2.2f)
+                {
+                    foundUpstreamSlot = true;
+                    break;
+                }
+            }
+        }
+        Assert.True(foundUpstreamSlot, "Expected landing angle to be upstream of an active slot with clear runway");
+    }
+
+    [Fact]
+    public void Teleport_AntiCheapGuard_DelaysWarpWhenInsidePreferredSlot()
+    {
+        var run = new PrototypeRun();
+        run.EndDay();
+        run.EndDay();
+        var context = ScreenContext.CreateTestContext(run);
+        var screen = new CareQteScreen(context);
+
+        // Step up to just before telegraph window
+        float justBeforeTelegraph = screen.NextTeleportTime - CareQteScreen.TelegraphDuration - 0.05f;
+        if (justBeforeTelegraph > 0f)
+        {
+            screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(justBeforeTelegraph)));
+        }
+
+        // Position needle directly inside preferred slot
+        var pet = PetCatalog.Get(run.ActivePet);
+        var prefSlot = screen.Zone.Slots.First(s => s.Action == pet.Pattern.PreferredAction);
+        prefSlot.AppearTime = 0f;
+        screen.Zone.NeedleAngle = prefSlot.CenterAngle;
+        float originalTeleportTime = screen.NextTeleportTime;
+
+        // Step 0.10s into telegraph window
+        screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.10f)));
+
+        // Anti-cheap guard should have delayed _nextTeleportTime
+        Assert.True(screen.NextTeleportTime >= originalTeleportTime + 0.7f,
+            $"Expected teleport time to be delayed beyond {originalTeleportTime + 0.7f}, was {screen.NextTeleportTime}");
+    }
+
+    [Fact]
+    public void Teleport_PostWarpGracePeriod_AbsorbsDeadZonePress()
+    {
+        var run = new PrototypeRun();
+        run.EndDay();
+        run.EndDay();
+        var context = ScreenContext.CreateTestContext(run);
+        var screen = new CareQteScreen(context);
+
+        // Step until teleport occurs
+        while (screen.TeleportCount == 0 && screen.QteTime < 2.5f)
+        {
+            screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.02f)));
+        }
+
+        Assert.Equal(1, screen.TeleportCount);
+        Assert.True(screen.TeleportGraceTimer > 0f);
+
+        // Ensure needle is in dead zone (null hovered action)
+        if (screen.GetHoveredAction() != null)
+        {
+            screen.Zone.NeedleAngle = (screen.Zone.NeedleAngle + MathF.PI * 0.5f) % ShrinkingQteZone.Tau;
+        }
+
+        int hpBefore = run.Health;
+        screen.ResolveCare();
+
+        // Grace period absorbed the hit without taking damage
+        Assert.Equal(hpBefore, run.Health);
+        Assert.Contains(context.Tags, t => t.Text == "WARP DEFLECTED!");
+    }
+
+    [Fact]
+    public void Teleport_MaxTwoWarpsPerCycle()
+    {
+        var run = new PrototypeRun();
+        run.EndDay();
+        run.EndDay();
+        var context = ScreenContext.CreateTestContext(run);
+        var screen = new CareQteScreen(context);
+
+        // Step through 5.0s (less than zone expiration 5.5s)
+        float total = 0f;
+        while (total < 5.0f && !screen.Zone.IsExpired)
+        {
+            screen.Update(new GameTime(TimeSpan.FromSeconds(total), TimeSpan.FromSeconds(0.05f)));
+            total += 0.05f;
+        }
+
+        Assert.True(screen.TeleportCount <= CareQteScreen.MaxTeleportsPerCycle);
+        Assert.Equal(2, screen.TeleportCount);
+    }
+
+    [Fact]
     public void DodgeFailure_NonFatal_ReturnsToCareQteScreen()
     {
         // Arrange
