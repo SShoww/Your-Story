@@ -84,7 +84,8 @@ public sealed class CareQteScreen : IScreen
 
         if (_zone.IsExpired)
         {
-            HandleMiss("The timing window expired! Lost 1 Health.");
+            ResetQte();
+            _context.Message = "The timing window expired. A new opportunity appeared.";
             return;
         }
 

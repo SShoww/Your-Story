@@ -11,7 +11,7 @@ namespace BePal.Tests.Screens;
 public class CareQteScreenTests
 {
     [Fact]
-    public void Timeout_InflictsOneDamage_AndSpawnsUnifiedMissTag_AndStaysInQte()
+    public void Timeout_DoesNotInflictDamage_AndDoesNotSpawnMissTag_AndResetsInQte()
     {
         // Arrange
         var run = new PrototypeRun();
@@ -25,10 +25,11 @@ public class CareQteScreenTests
         // Act: Advance time past multi-slot zone duration (5.5s)
         screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(6.0f)));
 
-        // Assert: 1 damage taken, unified miss tag spawned, stayed on CareQteScreen
-        Assert.Equal(2, run.Health);
-        Assert.Contains(context.Tags, t => t.Text == "MISSED! -1 HP");
+        // Assert: No damage taken, no miss tag spawned, stayed on CareQteScreen, zone reset
+        Assert.Equal(3, run.Health);
+        Assert.DoesNotContain(context.Tags, t => t.Text.Contains("MISSED"));
         Assert.IsType<CareQteScreen>(manager.CurrentScreen);
+        Assert.False(screen.Zone.IsExpired);
     }
 
     [Fact]
@@ -41,8 +42,8 @@ public class CareQteScreenTests
         var screen = new CareQteScreen(context);
         manager.SetScreen(screen, useTransition: false);
 
-        // Dead zone angle (e.g. PI/4 is midway between 0 and PI/2)
-        screen.Zone.NeedleAngle = MathF.PI / 4f;
+        // Dead zone angle (0.9*PI is midway between 0.7*PI and 1.1*PI, guaranteeing empty space)
+        screen.Zone.NeedleAngle = 0.9f * MathF.PI;
         Assert.Null(screen.Zone.GetHoveredSlot());
 
         // Act
@@ -101,7 +102,7 @@ public class CareQteScreenTests
         manager.SetScreen(screen, useTransition: false);
 
         // Act: Dead zone hit reduces HP from 1 to 0
-        screen.Zone.NeedleAngle = MathF.PI / 4f;
+        screen.Zone.NeedleAngle = 0.9f * MathF.PI;
         screen.ResolveCare();
 
         // Assert: Forced retreat triggered
