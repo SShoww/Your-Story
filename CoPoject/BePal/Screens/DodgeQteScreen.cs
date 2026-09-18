@@ -44,7 +44,16 @@ public sealed class DodgeQteScreen : IScreen
             _context.TriggerShake(0.35f, 13f);
             _context.SetPetReaction(_context.PetAngry, 0.75f);
             _context.SpawnTag("DODGE TIMEOUT! -1 HP", new Color(65, 10, 15), new Color(255, 70, 70));
-            _context.Manager.Fail("Failed to dodge attack in time! Lost 1 Health.");
+            bool forcedRetreat = _context.Run.TakeDamage();
+            if (forcedRetreat)
+            {
+                _context.Manager.HandleForcedRetreat();
+            }
+            else
+            {
+                _context.Message = "Failed to dodge attack in time! Lost 1 Health.";
+                _context.Manager.SetScreen(new CareQteScreen(_context), useTransition: false);
+            }
             return;
         }
 
@@ -73,7 +82,16 @@ public sealed class DodgeQteScreen : IScreen
             _context.TriggerShake(0.35f, 13f);
             _context.SetPetReaction(_context.PetAngry, 0.75f);
             _context.SpawnTag("HIT BY ATTACK! -1 HP", new Color(65, 10, 15), new Color(255, 70, 70));
-            _context.Manager.Fail("Failed to dodge attack! Lost 1 Health.");
+            bool forcedRetreat = _context.Run.TakeDamage();
+            if (forcedRetreat)
+            {
+                _context.Manager.HandleForcedRetreat();
+            }
+            else
+            {
+                _context.Message = "Failed to dodge attack! Lost 1 Health.";
+                _context.Manager.SetScreen(new CareQteScreen(_context), useTransition: false);
+            }
         }
     }
 
@@ -84,7 +102,10 @@ public sealed class DodgeQteScreen : IScreen
 
         // 1. Central Creature Display with Red Danger Alert
         spriteBatch.FillRectangle(new RectangleF(c.X - 110, c.Y - 145, 220, 290), new Color(14, 16, 24, 210));
-        spriteBatch.Draw(_context.PetImage, new Rectangle((int)c.X - 90, (int)c.Y - 125, 180, 250), Color.White);
+        if (_context.PetImage != null)
+        {
+            spriteBatch.Draw(_context.PetImage, new Rectangle((int)c.X - 90, (int)c.Y - 125, 180, 250), Color.White);
+        }
         spriteBatch.DrawRectangle(new RectangleF(c.X - 95, c.Y - 130, 190, 260), new Color(255, 65, 75), 3f);
 
         RectangleF alertRect = new(c.X - 80, c.Y - 26, 160, 48);

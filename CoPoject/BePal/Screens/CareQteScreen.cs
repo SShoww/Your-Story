@@ -37,12 +37,18 @@ public sealed class CareQteScreen : IScreen
     private readonly ShrinkingQteZone _zone;
 
     private float _qteTime;
-    private float _teleportAt;
-    private bool _teleported;
+    private float _nextTeleportTime;
+    private float _teleportFxTimer;
+    private float _lastTeleportAngle;
+    private int _teleportCount;
 
     public float Angle => _zone.NeedleAngle;
     public ShrinkingQteZone Zone => _zone;
-
+    public int TeleportCount => _teleportCount;
+    public float NextTeleportTime => _nextTeleportTime;
+    public float LastTeleportAngle => _lastTeleportAngle;
+    public float TeleportFxTimer => _teleportFxTimer;
+    public float QteTime => _qteTime;
     public CareQteScreen(ScreenContext context)
     {
         _context = context;
@@ -54,8 +60,9 @@ public sealed class CareQteScreen : IScreen
     {
         _zone.SpawnSlots(AllCareActions);
         _qteTime = 0f;
-        _teleported = false;
-        _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
+        _teleportFxTimer = 0f;
+        _teleportCount = 0;
+        _nextTeleportTime = 0.9f + (float)_random.NextDouble() * 0.5f;
     }
 
     public void Update(GameTime gameTime)
@@ -65,25 +72,19 @@ public sealed class CareQteScreen : IScreen
         _qteTime += dt;
 
         PetDefinition pet = PetCatalog.Get(_context.Run.ActivePet);
-        if (pet.Pattern.HasTeleportingMarker && !_teleported && _qteTime >= _teleportAt)
+        if (pet.Pattern.HasTeleportingMarker)
         {
-            _zone.NeedleAngle = (float)_random.NextDouble() * ShrinkingQteZone.Tau;
-            _teleported = true;
-            _context.Audio.PlayTeleport();
-            _context.TriggerShake(0.18f, 5f);
-            _context.SpawnTag("MARKER TELEPORTED!", new Color(45, 25, 55), new Color(230, 160, 255));
-            _context.Message = "The marker teleported!";
+            _teleportFxTimer = MathF.Max(0f, _teleportFxTimer - dt);
+
+            if (_qteTime >= _nextTeleportTime && _teleportCount < 3 && !_zone.IsExpired)
+            {
+                TriggerTeleport();
+            }
         }
 
         if (_zone.IsExpired)
         {
-            _context.Audio.PlayFail();
-            _context.SpawnTag("MISSED! TRY AGAIN", new Color(45, 35, 20), new Color(255, 200, 100));
-            _context.Message = "The timing window expired! A new opportunity appeared.";
-            _zone.SpawnSlots(AllCareActions);
-            _qteTime = 0f;
-            _teleported = false;
-            _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
+            HandleMiss("The timing window expired! Lost 1 Health.");
             return;
         }
 
@@ -91,6 +92,67 @@ public sealed class CareQteScreen : IScreen
         {
             _context.Audio.PlayConfirm();
             ResolveCare();
+        }
+    }
+
+    private void TriggerTeleport()
+    {
+        _lastTeleportAngle = _zone.NeedleAngle;
+        _teleportFxTimer = 0.35f;
+        _teleportCount++;
+
+        float minOffset = MathF.PI * 0.5f;
+        float maxOffset = MathF.PI * 1.15f;
+        float offset = minOffset + (float)_random.NextDouble() * (maxOffset - minOffset);
+        if (_random.Next(2) == 0) offset = -offset;
+
+        _zone.NeedleAngle = (_zone.NeedleAngle + offset) % ShrinkingQteZone.Tau;
+        if (_zone.NeedleAngle < 0f) _zone.NeedleAngle += ShrinkingQteZone.Tau;
+
+        _context.Audio.PlayTeleport();
+        _context.TriggerShake(0.20f, 6f);
+        _context.SetPetReaction(_context.PetAngry, 0.45f);
+        _context.SpawnTag("WARP!", new Color(45, 18, 55), new Color(230, 160, 255));
+        _context.Message = "Blinkbun warped the wheel marker!";
+        _nextTeleportTime = _qteTime + 1.4f + (float)_random.NextDouble() * 0.5f;
+    }
+
+    private void HandleMiss(string message)
+    {
+        _context.Audio.PlayFail();
+        _context.TriggerShake(0.24f, 9f);
+        _context.SetPetReaction(_context.PetAngry, 0.65f);
+        _context.SpawnTag("MISSED! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
+
+        bool forcedRetreat = _context.Run.TakeDamage();
+        if (forcedRetreat)
+        {
+            _context.Manager.HandleForcedRetreat();
+        }
+        else
+        {
+            _context.Message = message;
+            ResetQte();
+        }
+    }
+
+    private void HandleRejection(CareAction action)
+    {
+        _context.Audio.PlayFail();
+        _context.TriggerShake(0.24f, 9f);
+        _context.SetPetReaction(_context.PetAngry, 0.65f);
+        string actionName = action.ToString().ToUpperInvariant();
+        _context.SpawnTag($"REJECTED: {actionName}! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
+
+        bool forcedRetreat = _context.Run.TakeDamage();
+        if (forcedRetreat)
+        {
+            _context.Manager.HandleForcedRetreat();
+        }
+        else
+        {
+            _context.Message = $"Disliked {action}! Lost 1 Health.";
+            ResetQte();
         }
     }
 
@@ -106,11 +168,7 @@ public sealed class CareQteScreen : IScreen
 
         if (hovered == null)
         {
-            _context.Audio.PlayFail();
-            _context.TriggerShake(0.24f, 9f);
-            _context.SetPetReaction(_context.PetAngry, 0.65f);
-            _context.SpawnTag("MISSED! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
-            _context.Manager.Fail("Hit the dead zone! Lost 1 Health.");
+            HandleMiss("Hit the dead zone! Lost 1 Health.");
             return;
         }
 
@@ -136,21 +194,13 @@ public sealed class CareQteScreen : IScreen
             else
             {
                 _context.Audio.PlaySuccess();
-                _zone.SpawnSlots(AllCareActions);
-                _qteTime = 0f;
-                _teleported = false;
-                _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
+                ResetQte();
                 _context.Message = "Correct action! Keep going.";
             }
         }
         else
         {
-            _context.Audio.PlayFail();
-            _context.TriggerShake(0.24f, 9f);
-            _context.SetPetReaction(_context.PetAngry, 0.65f);
-            string actionName = hovered.Action?.ToString().ToUpperInvariant() ?? "UNKNOWN";
-            _context.SpawnTag($"REJECTED: {actionName}! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
-            _context.Manager.Fail($"Disliked {hovered.Action}! Lost 1 Health.");
+            HandleRejection(hovered.Action!.Value);
         }
     }
 
@@ -161,7 +211,10 @@ public sealed class CareQteScreen : IScreen
 
         // 1. Central Creature Display with Vignette Backdrop
         spriteBatch.FillRectangle(new RectangleF(c.X - 110, c.Y - 145, 220, 290), new Color(14, 16, 24, 210));
-        spriteBatch.Draw(_context.PetImage, new Rectangle((int)c.X - 90, (int)c.Y - 125, 180, 250), Color.White);
+        if (_context.PetImage != null)
+        {
+            spriteBatch.Draw(_context.PetImage, new Rectangle((int)c.X - 90, (int)c.Y - 125, 180, 250), Color.White);
+        }
         spriteBatch.DrawRectangle(new RectangleF(c.X - 95, c.Y - 130, 190, 260), new Color(42, 50, 72), 2f);
 
         // 2. Circular Ring Track (Death Spiral style)
@@ -199,12 +252,42 @@ public sealed class CareQteScreen : IScreen
             _context.DrawScrapBadge(spriteBatch, badgePos, desc.Action.ToString().ToUpperInvariant(), desc.Need, arcCol, Color.White, isHovered);
         }
 
-        // 4. Rotating Needle Marker
+        PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
+
+        // Ghost Trail Afterimage
+        if (_teleportFxTimer > 0f)
+        {
+            float alpha = Math.Clamp(_teleportFxTimer / 0.35f, 0f, 1f);
+            Vector2 ghostInner = c + Dir(_lastTeleportAngle) * (trackRadius - 22f);
+            Vector2 ghostOuter = c + Dir(_lastTeleportAngle) * (trackRadius + 24f);
+            spriteBatch.DrawLine(ghostInner, ghostOuter, new Color(190, 80, 255) * alpha, 6f);
+            spriteBatch.DrawCircle(ghostOuter, 3f, 16, new Color(230, 160, 255) * alpha, 2f);
+
+            Vector2 warpFrom = c + Dir(_lastTeleportAngle) * trackRadius;
+            Vector2 warpTo = c + Dir(_zone.NeedleAngle) * trackRadius;
+            spriteBatch.DrawLine(warpFrom, warpTo, new Color(220, 150, 255) * (alpha * 0.5f), 2f);
+        }
+
+        // 4. Rotating Needle Marker (with telegraph pulse)
+        bool isTelegraphing = activePet.Pattern.HasTeleportingMarker &&
+                              _teleportCount < 3 &&
+                              _nextTeleportTime - _qteTime <= 0.25f &&
+                              _nextTeleportTime > _qteTime;
+
+        Color needleColor = Color.White;
+        Color pipColor = Color.Gold;
+
+        if (isTelegraphing)
+        {
+            float pulse = (MathF.Sin(_qteTime * 25f) + 1f) * 0.5f;
+            needleColor = Color.Lerp(Color.White, new Color(230, 120, 255), pulse);
+            pipColor = new Color(255, 110, 230);
+        }
+
         Vector2 innerPt = c + Dir(_zone.NeedleAngle) * (trackRadius - 22f);
         Vector2 outerPt = c + Dir(_zone.NeedleAngle) * (trackRadius + 24f);
-        spriteBatch.DrawLine(innerPt, outerPt, Color.White, 8f);
-        spriteBatch.DrawCircle(outerPt, 4f, 16, Color.Gold, 2f);
-
+        spriteBatch.DrawLine(innerPt, outerPt, needleColor, 8f);
+        spriteBatch.DrawCircle(outerPt, 4f, 16, pipColor, 2f);
         // 5. HUD & Status
         _context.DrawHUD(spriteBatch);
 
