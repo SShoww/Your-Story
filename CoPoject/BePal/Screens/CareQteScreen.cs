@@ -9,7 +9,7 @@ using MonoGame.Extended;
 namespace BePal.Screens;
 
 /// <summary>
-/// Handles the radial Care QTE mini-game with a dynamic shrinking care zone, rotating Wheel Marker, and Spacebar confirmation.
+/// Handles the radial Care QTE mini-game with dynamic multi-slot shrinking care zones, rotating Wheel Marker, and Spacebar confirmation.
 /// </summary>
 public sealed class CareQteScreen : IScreen
 {
@@ -22,6 +22,14 @@ public sealed class CareQteScreen : IScreen
         new(CareAction.Play, "Recreation", new Color(65, 170, 245)),
         new(CareAction.Pet, "Intimacy", new Color(245, 115, 165)),
         new(CareAction.Observe, "Observation", new Color(180, 125, 245))
+    };
+
+    private static readonly CareAction[] AllCareActions =
+    {
+        CareAction.Feed,
+        CareAction.Play,
+        CareAction.Pet,
+        CareAction.Observe
     };
 
     private readonly ScreenContext _context;
@@ -38,13 +46,13 @@ public sealed class CareQteScreen : IScreen
     public CareQteScreen(ScreenContext context)
     {
         _context = context;
-        _zone = new ShrinkingQteZone(duration: 3.2f, random: _random);
+        _zone = new ShrinkingQteZone(initialSpan: MathF.PI / 4f, duration: 3.2f, random: _random);
         ResetQte();
     }
 
     public void ResetQte()
     {
-        _zone.SpawnNewZone();
+        _zone.SpawnSlots(AllCareActions);
         _qteTime = 0f;
         _teleported = false;
         _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
@@ -72,7 +80,7 @@ public sealed class CareQteScreen : IScreen
             _context.Audio.PlayFail();
             _context.SpawnTag("MISSED! TRY AGAIN", new Color(45, 35, 20), new Color(255, 200, 100));
             _context.Message = "The timing window expired! A new opportunity appeared.";
-            _zone.SpawnNewZone();
+            _zone.SpawnSlots(AllCareActions);
             _qteTime = 0f;
             _teleported = false;
             _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
@@ -88,17 +96,25 @@ public sealed class CareQteScreen : IScreen
 
     public CareAction? GetHoveredAction()
     {
-        if (_zone.IsNeedleInsideZone())
-        {
-            return PetCatalog.Get(_context.Run.ActivePet).Pattern.PreferredAction;
-        }
-        return null;
+        return _zone.GetHoveredSlot()?.Action;
     }
 
     public void ResolveCare()
     {
         PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
-        if (_zone.IsNeedleInsideZone())
+        QteSlot? hovered = _zone.GetHoveredSlot();
+
+        if (hovered == null)
+        {
+            _context.Audio.PlayFail();
+            _context.TriggerShake(0.24f, 9f);
+            _context.SetPetReaction(_context.PetAngry, 0.65f);
+            _context.SpawnTag("MISSED! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
+            _context.Manager.Fail("Hit the dead zone! Lost 1 Health.");
+            return;
+        }
+
+        if (hovered.Action == activePet.Pattern.PreferredAction)
         {
             _context.Run.RecordCareSuccess();
             _context.SetPetReaction(_context.PetHappy, 0.75f);
@@ -120,7 +136,7 @@ public sealed class CareQteScreen : IScreen
             else
             {
                 _context.Audio.PlaySuccess();
-                _zone.SpawnNewZone();
+                _zone.SpawnSlots(AllCareActions);
                 _qteTime = 0f;
                 _teleported = false;
                 _teleportAt = 0.45f + (float)_random.NextDouble() * 0.85f;
@@ -132,8 +148,9 @@ public sealed class CareQteScreen : IScreen
             _context.Audio.PlayFail();
             _context.TriggerShake(0.24f, 9f);
             _context.SetPetReaction(_context.PetAngry, 0.65f);
-            _context.SpawnTag("MISSED! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
-            _context.Manager.Fail("Hit the dead zone! Lost 1 Health.");
+            string actionName = hovered.Action?.ToString().ToUpperInvariant() ?? "UNKNOWN";
+            _context.SpawnTag($"REJECTED: {actionName}! -1 HP", new Color(45, 12, 18), new Color(255, 80, 80));
+            _context.Manager.Fail($"Disliked {hovered.Action}! Lost 1 Health.");
         }
     }
 
@@ -163,23 +180,28 @@ public sealed class CareQteScreen : IScreen
             spriteBatch.DrawLine(p1, p2, new Color(55, 65, 88), 2f);
         }
 
-        // 3. Dynamic Shrinking Care Zone Arc & Scrap Badge
-        PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
-        CareActionDescriptor desc = GetDescriptor(activePet.Pattern.PreferredAction);
-
-        float centerA = _zone.CenterAngle;
+        // 3. Dynamic Shrinking Care Zone Arcs & Scrap Badges for All Active Slots
+        QteSlot? hoveredSlot = _zone.GetHoveredSlot();
         float span = _zone.CurrentSpan;
-        bool isHovered = _zone.IsNeedleInsideZone();
-        Color baseCol = desc.Color;
-        Color arcCol = isHovered ? Color.Lerp(baseCol, Color.White, 0.45f) : baseCol;
 
-        if (span > 0f)
+        foreach (var slot in _zone.Slots)
         {
-            spriteBatch.DrawArc(c, trackRadius, centerA - span / 2f, span, 32, arcCol, isHovered ? 24f : 18f);
-        }
+            if (!slot.Action.HasValue) continue;
 
-        Vector2 badgePos = c + Dir(centerA) * (trackRadius + 58f);
-        _context.DrawScrapBadge(spriteBatch, badgePos, desc.Action.ToString().ToUpperInvariant(), desc.Need, arcCol, Color.White, isHovered);
+            CareActionDescriptor desc = GetDescriptor(slot.Action.Value);
+            float centerA = slot.CenterAngle;
+            bool isHovered = (hoveredSlot == slot);
+            Color baseCol = desc.Color;
+            Color arcCol = isHovered ? Color.Lerp(baseCol, Color.White, 0.45f) : baseCol;
+
+            if (span > 0f)
+            {
+                spriteBatch.DrawArc(c, trackRadius, centerA - span / 2f, span, 32, arcCol, isHovered ? 24f : 18f);
+            }
+
+            Vector2 badgePos = c + Dir(centerA) * (trackRadius + 58f);
+            _context.DrawScrapBadge(spriteBatch, badgePos, desc.Action.ToString().ToUpperInvariant(), desc.Need, arcCol, Color.White, isHovered);
+        }
 
         // 4. Rotating Needle Marker
         Vector2 innerPt = c + Dir(_zone.NeedleAngle) * (trackRadius - 22f);

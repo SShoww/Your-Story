@@ -1,7 +1,21 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 
 namespace BePal.Gameplay;
+
+public sealed class QteSlot
+{
+    public int PositionIndex { get; set; }
+    public CareAction? Action { get; set; }
+    public float CenterAngle => ShrinkingQteZone.PresetAngles[PositionIndex];
+
+    public QteSlot(int positionIndex, CareAction? action = null)
+    {
+        PositionIndex = positionIndex;
+        Action = action;
+    }
+}
 
 /// <summary>
 /// Domain model for dynamic shrinking radial QTE zones with continuous needle rotation and 5-position cycling.
@@ -27,11 +41,12 @@ public sealed class ShrinkingQteZone
 
     public float NeedleAngle { get; set; }
     public float NeedleSpeed { get; set; }
-    public int CurrentPositionIndex { get; private set; }
-    public float CenterAngle => PresetAngles[CurrentPositionIndex];
-    public float InitialSpan { get; private set; }
+    public List<QteSlot> Slots { get; } = new();
+    public int CurrentPositionIndex => Slots.Count > 0 ? Slots[0].PositionIndex : 0;
+    public float CenterAngle => Slots.Count > 0 ? Slots[0].CenterAngle : PresetAngles[0];
+    public float InitialSpan { get; set; }
     public float CurrentSpan { get; private set; }
-    public float Duration { get; private set; }
+    public float Duration { get; set; }
     public float ElapsedTime { get; private set; }
     public bool IsExpired => ElapsedTime >= Duration || CurrentSpan <= 0f;
 
@@ -46,7 +61,7 @@ public sealed class ShrinkingQteZone
         Duration = duration;
         _random = random ?? new Random();
         CurrentSpan = initialSpan;
-        CurrentPositionIndex = 0;
+        Slots.Add(new QteSlot(0));
     }
 
     public void Update(float dt)
@@ -58,29 +73,62 @@ public sealed class ShrinkingQteZone
         CurrentSpan = MathF.Max(0f, InitialSpan * (1f - ElapsedTime / Duration));
     }
 
-    public bool IsNeedleInsideZone()
+    public QteSlot? GetHoveredSlot()
     {
-        if (CurrentSpan <= 0f) return false;
-        float diff = MathF.Abs(Wrap(NeedleAngle, CenterAngle));
-        return diff <= CurrentSpan / 2f;
+        if (CurrentSpan <= 0f) return null;
+        for (int i = 0; i < Slots.Count; i++)
+        {
+            float diff = MathF.Abs(Wrap(NeedleAngle, Slots[i].CenterAngle));
+            if (diff <= CurrentSpan / 2f)
+            {
+                return Slots[i];
+            }
+        }
+        return null;
     }
+
+    public bool IsNeedleInsideZone() => GetHoveredSlot() != null;
 
     public void SpawnNewZone(int? forceIndex = null, float? newDuration = null)
     {
         if (newDuration.HasValue) Duration = newDuration.Value;
 
+        int newIndex;
         if (forceIndex.HasValue)
         {
-            CurrentPositionIndex = ((forceIndex.Value % PositionCount) + PositionCount) % PositionCount;
+            newIndex = ((forceIndex.Value % PositionCount) + PositionCount) % PositionCount;
         }
         else
         {
+            int currentIdx = Slots.Count > 0 ? Slots[0].PositionIndex : 0;
             int offset = _random.Next(1, PositionCount);
-            CurrentPositionIndex = (CurrentPositionIndex + offset) % PositionCount;
+            newIndex = (currentIdx + offset) % PositionCount;
         }
 
         ElapsedTime = 0f;
         CurrentSpan = InitialSpan;
+        Slots.Clear();
+        Slots.Add(new QteSlot(newIndex));
+    }
+
+    public void SpawnSlots(CareAction[] actions)
+    {
+        ElapsedTime = 0f;
+        CurrentSpan = InitialSpan;
+        Slots.Clear();
+
+        int[] positions = { 0, 1, 2, 3, 4 };
+        for (int i = positions.Length - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            (positions[i], positions[j]) = (positions[j], positions[i]);
+        }
+
+        int count = Math.Min(actions.Length, PositionCount);
+        for (int i = 0; i < count; i++)
+        {
+            Slots.Add(new QteSlot(positions[i], actions[i]));
+        }
     }
 
     public static float Wrap(float a, float b)

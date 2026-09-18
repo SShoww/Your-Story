@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using BePal.Gameplay;
 using Xunit;
 
@@ -197,5 +199,116 @@ public class ShrinkingQteZoneTests
             Assert.Equal(zone.InitialSpan, zone.CurrentSpan);
             Assert.Equal(0f, zone.ElapsedTime);
         }
+    }
+
+    [Fact]
+    public void SpawnSlots_DistributesActionsAcrossDistinctPositions()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
+
+        Assert.Equal(4, zone.Slots.Count);
+        var positions = zone.Slots.Select(s => s.PositionIndex).ToList();
+        Assert.Equal(4, positions.Distinct().Count());
+        Assert.All(positions, pos => Assert.InRange(pos, 0, 4));
+
+        var slotActions = zone.Slots.Select(s => s.Action).ToList();
+        Assert.Equal(4, slotActions.Distinct().Count());
+        foreach (var action in actions)
+        {
+            Assert.Contains(action, slotActions);
+        }
+    }
+
+    [Fact]
+    public void GetHoveredSlot_ReturnsMatchingAction_WhenNeedleInsideSlot()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
+
+        foreach (var slot in zone.Slots)
+        {
+            zone.NeedleAngle = slot.CenterAngle;
+            var hovered = zone.GetHoveredSlot();
+            Assert.NotNull(hovered);
+            Assert.Equal(slot.Action, hovered.Action);
+            Assert.Equal(slot.PositionIndex, hovered.PositionIndex);
+            Assert.True(zone.IsNeedleInsideZone());
+        }
+    }
+
+    [Fact]
+    public void GetHoveredSlot_ReturnsNull_WhenNeedleInDeadZoneOrEmptyPosition()
+    {
+        var zone = new ShrinkingQteZone(initialSpan: MathF.PI / 4f);
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
+
+        // Find the 5th unused preset position
+        var occupied = zone.Slots.Select(s => s.PositionIndex).ToHashSet();
+        int emptyPos = Enumerable.Range(0, 5).First(p => !occupied.Contains(p));
+
+        zone.NeedleAngle = ShrinkingQteZone.PresetAngles[emptyPos];
+        Assert.Null(zone.GetHoveredSlot());
+        Assert.False(zone.IsNeedleInsideZone());
+
+        // Shrink the zone and test dead space between slots
+        zone.Update(1.5f);
+        zone.NeedleAngle = (ShrinkingQteZone.PresetAngles[emptyPos] + 0.1f) % ShrinkingQteZone.Tau;
+        if (zone.GetHoveredSlot() == null)
+        {
+            Assert.False(zone.IsNeedleInsideZone());
+        }
+    }
+
+    [Fact]
+    public void SpawnSlots_AllSlotsShrinkSynchronously()
+    {
+        var zone = new ShrinkingQteZone(initialSpan: 1.0f, duration: 2.0f);
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
+
+        Assert.Equal(1.0f, zone.CurrentSpan);
+        zone.Update(1.0f); // Halfway through duration
+
+        Assert.Equal(0.5f, zone.CurrentSpan, 2);
+
+        // Verify each slot's effective hit boundary is governed by CurrentSpan / 2
+        float halfSpan = zone.CurrentSpan / 2f;
+        foreach (var slot in zone.Slots)
+        {
+            // Center is always inside
+            zone.NeedleAngle = slot.CenterAngle;
+            Assert.Equal(slot.Action, zone.GetHoveredSlot()?.Action);
+
+            // Just inside boundary
+            zone.NeedleAngle = (slot.CenterAngle + halfSpan * 0.9f) % ShrinkingQteZone.Tau;
+            Assert.Equal(slot.Action, zone.GetHoveredSlot()?.Action);
+
+            // Far outside boundary (e.g. opposite side of wheel)
+            zone.NeedleAngle = (slot.CenterAngle + MathF.PI) % ShrinkingQteZone.Tau;
+            var hovered = zone.GetHoveredSlot();
+            Assert.True(hovered == null || hovered != slot);
+        }
+    }
+
+    [Fact]
+    public void SpawnSlots_MultipleCalls_ProduceVariedPositions()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+
+        // Over 20 spawns, action Feed should not stay fixed to the same position index every time
+        var feedPositions = new HashSet<int>();
+        for (int i = 0; i < 20; i++)
+        {
+            zone.SpawnSlots(actions);
+            var feedSlot = zone.Slots.First(s => s.Action == CareAction.Feed);
+            feedPositions.Add(feedSlot.PositionIndex);
+        }
+
+        Assert.True(feedPositions.Count > 1, "Feed position should vary across multiple SpawnSlots calls.");
     }
 }

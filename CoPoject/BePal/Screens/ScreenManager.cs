@@ -139,7 +139,7 @@ public sealed class ScreenManager
         Context.TriggerShake(0.3f, 8f);
         Context.SpawnTag("WARNING: ATTACK INCOMING!", new Color(60, 15, 20), new Color(255, 200, 70));
         Context.Message = "ATTACK! Press Space inside the gold Dodge Zone!";
-        SetScreen(new DodgeQteScreen(Context));
+        SetScreen(new DodgeQteScreen(Context), useTransition: false);
     }
 
     public void ShowSurvivalLog()
@@ -170,7 +170,8 @@ public sealed class ScreenManager
         else
         {
             Context.Message = message;
-            SetScreen(new PanoramicRoomScreen(Context, 0));
+            bool isDodge = CurrentScreen is DodgeQteScreen;
+            SetScreen(new PanoramicRoomScreen(Context, 0), useTransition: !isDodge);
         }
     }
 
