@@ -63,7 +63,7 @@ public sealed class ShrinkingQteZone
     public const float DefaultInitialSpan = MathF.PI / 3f;
     public const float DefaultDuration = 2.8f;
     public const float DefaultStaggerInterval = 1.0f;
-    public const float DefaultSlotDuration = 2.5f;
+    public const float DefaultSlotDuration = 4.5f;
 
     public static readonly float[] PresetAngles =
     {
