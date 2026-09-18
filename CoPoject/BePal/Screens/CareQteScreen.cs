@@ -182,11 +182,10 @@ public sealed class CareQteScreen : IScreen
 
         // 3. Dynamic Shrinking Care Zone Arcs & Scrap Badges for All Active Slots
         QteSlot? hoveredSlot = _zone.GetHoveredSlot();
-        float span = _zone.CurrentSpan;
 
         foreach (var slot in _zone.Slots)
         {
-            if (!slot.Action.HasValue) continue;
+            if (!slot.Action.HasValue || slot.CurrentSpan <= 0f) continue;
 
             CareActionDescriptor desc = GetDescriptor(slot.Action.Value);
             float centerA = slot.CenterAngle;
@@ -194,10 +193,7 @@ public sealed class CareQteScreen : IScreen
             Color baseCol = desc.Color;
             Color arcCol = isHovered ? Color.Lerp(baseCol, Color.White, 0.45f) : baseCol;
 
-            if (span > 0f)
-            {
-                spriteBatch.DrawArc(c, trackRadius, centerA - span / 2f, span, 32, arcCol, isHovered ? 24f : 18f);
-            }
+            spriteBatch.DrawArc(c, trackRadius, centerA - slot.CurrentSpan / 2f, slot.CurrentSpan, 32, arcCol, isHovered ? 24f : 18f);
 
             Vector2 badgePos = c + Dir(centerA) * (trackRadius + 58f);
             _context.DrawScrapBadge(spriteBatch, badgePos, desc.Action.ToString().ToUpperInvariant(), desc.Need, arcCol, Color.White, isHovered);
