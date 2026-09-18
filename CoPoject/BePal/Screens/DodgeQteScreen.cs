@@ -65,7 +65,7 @@ public sealed class DodgeQteScreen : IScreen
             _context.ResetPetReaction();
             _context.SpawnTag("DODGED!", new Color(50, 42, 12), new Color(255, 220, 80));
             _context.Message = "Attack evaded! One final care action remains.";
-            _context.Manager.SetScreen(new CareQteScreen(_context));
+            _context.Manager.SetScreen(new CareQteScreen(_context), useTransition: false);
         }
         else
         {
