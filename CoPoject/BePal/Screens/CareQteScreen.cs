@@ -14,6 +14,9 @@ namespace BePal.Screens;
 public sealed class CareQteScreen : IScreen
 {
     public const float Tau = MathF.PI * 2f;
+    public const float TelegraphDuration = 0.60f;
+    public const float GracePeriodDuration = 0.20f;
+    public const int MaxTeleportsPerCycle = 2;
 
     private record struct CareActionDescriptor(CareAction Action, string Need, Color Color);
     private static readonly CareActionDescriptor[] ActionDescriptors =
@@ -33,11 +36,14 @@ public sealed class CareQteScreen : IScreen
     };
 
     private readonly ScreenContext _context;
-    private readonly Random _random = new();
+    private readonly Random _random;
     private readonly ShrinkingQteZone _zone;
 
     private float _qteTime;
     private float _nextTeleportTime;
+    private float _teleportTargetAngle;
+    private bool _hasPreparedDestination;
+    private float _teleportGraceTimer;
     private float _teleportFxTimer;
     private float _lastTeleportAngle;
     private int _teleportCount;
@@ -48,10 +54,18 @@ public sealed class CareQteScreen : IScreen
     public float NextTeleportTime => _nextTeleportTime;
     public float LastTeleportAngle => _lastTeleportAngle;
     public float TeleportFxTimer => _teleportFxTimer;
+    public float TeleportGraceTimer => _teleportGraceTimer;
+    public float TeleportTargetAngle => _teleportTargetAngle;
     public float QteTime => _qteTime;
-    public CareQteScreen(ScreenContext context)
+    public bool IsTelegraphing => PetCatalog.Get(_context.Run.ActivePet).Pattern.HasTeleportingMarker &&
+                                  _teleportCount < MaxTeleportsPerCycle &&
+                                  _qteTime >= _nextTeleportTime - TelegraphDuration &&
+                                  _qteTime < _nextTeleportTime;
+
+    public CareQteScreen(ScreenContext context, Random? random = null)
     {
         _context = context;
+        _random = random ?? new Random();
         _zone = new ShrinkingQteZone(initialSpan: MathF.PI / 4f, duration: 3.2f, random: _random);
         ResetQte();
     }
@@ -61,8 +75,11 @@ public sealed class CareQteScreen : IScreen
         _zone.SpawnSlots(AllCareActions);
         _qteTime = 0f;
         _teleportFxTimer = 0f;
+        _teleportGraceTimer = 0f;
         _teleportCount = 0;
-        _nextTeleportTime = 0.9f + (float)_random.NextDouble() * 0.5f;
+        _hasPreparedDestination = false;
+        _teleportTargetAngle = 0f;
+        _nextTeleportTime = 1.3f + (float)_random.NextDouble() * 0.2f;
     }
 
     public void Update(GameTime gameTime)
@@ -70,15 +87,46 @@ public sealed class CareQteScreen : IScreen
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _zone.Update(dt);
         _qteTime += dt;
+        _teleportGraceTimer = MathF.Max(0f, _teleportGraceTimer - dt);
+        _teleportFxTimer = MathF.Max(0f, _teleportFxTimer - dt);
 
         PetDefinition pet = PetCatalog.Get(_context.Run.ActivePet);
         if (pet.Pattern.HasTeleportingMarker)
         {
-            _teleportFxTimer = MathF.Max(0f, _teleportFxTimer - dt);
-
-            if (_qteTime >= _nextTeleportTime && _teleportCount < 3 && !_zone.IsExpired)
+            if (_teleportCount < MaxTeleportsPerCycle && !_zone.IsExpired)
             {
-                TriggerTeleport();
+                if (_qteTime >= _nextTeleportTime - TelegraphDuration)
+                {
+                    if (!_hasPreparedDestination)
+                    {
+                        if (IsNeedleInOrApproachingPreferredSlot(pet.Pattern.PreferredAction))
+                        {
+                            _nextTeleportTime += 0.8f;
+                        }
+                        else
+                        {
+                            float timeUntilWarp = MathF.Max(0f, _nextTeleportTime - _qteTime);
+                            float needleAtWarp = (_zone.NeedleAngle + _zone.NeedleSpeed * timeUntilWarp) % ShrinkingQteZone.Tau;
+                            if (needleAtWarp < 0f) needleAtWarp += ShrinkingQteZone.Tau;
+
+                            _teleportTargetAngle = CalculateFairLandingAngle(needleAtWarp, timeUntilWarp);
+                            _hasPreparedDestination = true;
+                        }
+                    }
+                }
+
+                if (_qteTime >= _nextTeleportTime)
+                {
+                    if (IsNeedleInOrApproachingPreferredSlot(pet.Pattern.PreferredAction))
+                    {
+                        _nextTeleportTime = _qteTime + 0.8f;
+                        _hasPreparedDestination = false;
+                    }
+                    else
+                    {
+                        TriggerTeleport();
+                    }
+                }
             }
         }
 
@@ -96,28 +144,114 @@ public sealed class CareQteScreen : IScreen
         }
     }
 
+    public bool IsNeedleInOrApproachingPreferredSlot(CareAction preferredAction)
+    {
+        foreach (var slot in _zone.Slots)
+        {
+            if (slot.Action == preferredAction && slot.CurrentSpan > 0f)
+            {
+                float dist = ShrinkingQteZone.Wrap(slot.CenterAngle, _zone.NeedleAngle);
+                float halfSpan = slot.CurrentSpan / 2f;
+                if (dist >= -halfSpan && dist <= halfSpan + 0.25f)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public float CalculateFairLandingAngle(float? referenceNeedleAngle = null, float? timeUntilWarp = null)
+    {
+        float needleRef = referenceNeedleAngle ?? _zone.NeedleAngle;
+        float warpTime = _zone.ElapsedTime + (timeUntilWarp ?? 0f);
+        PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
+
+        float runway = 1.1f + (float)_random.NextDouble() * 0.4f;
+        float minDisplacement = MathF.PI * 0.5f + 0.10f;
+
+        bool IsEligible(QteSlot s) =>
+            !s.IsFinished(warpTime) && (warpTime >= s.AppearTime || s.CurrentSpan > 0f);
+        // 1. Preferred action slot if eligible and provides >= minDisplacement
+        foreach (var slot in _zone.Slots)
+        {
+            if (slot.Action == activePet.Pattern.PreferredAction && IsEligible(slot))
+            {
+                float candidate = (slot.CenterAngle - runway) % ShrinkingQteZone.Tau;
+                if (candidate < 0f) candidate += ShrinkingQteZone.Tau;
+                if (MathF.Abs(ShrinkingQteZone.Wrap(candidate, needleRef)) >= minDisplacement)
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        // 2. Any eligible slot that provides >= minDisplacement
+        foreach (var slot in _zone.Slots)
+        {
+            if (IsEligible(slot))
+            {
+                float candidate = (slot.CenterAngle - runway) % ShrinkingQteZone.Tau;
+                if (candidate < 0f) candidate += ShrinkingQteZone.Tau;
+                if (MathF.Abs(ShrinkingQteZone.Wrap(candidate, needleRef)) >= minDisplacement)
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        // 3. Fallback among any eligible slots maximizing displacement
+        float maxDisp = -1f;
+        float bestCandidate = 0f;
+        bool foundEligible = false;
+
+        foreach (var slot in _zone.Slots)
+        {
+            if (IsEligible(slot))
+            {
+                float candidate = (slot.CenterAngle - runway) % ShrinkingQteZone.Tau;
+                if (candidate < 0f) candidate += ShrinkingQteZone.Tau;
+                float disp = MathF.Abs(ShrinkingQteZone.Wrap(candidate, needleRef));
+                if (disp > maxDisp)
+                {
+                    maxDisp = disp;
+                    bestCandidate = candidate;
+                    foundEligible = true;
+                }
+            }
+        }
+
+        if (foundEligible)
+        {
+            return bestCandidate;
+        }
+
+        // 4. Ultimate fallback: opposite needleRef (180 deg, PI displacement)
+        float fallback = (needleRef + MathF.PI) % ShrinkingQteZone.Tau;
+        if (fallback < 0f) fallback += ShrinkingQteZone.Tau;
+        return fallback;
+    }
+
     private void TriggerTeleport()
     {
         _lastTeleportAngle = _zone.NeedleAngle;
+        _zone.NeedleAngle = _teleportTargetAngle;
         _teleportFxTimer = 0.35f;
+        _teleportGraceTimer = GracePeriodDuration;
         _teleportCount++;
-
-        float minOffset = MathF.PI * 0.5f;
-        float maxOffset = MathF.PI * 1.15f;
-        float offset = minOffset + (float)_random.NextDouble() * (maxOffset - minOffset);
-        if (_random.Next(2) == 0) offset = -offset;
-
-        _zone.NeedleAngle = (_zone.NeedleAngle + offset) % ShrinkingQteZone.Tau;
-        if (_zone.NeedleAngle < 0f) _zone.NeedleAngle += ShrinkingQteZone.Tau;
+        _hasPreparedDestination = false;
 
         _context.Audio.PlayTeleport();
-        _context.TriggerShake(0.20f, 6f);
+        _context.TriggerShake(0.18f, 5f);
         _context.SetPetReaction(_context.PetAngry, 0.45f);
         _context.SpawnTag("WARP!", new Color(45, 18, 55), new Color(230, 160, 255));
         _context.Message = "Blinkbun warped the wheel marker!";
-        _nextTeleportTime = _qteTime + 1.4f + (float)_random.NextDouble() * 0.5f;
-    }
 
+        if (_teleportCount < MaxTeleportsPerCycle)
+        {
+            _nextTeleportTime = 3.4f + (float)_random.NextDouble() * 0.4f;
+        }
+    }
     private void HandleMiss(string message)
     {
         _context.Audio.PlayFail();
@@ -169,6 +303,12 @@ public sealed class CareQteScreen : IScreen
 
         if (hovered == null)
         {
+            if (_teleportGraceTimer > 0f)
+            {
+                _context.SpawnTag("WARP DEFLECTED!", new Color(45, 25, 55), new Color(230, 160, 255));
+                _context.Message = "The marker warped as you pressed! Deflected safely.";
+                return;
+            }
             HandleMiss("Hit the dead zone! Lost 1 Health.");
             return;
         }
@@ -269,20 +409,27 @@ public sealed class CareQteScreen : IScreen
             spriteBatch.DrawLine(warpFrom, warpTo, new Color(220, 150, 255) * (alpha * 0.5f), 2f);
         }
 
-        // 4. Rotating Needle Marker (with telegraph pulse)
-        bool isTelegraphing = activePet.Pattern.HasTeleportingMarker &&
-                              _teleportCount < 3 &&
-                              _nextTeleportTime - _qteTime <= 0.25f &&
-                              _nextTeleportTime > _qteTime;
-
+        // 4. Rotating Needle Marker (with telegraph pulse and ghost destination preview)
         Color needleColor = Color.White;
         Color pipColor = Color.Gold;
 
-        if (isTelegraphing)
+        if (IsTelegraphing)
         {
-            float pulse = (MathF.Sin(_qteTime * 25f) + 1f) * 0.5f;
-            needleColor = Color.Lerp(Color.White, new Color(230, 120, 255), pulse);
-            pipColor = new Color(255, 110, 230);
+            float progress = Math.Clamp(1f - (_nextTeleportTime - _qteTime) / TelegraphDuration, 0f, 1f);
+            float pulseRate = MathHelper.Lerp(15f, 35f, progress);
+            float pulse = (MathF.Sin(_qteTime * pulseRate) + 1f) * 0.5f;
+            needleColor = Color.Lerp(Color.White, new Color(235, 130, 255), pulse);
+            pipColor = Color.Lerp(Color.Gold, new Color(255, 100, 230), pulse);
+
+            // Ghost destination preview marker
+            float ghostAlpha = MathHelper.Lerp(0.35f, 0.85f, progress);
+            Vector2 ghostIn = c + Dir(_teleportTargetAngle) * (trackRadius - 20f);
+            Vector2 ghostOut = c + Dir(_teleportTargetAngle) * (trackRadius + 22f);
+            spriteBatch.DrawLine(ghostIn, ghostOut, new Color(200, 100, 255) * ghostAlpha, 5f);
+            spriteBatch.DrawCircle(ghostOut, 5f, 16, new Color(255, 150, 255) * ghostAlpha, 2f);
+
+            // Dynamic warp trajectory line from needle to target
+            spriteBatch.DrawLine(c + Dir(_zone.NeedleAngle) * trackRadius, c + Dir(_teleportTargetAngle) * trackRadius, new Color(220, 130, 255) * (ghostAlpha * 0.4f), 2f);
         }
 
         Vector2 innerPt = c + Dir(_zone.NeedleAngle) * (trackRadius - 22f);
