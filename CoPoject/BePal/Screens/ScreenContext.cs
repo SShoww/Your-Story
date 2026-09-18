@@ -27,8 +27,7 @@ public sealed class ScreenContext
     public Texture2D PetIdle { get; }
     public Texture2D PetHappy { get; }
     public Texture2D PetAngry { get; }
-
-    public Texture2D PetImage { get; set; }
+    public Texture2D? PetImage { get; set; }
     public float ReactionTime { get; set; }
     public float ShakeTime { get; set; }
     public float ShakeAmount { get; set; } = 8f;
@@ -67,7 +66,24 @@ public sealed class ScreenContext
         Audio = audio ?? NullAudioService.Instance;
     }
 
-    public void SetPetReaction(Texture2D texture, float duration)
+    public static ScreenContext CreateTestContext(PrototypeRun? run = null, IAudioService? audio = null)
+    {
+        return new ScreenContext(
+            font: null!,
+            pixel: null!,
+            circle: null!,
+            petIdle: null!,
+            petHappy: null!,
+            petAngry: null!,
+            exitGame: () => { },
+            saveScreenshotAction: _ => { },
+            audio: audio)
+        {
+            Run = run ?? new PrototypeRun()
+        };
+    }
+
+    public void SetPetReaction(Texture2D? texture, float duration)
     {
         PetImage = texture;
         ReactionTime = duration;

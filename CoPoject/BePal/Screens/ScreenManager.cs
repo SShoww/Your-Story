@@ -152,20 +152,25 @@ public sealed class ScreenManager
         SetScreen(new SummaryScreen(Context));
     }
 
+    public void HandleForcedRetreat()
+    {
+        if (Context.Run.IsComplete)
+        {
+            ShowSummary();
+            return;
+        }
+
+        Context.ResetPetReaction();
+        Context.Message = $"Day {Context.Run.DayNumber} begins. Forced retreat! You collapsed and were rushed to safety.";
+        ShowDoorstep();
+    }
+
     public void Fail(string message)
     {
         bool forcedRetreat = Context.Run.TakeDamage();
         if (forcedRetreat)
         {
-            if (Context.Run.IsComplete)
-            {
-                ShowSummary();
-                return;
-            }
-
-            Context.ResetPetReaction();
-            Context.Message = $"Day {Context.Run.DayNumber} begins. Forced retreat! You collapsed and were rushed to safety.";
-            ShowDoorstep();
+            HandleForcedRetreat();
         }
         else
         {
