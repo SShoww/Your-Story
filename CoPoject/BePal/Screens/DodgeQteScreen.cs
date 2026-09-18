@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using BePal.Gameplay;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -8,32 +9,44 @@ using MonoGame.Extended;
 namespace BePal.Screens;
 
 /// <summary>
-/// Handles the high-stakes reactive Dodge QTE mini-game with an evasive Dodge Zone.
+/// Handles the high-stakes reactive Dodge QTE mini-game with a dynamic shrinking Dodge Zone.
 /// </summary>
 public sealed class DodgeQteScreen : IScreen
 {
-    public const float Tau = MathF.PI * 2;
+    public const float Tau = MathF.PI * 2f;
 
     private readonly ScreenContext _context;
-    private float _angle;
+    private readonly ShrinkingQteZone _zone;
 
-    public float Angle => _angle;
+    public float Angle => _zone.NeedleAngle;
+    public ShrinkingQteZone Zone => _zone;
 
     public DodgeQteScreen(ScreenContext context)
     {
         _context = context;
+        _zone = new ShrinkingQteZone(duration: 2.8f);
         ResetQte();
     }
 
     public void ResetQte()
     {
-        _angle = 0;
+        _zone.SpawnNewZone();
     }
 
     public void Update(GameTime gameTime)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        _angle = (_angle + 2.2f * dt) % Tau;
+        _zone.Update(dt);
+
+        if (_zone.IsExpired)
+        {
+            _context.Audio.PlayFail();
+            _context.TriggerShake(0.35f, 13f);
+            _context.SetPetReaction(_context.PetAngry, 0.75f);
+            _context.SpawnTag("DODGE TIMEOUT! -1 HP", new Color(65, 10, 15), new Color(255, 70, 70));
+            _context.Manager.Fail("Failed to dodge attack in time! Lost 1 Health.");
+            return;
+        }
 
         if (_context.IsKeyPressed(Keys.Space))
         {
@@ -42,12 +55,7 @@ public sealed class DodgeQteScreen : IScreen
         }
     }
 
-    public bool CheckDodgeSuccess()
-    {
-        float dodgeCenter = MathF.PI * 1.5f;
-        float diff = MathF.Abs(Wrap(_angle, dodgeCenter));
-        return diff <= MathF.PI / 6f;
-    }
+    public bool CheckDodgeSuccess() => _zone.IsNeedleInsideZone();
 
     public void ResolveDodge()
     {
@@ -92,19 +100,22 @@ public sealed class DodgeQteScreen : IScreen
         spriteBatch.DrawCircle(c, trackRadius + 10f, 64, trackBorder, 2f);
 
         // 3. Dodge Zone Arc and Scrap Badge
-        float dodgeCenter = MathF.PI * 1.5f;
-        float dodgeSpan = MathF.PI / 3f;
+        float dodgeCenter = _zone.CenterAngle;
+        float dodgeSpan = _zone.CurrentSpan;
         bool inDodge = CheckDodgeSuccess();
         Color dodgeColor = inDodge ? Color.White : new Color(255, 215, 65);
 
-        spriteBatch.DrawArc(c, trackRadius, dodgeCenter - dodgeSpan / 2f, dodgeSpan, 32, dodgeColor, inDodge ? 24f : 20f);
+        if (dodgeSpan > 0f)
+        {
+            spriteBatch.DrawArc(c, trackRadius, dodgeCenter - dodgeSpan / 2f, dodgeSpan, 32, dodgeColor, inDodge ? 24f : 20f);
+        }
 
         Vector2 badgePos = c + Dir(dodgeCenter) * (trackRadius + 56f);
         _context.DrawScrapBadge(spriteBatch, badgePos, "DODGE ZONE", "SPACE TO EVADE", dodgeColor, Color.White, inDodge);
 
         // 4. Rotating Needle Marker
-        Vector2 innerPt = c + Dir(_angle) * (trackRadius - 22f);
-        Vector2 outerPt = c + Dir(_angle) * (trackRadius + 24f);
+        Vector2 innerPt = c + Dir(_zone.NeedleAngle) * (trackRadius - 22f);
+        Vector2 outerPt = c + Dir(_zone.NeedleAngle) * (trackRadius + 24f);
         spriteBatch.DrawLine(innerPt, outerPt, Color.White, 8f);
         spriteBatch.DrawCircle(outerPt, 4f, 16, Color.Gold, 2f);
 
@@ -120,10 +131,4 @@ public sealed class DodgeQteScreen : IScreen
     }
 
     private static Vector2 Dir(float a) => new(MathF.Cos(a), MathF.Sin(a));
-
-    private static float Wrap(float a, float b)
-    {
-        float difference = (a - b + MathF.PI) % Tau;
-        return (difference < 0 ? difference + Tau : difference) - MathF.PI;
-    }
 }
