@@ -222,14 +222,23 @@ public class ShrinkingQteZoneTests
     }
 
     [Fact]
-    public void GetHoveredSlot_ReturnsMatchingAction_WhenNeedleInsideSlot()
+    public void GetHoveredSlot_ReturnsMatchingAction_WhenNeedleInsideActiveSlot()
     {
         var zone = new ShrinkingQteZone();
         CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
         zone.SpawnSlots(actions);
 
+        // Advance to each slot's active window and test hit
+        float lastTime = 0f;
         foreach (var slot in zone.Slots)
         {
+            float dt = slot.AppearTime - lastTime;
+            if (dt > 0f)
+            {
+                zone.Update(dt);
+                lastTime = slot.AppearTime;
+            }
+
             zone.NeedleAngle = slot.CenterAngle;
             var hovered = zone.GetHoveredSlot();
             Assert.NotNull(hovered);
@@ -264,34 +273,90 @@ public class ShrinkingQteZoneTests
     }
 
     [Fact]
-    public void SpawnSlots_AllSlotsShrinkSynchronously()
+    public void SpawnSlots_StaggersAppearTimes_AtOneSecondIntervals()
     {
-        var zone = new ShrinkingQteZone(initialSpan: 1.0f, duration: 2.0f);
+        var zone = new ShrinkingQteZone();
         CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
         zone.SpawnSlots(actions);
 
-        Assert.Equal(1.0f, zone.CurrentSpan);
-        zone.Update(1.0f); // Halfway through duration
+        Assert.Equal(4, zone.Slots.Count);
+        Assert.Equal(0.0f, zone.Slots[0].AppearTime);
+        Assert.Equal(1.0f, zone.Slots[1].AppearTime);
+        Assert.Equal(2.0f, zone.Slots[2].AppearTime);
+        Assert.Equal(3.0f, zone.Slots[3].AppearTime);
 
-        Assert.Equal(0.5f, zone.CurrentSpan, 2);
+        // Total duration: (4 - 1) * 1.0s + 2.5s = 5.5s
+        Assert.Equal(5.5f, zone.Duration);
+    }
 
-        // Verify each slot's effective hit boundary is governed by CurrentSpan / 2
-        float halfSpan = zone.CurrentSpan / 2f;
-        foreach (var slot in zone.Slots)
-        {
-            // Center is always inside
-            zone.NeedleAngle = slot.CenterAngle;
-            Assert.Equal(slot.Action, zone.GetHoveredSlot()?.Action);
+    [Fact]
+    public void Slot_IsInactiveBeforeAppearTime_AndActiveAfter()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
 
-            // Just inside boundary
-            zone.NeedleAngle = (slot.CenterAngle + halfSpan * 0.9f) % ShrinkingQteZone.Tau;
-            Assert.Equal(slot.Action, zone.GetHoveredSlot()?.Action);
+        // At t = 0.5s: Slot 0 is active, Slot 1 has not appeared
+        zone.Update(0.5f);
+        Assert.True(zone.Slots[0].CurrentSpan > 0f);
+        Assert.Equal(0f, zone.Slots[1].CurrentSpan);
 
-            // Far outside boundary (e.g. opposite side of wheel)
-            zone.NeedleAngle = (slot.CenterAngle + MathF.PI) % ShrinkingQteZone.Tau;
-            var hovered = zone.GetHoveredSlot();
-            Assert.True(hovered == null || hovered != slot);
-        }
+        // At t = 1.0s: Slot 1 has now appeared at full span
+        zone.Update(0.5f);
+        Assert.Equal(zone.InitialSpan, zone.Slots[1].CurrentSpan);
+    }
+
+    [Fact]
+    public void Slot_ShrinksIndependently_OverConfiguredDuration()
+    {
+        var zone = new ShrinkingQteZone(initialSpan: 1.0f);
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions, staggerInterval: 1.0f, slotDuration: 2.0f);
+
+        // Slot 0 appears at 0s, expires at 2s
+        // Slot 1 appears at 1s, expires at 3s
+        zone.Update(1.0f); // t = 1.0s
+        Assert.Equal(0.5f, zone.Slots[0].CurrentSpan, 2); // halfway
+        Assert.Equal(1.0f, zone.Slots[1].CurrentSpan, 2); // just appeared
+
+        zone.Update(1.0f); // t = 2.0s
+        Assert.Equal(0f, zone.Slots[0].CurrentSpan); // expired
+        Assert.True(zone.Slots[0].IsFinished(2.0f));
+        Assert.Equal(0.5f, zone.Slots[1].CurrentSpan, 2); // halfway
+    }
+
+    [Fact]
+    public void GetHoveredSlot_ReturnsNull_BeforeSlotAppears()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions);
+
+        // At t = 0.5s, Slot 1 has appearTime = 1.0s
+        zone.Update(0.5f);
+        zone.NeedleAngle = zone.Slots[1].CenterAngle;
+
+        // Even though needle points exactly at Slot 1's position, Slot 1 is not active yet
+        Assert.Null(zone.GetHoveredSlot());
+        Assert.False(zone.IsNeedleInsideZone());
+    }
+
+    [Fact]
+    public void Zone_ExpiresOnlyAfterAllStaggeredSlotsFinish()
+    {
+        var zone = new ShrinkingQteZone();
+        CareAction[] actions = { CareAction.Feed, CareAction.Play, CareAction.Pet, CareAction.Observe };
+        zone.SpawnSlots(actions, staggerInterval: 1.0f, slotDuration: 2.5f);
+        // Total duration = 3 * 1.0 + 2.5 = 5.5s
+
+        zone.Update(2.5f); // Slot 0 expires, but Slots 1-3 still active
+        Assert.False(zone.IsExpired);
+
+        zone.Update(2.0f); // t = 4.5s: Slot 2 expires, Slot 3 still has 1.0s
+        Assert.False(zone.IsExpired);
+
+        zone.Update(1.0f); // t = 5.5s: All slots finished
+        Assert.True(zone.IsExpired);
     }
 
     [Fact]

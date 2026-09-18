@@ -9,12 +9,47 @@ public sealed class QteSlot
     public int PositionIndex { get; set; }
     public CareAction? Action { get; set; }
     public float CenterAngle => ShrinkingQteZone.PresetAngles[PositionIndex];
+    public float AppearTime { get; set; }
+    public float Duration { get; set; }
+    public float InitialSpan { get; set; }
+    public float CurrentSpan { get; private set; }
 
-    public QteSlot(int positionIndex, CareAction? action = null)
+    public QteSlot(
+        int positionIndex,
+        CareAction? action = null,
+        float appearTime = 0f,
+        float duration = ShrinkingQteZone.DefaultSlotDuration,
+        float initialSpan = ShrinkingQteZone.DefaultInitialSpan)
     {
         PositionIndex = positionIndex;
         Action = action;
+        AppearTime = appearTime;
+        Duration = duration;
+        InitialSpan = initialSpan;
+        CurrentSpan = appearTime == 0f ? initialSpan : 0f;
     }
+
+    public void Update(float totalElapsed)
+    {
+        if (totalElapsed < AppearTime)
+        {
+            CurrentSpan = 0f;
+        }
+        else
+        {
+            float activeElapsed = totalElapsed - AppearTime;
+            if (activeElapsed >= Duration)
+            {
+                CurrentSpan = 0f;
+            }
+            else
+            {
+                CurrentSpan = MathF.Max(0f, InitialSpan * (1f - activeElapsed / Duration));
+            }
+        }
+    }
+
+    public bool IsFinished(float totalElapsed) => totalElapsed >= AppearTime + Duration;
 }
 
 /// <summary>
@@ -27,6 +62,8 @@ public sealed class ShrinkingQteZone
     public const float DefaultSpeed = 2.2f;
     public const float DefaultInitialSpan = MathF.PI / 3f;
     public const float DefaultDuration = 2.8f;
+    public const float DefaultStaggerInterval = 1.0f;
+    public const float DefaultSlotDuration = 2.5f;
 
     public static readonly float[] PresetAngles =
     {
@@ -45,10 +82,10 @@ public sealed class ShrinkingQteZone
     public int CurrentPositionIndex => Slots.Count > 0 ? Slots[0].PositionIndex : 0;
     public float CenterAngle => Slots.Count > 0 ? Slots[0].CenterAngle : PresetAngles[0];
     public float InitialSpan { get; set; }
-    public float CurrentSpan { get; private set; }
+    public float CurrentSpan => Slots.Count > 0 ? Slots[0].CurrentSpan : 0f;
     public float Duration { get; set; }
     public float ElapsedTime { get; private set; }
-    public bool IsExpired => ElapsedTime >= Duration || CurrentSpan <= 0f;
+    public bool IsExpired => ElapsedTime >= Duration || (Slots.Count > 0 && Slots.TrueForAll(s => s.IsFinished(ElapsedTime)));
 
     public ShrinkingQteZone(
         float speed = DefaultSpeed,
@@ -60,8 +97,7 @@ public sealed class ShrinkingQteZone
         InitialSpan = initialSpan;
         Duration = duration;
         _random = random ?? new Random();
-        CurrentSpan = initialSpan;
-        Slots.Add(new QteSlot(0));
+        Slots.Add(new QteSlot(0, null, 0f, duration, initialSpan));
     }
 
     public void Update(float dt)
@@ -70,18 +106,22 @@ public sealed class ShrinkingQteZone
         if (NeedleAngle < 0f) NeedleAngle += Tau;
 
         ElapsedTime = MathF.Min(Duration, ElapsedTime + dt);
-        CurrentSpan = MathF.Max(0f, InitialSpan * (1f - ElapsedTime / Duration));
+        for (int i = 0; i < Slots.Count; i++)
+        {
+            Slots[i].Update(ElapsedTime);
+        }
     }
 
     public QteSlot? GetHoveredSlot()
     {
-        if (CurrentSpan <= 0f) return null;
         for (int i = 0; i < Slots.Count; i++)
         {
-            float diff = MathF.Abs(Wrap(NeedleAngle, Slots[i].CenterAngle));
-            if (diff <= CurrentSpan / 2f)
+            var slot = Slots[i];
+            if (slot.CurrentSpan <= 0f) continue;
+            float diff = MathF.Abs(Wrap(NeedleAngle, slot.CenterAngle));
+            if (diff <= slot.CurrentSpan / 2f)
             {
-                return Slots[i];
+                return slot;
             }
         }
         return null;
@@ -106,15 +146,13 @@ public sealed class ShrinkingQteZone
         }
 
         ElapsedTime = 0f;
-        CurrentSpan = InitialSpan;
         Slots.Clear();
-        Slots.Add(new QteSlot(newIndex));
+        Slots.Add(new QteSlot(newIndex, null, 0f, Duration, InitialSpan));
     }
 
-    public void SpawnSlots(CareAction[] actions)
+    public void SpawnSlots(CareAction[] actions, float staggerInterval = DefaultStaggerInterval, float slotDuration = DefaultSlotDuration)
     {
         ElapsedTime = 0f;
-        CurrentSpan = InitialSpan;
         Slots.Clear();
 
         int[] positions = { 0, 1, 2, 3, 4 };
@@ -124,10 +162,20 @@ public sealed class ShrinkingQteZone
             (positions[i], positions[j]) = (positions[j], positions[i]);
         }
 
-        int count = Math.Min(actions.Length, PositionCount);
+        CareAction[] shuffledActions = (CareAction[])actions.Clone();
+        for (int i = shuffledActions.Length - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            (shuffledActions[i], shuffledActions[j]) = (shuffledActions[j], shuffledActions[i]);
+        }
+
+        int count = Math.Min(shuffledActions.Length, PositionCount);
+        Duration = count > 0 ? (count - 1) * staggerInterval + slotDuration : DefaultDuration;
+
         for (int i = 0; i < count; i++)
         {
-            Slots.Add(new QteSlot(positions[i], actions[i]));
+            float appearTime = i * staggerInterval;
+            Slots.Add(new QteSlot(positions[i], shuffledActions[i], appearTime, slotDuration, InitialSpan));
         }
     }
 
