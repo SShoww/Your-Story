@@ -75,6 +75,16 @@ public sealed class PetEntity
         HasAcidBurn = false;
     }
 
+    public void FeedDirect(int amount)
+    {
+        Stomach = Math.Clamp(Stomach + amount, 0, 100);
+    }
+
+    public void CleanDirect(int amount)
+    {
+        Clean = Math.Clamp(Clean + amount, 0, 100);
+    }
+
     public void AddExp(int exp, float multiplier = 1.0f)
     {
         int adjusted = (int)(exp * multiplier);

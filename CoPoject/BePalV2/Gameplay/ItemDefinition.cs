@@ -15,7 +15,9 @@ public sealed record ItemDefinition(
     ItemCategory Category,
     int HealthRestore = 0,
     int StomachRestore = 0,
+    int CleanRestore = 0,
     int EnergyRestore = 0,
+    int ExpGain = 0,
     float PerfectZoneBonus = 0f,
     float DodgeZoneBonus = 0f,
     float CounterDamageBonus = 0f,
@@ -25,13 +27,40 @@ public sealed record ItemDefinition(
     float TrainExpMultiplier = 1f
 )
 {
+    // --- 5 Canonical Items Matching Slide 62 ---
+    public static readonly ItemDefinition ExpBooster = new(
+        "exp_booster", "EXP Booster (+50 EXP)", "Nutritious essence. Grants +50 EXP to pet.",
+        Price: 35, Category: ItemCategory.Consumable, ExpGain: 50
+    );
+
+    public static readonly ItemDefinition FoodPotion = new(
+        "food_potion", "Food Potion (+35 Stomach)", "Calorie-dense nutrition pack. Restores +35 Stomach.",
+        Price: 20, Category: ItemCategory.Consumable, StomachRestore: 35
+    );
+
+    public static readonly ItemDefinition CleanSanitizer = new(
+        "clean_sanitizer", "Sanitizer (+40 Clean)", "Antiseptic cleaning spray. Restores +40 Cleanliness.",
+        Price: 25, Category: ItemCategory.Consumable, CleanRestore: 40
+    );
+
+    public static readonly ItemDefinition HealthMedicine = new(
+        "health_medicine", "Health Medicine (+50 HP)", "Medical revitalization flask. Restores +50 Health.",
+        Price: 30, Category: ItemCategory.Medicine, HealthRestore: 50
+    );
+
+    public static readonly ItemDefinition EnergyTonic = new(
+        "energy_tonic", "Energy Tonic (+2 AP)", "High-octane stimulant. Instantly restores +2 AP.",
+        Price: 40, Category: ItemCategory.Consumable, EnergyRestore: 2
+    );
+
+    // --- Auxiliary Tactical Items ---
     public static readonly ItemDefinition CrabApple = new(
-        "crab_apple", "Crab Apple", "Juicy wild apple. Restores 18 HP and 20 Stomach (0 AP).",
+        "crab_apple", "Crab Apple", "Juicy wild apple. Restores 18 HP and 20 Stomach.",
         Price: 25, Category: ItemCategory.Consumable, HealthRestore: 18, StomachRestore: 20
     );
 
     public static readonly ItemDefinition SeaTea = new(
-        "sea_tea", "Sea Tea", "Crisp ocean herbal tea. Expands Dodge Zone by +20% for 1 day.",
+        "sea_tea", "Sea Tea", "Crisp ocean herbal tea. Expands Dodge Zone by +20%.",
         Price: 18, Category: ItemCategory.Consumable, DodgeZoneBonus: 0.20f
     );
 
@@ -51,7 +80,7 @@ public sealed record ItemDefinition(
     );
 
     public static readonly ItemDefinition FirstAidKit = new(
-        "first_aid_kit", "First Aid Kit", "Standard medical supplies. Enables 1 AP Heal and restores 30 HP.",
+        "first_aid_kit", "First Aid Kit", "Standard medical supplies. Restores 30 HP.",
         Price: 20, Category: ItemCategory.Medicine, HealthRestore: 30
     );
 
@@ -70,8 +99,22 @@ public sealed record ItemDefinition(
         Price: 35, Category: ItemCategory.Equipment, CleanDecayReduction: 0.30f
     );
 
+    public static IReadOnlyList<ItemDefinition> CanonicalFive { get; } = new List<ItemDefinition>
+    {
+        ExpBooster,
+        FoodPotion,
+        CleanSanitizer,
+        HealthMedicine,
+        EnergyTonic
+    };
+
     public static IReadOnlyList<ItemDefinition> AllCatalog { get; } = new List<ItemDefinition>
     {
+        ExpBooster,
+        FoodPotion,
+        CleanSanitizer,
+        HealthMedicine,
+        EnergyTonic,
         CrabApple,
         SeaTea,
         CloudyGlasses,

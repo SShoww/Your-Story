@@ -26,6 +26,16 @@ public sealed class CareQteEngine
     public float PerfectWindow { get; }
     public float GoodWindow { get; }
 
+    // Action-specific dynamic behaviors (Slides 15-20)
+    public float RotationDirection { get; private set; } = 1.0f; // Feed: reverse rotation
+    private float _directionTimer;
+
+    public float TargetOffsetAngle { get; private set; } = 0f; // Clean: target zone moves away
+    public float CurrentTargetCenterAngle => (TargetCenterAngle + TargetOffsetAngle) % (float)(2.0 * Math.PI);
+
+    public bool IsTargetVisible { get; private set; } = true; // Heal: target zone flickers
+    private float _blinkTimer;
+
     public int CurrentAttemptIndex { get; private set; } = 0; // 0 to 10
     public bool IsCompleted => CurrentAttemptIndex >= TotalAttempts;
 
@@ -44,6 +54,11 @@ public sealed class CareQteEngine
         EquippedItem = equipped;
 
         float speedMultiplier = pet.IsGrimy ? 1.15f : 1.0f;
+        // Slide 18: Train (EXP) -> "เล็กและหมุนเร็ว" (Faster needle)
+        if (action == CareActionType.Train)
+        {
+            speedMultiplier *= 1.4f;
+        }
         AngularVelocity = BaseAngularVelocity * speedMultiplier;
 
         float perfectBonusMultiplier = 1.0f;
@@ -55,9 +70,18 @@ public sealed class CareQteEngine
         {
             perfectBonusMultiplier += equipped.PerfectZoneBonus;
         }
-        if (pet.Species == PetSpecies.Sproutlet && action == CareActionType.Train)
+
+        if (action == CareActionType.Train)
         {
-            perfectBonusMultiplier += 0.15f;
+            if (pet.Species == PetSpecies.Sproutlet)
+            {
+                // Sproutlet Agile Reflex trait: +15% wider window on Train
+                perfectBonusMultiplier *= 1.15f;
+            }
+            else
+            {
+                perfectBonusMultiplier *= 0.75f; // Standard Train narrow window
+            }
         }
 
         PerfectWindow = BasePerfectWindow * Math.Max(0.1f, perfectBonusMultiplier);
@@ -72,8 +96,38 @@ public sealed class CareQteEngine
     public void Update(float dt)
     {
         if (IsCompleted) return;
-        CurrentAngle = (CurrentAngle + AngularVelocity * dt) % (float)(2.0 * Math.PI);
-        if (CurrentAngle < 0f) CurrentAngle += (float)(2.0 * Math.PI);
+
+        // Slide 17: Feed -> Needle reverses rotation direction
+        if (CurrentAction == CareActionType.Feed)
+        {
+            _directionTimer += dt;
+            if (_directionTimer >= 1.6f)
+            {
+                _directionTimer = 0f;
+                RotationDirection *= -1.0f;
+            }
+        }
+
+        // Slide 19: Clean -> Target zone shifts and evades needle
+        if (CurrentAction == CareActionType.Clean)
+        {
+            TargetOffsetAngle = (TargetOffsetAngle + 0.35f * dt) % (float)(2.0 * Math.PI);
+        }
+
+        // Slide 20: Heal -> Target zone blinks/flickers
+        if (CurrentAction == CareActionType.Heal)
+        {
+            _blinkTimer += dt;
+            if (_blinkTimer >= 0.35f)
+            {
+                _blinkTimer = 0f;
+                IsTargetVisible = !IsTargetVisible;
+            }
+        }
+
+        float tau = (float)(2.0 * Math.PI);
+        CurrentAngle = (CurrentAngle + AngularVelocity * RotationDirection * dt) % tau;
+        if (CurrentAngle < 0f) CurrentAngle += tau;
     }
 
     public PrecisionTier EvaluateAtCurrentAngle()
@@ -83,7 +137,7 @@ public sealed class CareQteEngine
 
     public PrecisionTier EvaluateAngle(float angle)
     {
-        float diff = Math.Abs(angle - TargetCenterAngle);
+        float diff = Math.Abs(angle - CurrentTargetCenterAngle);
         float tau = (float)(2.0 * Math.PI);
         diff = Math.Min(diff, tau - diff);
 
@@ -131,11 +185,11 @@ public sealed class CareQteEngine
 
     public (CareGrade grade, int goldReward) CalculateResults()
     {
-        int finalScore = GetFinalScore();
-        if (finalScore >= 1400) return (CareGrade.S, 50);
-        if (finalScore >= 1100) return (CareGrade.A, 35);
-        if (finalScore >= 800)  return (CareGrade.B, 20);
-        if (finalScore >= 500)  return (CareGrade.C, 10);
+        int score = GetFinalScore();
+        if (score >= 1200) return (CareGrade.S, 50);
+        if (score >= 900) return (CareGrade.A, 35);
+        if (score >= 600) return (CareGrade.B, 20);
+        if (score >= 300) return (CareGrade.C, 10);
         return (CareGrade.F, 0);
     }
 }

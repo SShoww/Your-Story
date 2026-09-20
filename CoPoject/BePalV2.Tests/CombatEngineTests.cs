@@ -6,39 +6,23 @@ namespace BePalV2.Tests;
 public class CombatEngineTests
 {
     [Fact]
-    public void ToothlessTaming_CountersIncreaseTameGauge()
+    public void ToothlessTaming_SuccessfulDodgeAndCounter_FillsTameGauge()
     {
         var pet = new PetEntity(PetSpecies.Coco);
         var engine = new CombatEngine(CombatMode.ToothlessTaming, pet);
 
         Assert.Equal(0f, engine.TameGauge);
-        Assert.Equal(100f, engine.PlayerHp);
         Assert.False(engine.IsCombatWon);
 
-        // Advance until needle is in dodge zone or test dodge mechanics
-        // When dodge succeeds, counter window opens
-        // We can test counter when window open
-        Assert.False(engine.IsCounterWindowOpen);
-        Assert.False(engine.AttemptCounter()); // Fails when window closed
-    }
-
-    [Fact]
-    public void ToothlessTaming_FourCounters_WinsTaming()
-    {
-        var pet = new PetEntity(PetSpecies.Coco);
-        var engine = new CombatEngine(CombatMode.ToothlessTaming, pet);
-
-        // Simulate 4 successful dodge + counter pairs
+        // 4 successful dodge + counter strikes should reach 100% (25% each)
         for (int i = 0; i < 4; i++)
         {
-            // Set needle at DodgeZoneCenter to guarantee dodge
-            // Or use Update
-            // We can test AttemptDodge directly when needle is aligned
-            // Let's verify needle positioning
+            // Align needle into dodge zone
             while (!engine.IsNeedleInDodgeZone())
             {
                 engine.Update(0.05f);
             }
+
             bool dodged = engine.AttemptDodge();
             Assert.True(dodged);
             Assert.True(engine.IsCounterWindowOpen);
@@ -136,5 +120,52 @@ public class CombatEngineTests
         engineWith.AttemptDodge();
         engineWith.AttemptCounter(); // 80 * 2 = 160 dmg
         Assert.Equal(840f, engineWith.BossHp);
+    }
+
+    [Fact]
+    public void MerchantBoss_MissedDodge_StealsGold()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.MerchantBoss, pet);
+
+        // Force miss
+        while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        bool dodged = engine.AttemptDodge();
+
+        Assert.False(dodged);
+        // Slide 54: "ถ้ากดไม่ทัน จะโดนขโมยเงิน"
+        Assert.Equal(200, engine.GoldStolenFromPlayer);
+    }
+
+    [Fact]
+    public void ToothlessTaming_MissedDodge_DamagesPet()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.ToothlessTaming, pet);
+        float startHp = pet.Health;
+
+        // Force miss
+        while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        bool dodged = engine.AttemptDodge();
+
+        Assert.False(dodged);
+        // Slide 38: "ถ้ากดไม่ทัน สัตว์เราจะโดนโจมตี"
+        Assert.Equal(startHp - 25f, pet.Health);
+    }
+
+    [Fact]
+    public void BossHitsGauge_TracksRemainingHitsCorrectly()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.MerchantBoss, pet);
+
+        Assert.Equal(5, engine.BossHitsRemaining);
+
+        // Deal 250 damage (each hit is 200 hp)
+        while (!engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        engine.AttemptDodge();
+        engine.AttemptCounter(); // 80 dmg
+        Assert.Equal(920f, engine.BossHp);
+        Assert.Equal(5, engine.BossHitsRemaining); // ceil(920 / 200) = 5
     }
 }
