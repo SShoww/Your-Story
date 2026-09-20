@@ -123,7 +123,8 @@ Game1.Draw(GameTime)
   - `.config/`: Tool manifest (`dotnet-tools.json`) pinning `dotnet-mgcb` CLI tools.
 - `CoPoject/BePal.Tests/`: Unit test suite (45 tests, .NET 8 xUnit) covering domain logic, navigation, transitions, and UI.
 - `BEPAL/Docs/`: Game design documentation and agile planning.
-  - `GDD/`: Concept, mechanics, core loop, class diagrams, and asset flow (`01-core-loop.md`, `04-class-diagram.md`).
+  - `NewGDD/`: **Active Game Design Document Suite (v2.0)** synthesizing the 64 presentation slides into 10 structured documents: 4-phase daily loop, 6 AP energy budget, 10-attempt care QTEs, Toothless taming encounter, multi-phase Merchant boss battle, and full economic/item system (`00-concept.md` through `08-technical-architecture.md`, `README.md`).
+  - `GDD/`: Legacy baseline specifications (v1) preserved intact for historical reference.
   - `Agile/`: Sprint plans, sprint backlogs, kanban setup, and MoSCoW breakdowns.
 - `docs/`: Repository governance and architectural documentation.
   - `gitflow-workflow.md`: Complete Gitflow branching, PR, and release specification.

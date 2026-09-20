@@ -168,7 +168,7 @@ public sealed class CareQteScreen : IScreen
         PetDefinition activePet = PetCatalog.Get(_context.Run.ActivePet);
 
         float runway = 1.1f + (float)_random.NextDouble() * 0.4f;
-        float minDisplacement = MathF.PI * 0.5f + 0.10f;
+        float minDisplacement = MathF.PI * 0.4f - 0.05f;
 
         bool IsEligible(QteSlot s) =>
             !s.IsFinished(warpTime) && (warpTime >= s.AppearTime || s.CurrentSpan > 0f);
