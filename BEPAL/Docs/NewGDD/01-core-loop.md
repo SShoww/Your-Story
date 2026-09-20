@@ -4,11 +4,11 @@ version: 2.0
 date: 2026-09-20
 ---
 
-# BePal — Core Loop & Gameplay Flow (v2)
+# BePal — Core Loop & Gameplay Flow
 
-## High-Level Daily Loop
+## Core Daily Loop
 
-วงจรการเล่นหลักของ BePal ถูกออกแบบให้เป็นวัฏจักรประจำวัน (Daily Cycle) ที่ผู้เล่นต้องบริหารจัดการเวลา พลังงาน และสถานะของสัตว์เลี้ยง ท่ามกลางวิกฤตและเหตุการณ์ไม่คาดฝัน
+วงจรการเล่นหลักของ BePal ถูกออกแบบให้เป็นวัฏจักรประจำวัน 4 เฟส (4-Phase Daily Loop) ที่ผู้เล่นต้องบริหารจัดการเวลา พลังงาน และสถานะของสัตว์เลี้ยง ท่ามกลางวิกฤตและเหตุการณ์ไม่คาดฝัน:
 
 ```mermaid
 flowchart TD
@@ -76,65 +76,34 @@ flowchart TD
 
 ---
 
-## State Machine Diagram
+## Scene Breakdown
 
-```mermaid
-stateDiagram-v2
-    [*] --> MainMenu
-    MainMenu --> IntroCutscene : Start Game
-    IntroCutscene --> ChoosePetScreen : Select Starter Pet
-    
-    ChoosePetScreen --> BaseRoom : Pet Selected
-    
-    state BaseRoom {
-        [*] --> IdleHUD : แสดงค่าพลังงาน 6 AP และสเตตัส
-        IdleHUD --> CareMiniGame_Feed : คลิก Feed (ใช้ 1 AP)
-        IdleHUD --> CareMiniGame_Clean : คลิก Clean (ใช้ 1 AP)
-        IdleHUD --> CareMiniGame_Train : คลิก Train (ใช้ 1 AP)
-        IdleHUD --> CareMiniGame_Heal : คลิก Heal (ใช้ 1 AP)
-        IdleHUD --> ShopScreen : คลิก Merchant (เฉพาะ Day 3)
-        IdleHUD --> InventoryOverlay : คลิกไอคอนกระเป๋า
-        
-        CareMiniGame_Feed --> IdleHUD : ครบ 10 ครั้ง / หัก AP
-        CareMiniGame_Clean --> IdleHUD : ครบ 10 ครั้ง / หัก AP
-        CareMiniGame_Train --> IdleHUD : ครบ 10 ครั้ง / หัก AP
-        CareMiniGame_Heal --> IdleHUD : ครบ 10 ครั้ง / หัก AP
-        ShopScreen --> IdleHUD : ปิดร้านค้า
-        InventoryOverlay --> IdleHUD : ใช้ไอเทม / ปิดกระเป๋า
-    }
-    
-    BaseRoom --> EventResolution : Energy == 0 หรือ กิจกรรมครบ
-    
-    state EventResolution {
-        [*] --> CheckEventDay
-        CheckEventDay --> DisasterDay1 : Day 1 (Thunderstorm)
-        CheckEventDay --> EncounterDay2 : Day 2 (Toothless Knock Knock)
-        CheckEventDay --> MerchantEncounterDay3 : Day 3 (Merchant Offer)
-        
-        DisasterDay1 --> CalmingQTE : ปลอบประโลมสัตว์เลี้ยง
-        EncounterDay2 --> TamingCombat : เลือก Tame (Acid Dodge)
-        EncounterDay2 --> ChasePeace : เลือก Chase (หนีไป)
-        MerchantEncounterDay3 --> SellEnding : เลือก Yes (ขาย 5,000G)
-        MerchantEncounterDay3 --> BossCombat : เลือก No (ปฏิเสธ)
-        
-        CalmingQTE --> EndPhaseCheck
-        TamingCombat --> EndPhaseCheck
-        ChasePeace --> EndPhaseCheck
-        BossCombat --> EndPhaseCheck
-    }
-    
-    EventResolution --> IncapacitatedScreen : สัตว์เลี้ยง HP == 0
-    IncapacitatedScreen --> SummaryReportScreen : จ่ายค่ารักษา 500G (หรือกู้ยืม)
-    
-    EventResolution --> SummaryReportScreen : ผ่านเหตุการณ์
-    SummaryReportScreen --> NightRestScreen : ยืนยันผล
-    NightRestScreen --> BaseRoom : เริ่มวันใหม่ (Day 2 หรือ Day 3)
-    NightRestScreen --> FinalCreditsScreen : จบวันที่ 3 (Vertical Slice Completed)
-```
+1. **Title Screen & Main Menu:**
+   - หน้าจอไตเติลพร้อมชื่อเกม BePal เมนู Start New Game, Help & Rules, และ Quit
+2. **Prologue & Choose Starter Pet Scene:**
+   - บทสนทนานำเข้าสู่เรื่องราวของผู้ดูแลสถานพักพิง (The Sanctuarist)
+   - หน้าจอเลือกรับอุปการะสัตว์เลี้ยงเริ่มต้น 1 ใน 3 ตัว: Coco (Mossling), Sproutlet, หรือ Gloomtail
+3. **Morning Briefing & Hazard Check:**
+   - แสดงหัวข้อข่าวประจำวันและสภาพอากาศ เช่น แจ้งเตือนพายุฝนฟ้าคะนองใน Day 1
+4. **Habitat Base Room HUD:**
+   - หน้าจอหลักประจำวัน แสดงค่าสถานะ: วันที่ (Day), แต้มพลังงาน (6 AP Pips), เงิน (Gold), และแถบสถานะสัตว์เลี้ยง (HP, Stomach, Clean, EXP)
+   - 4 ปุ่มคำสั่งการดูแลหลัก (Feed, Clean, Train, Heal)
+   - ปุ่มไอคอนลัด: กระเป๋าเก็บของ (Bag/Inventory), สมุดบันทึก (Survival Log), และรถเข็นร้านค้า (Shop)
+5. **10-Attempt Care QTE Mini-Game Screen:**
+   - วงล้อวัดความแม่นยำแบ่งโซน Perfect ($\pm 0.20 \text{ rad}$) และ Good ($\pm 0.45 \text{ rad}$)
+   - ตัวนับความพยายาม `[ 01 / 10 ]` ถึง `[ 10 / 10 ]` พร้อมแถบ Day Progress สะสม
+6. **Combat Encounter & Taming Arena Screen:**
+   - หน้าจอเผชิญหน้า Toothless (Day 2) และ Merchant Boss Fight (Day 3)
+   - วงล้อเตือนภัยสีแดง วงหลบหลีกสีทอง (Dodge Zone) และหน้าต่างกดสวนกลับ (Counter-Attack)
+7. **Emergency Revive Modal:**
+   - หน้าต่างกู้ชีพฉุกเฉินเมื่อสัตว์เลี้ยง HP เหลือ 0 ชำระค่าธรรมเนียม 500G หรือเซ็นสัญญากู้ยืมเงินดอกเบี้ย 20%
+8. **Daily Summary Report Card & Night Rest Screen:**
+   - เอกสารรายงานผลสไตล์ Papers, Please แสดงเกรดการดูแล (S, A, B, C, F), โบนัสเงินรางวัล, และการปลดล็อกบันทึก
+   - ตัดเข้าสู่ฉากกลางคืน (Fade to Black) บันทึกข้อมูล และรีเซ็ตพลังงานเข้าสู่วันถัดไป
 
 ---
 
-## Controls & Player Agency
+## Controls Mapping
 
 | รูปแบบการควบคุม | บริบทการใช้งาน | หน้าที่และผลลัพธ์ |
 | --- | --- | --- |
@@ -146,17 +115,15 @@ stateDiagram-v2
 
 ---
 
-## Win, Lose, and Recovery Rules
+## Win / Lose & Emergency Revive Conditions
 
 1. **Daily Victory Condition:**
-   - ใช้พลังงานและบริหารสเตตัสสัตว์เลี้ยงให้อยู่รอดจนสิ้นสุดวันโดยที่ค่า Health ไม่แตะระดับ 0
-   - ผ่านมินิเกมหรือเหตุการณ์การเผชิญหน้าประจำวัน
-
+   - บริหารสเตตัสสัตว์เลี้ยงให้อยู่รอดจนสิ้นสุดวันโดยที่ค่า Health ไม่ลดลงเหลือ 0
+   - ผ่านมินิเกมและเหตุการณ์การเผชิญหน้าประจำวัน
 2. **Incapacitation State (ภาวะสัตว์เลี้ยงหมดสภาพ):**
-   - เกิดขึ้นเมื่อสัตว์เลี้ยงได้รับความเสียหายจากการโดนกรด การโจมตี หรือการอดอาหารจนค่า Health กลายเป็น 0
+   - เกิดขึ้นเมื่อสัตว์เลี้ยงได้รับความเสียหายจากการโจมตี หรือการอดอาหารจนค่า Health กลายเป็น 0
    - เกมจะไม่จบลงแบบ Game Over ถาวร แต่จะเข้าสู่หน้าจอ **Emergency Revive (หน่วยแพทย์ฉุกเฉิน)**
-   - ผู้เล่นต้องชำระค่าธรรมเนียมกู้ชีพ **500 Gold** (หากเงินไม่พอ ระบบจะมีข้อตกลงเงินกู้ฉุกเฉินจากพ่อค้า คิดดอกเบี้ย 20% ต่อวัน)
-
+   - ผู้เล่นต้องชำระค่าธรรมเนียมกู้ชีพ **500 Gold** (หากเงินไม่พอ ระบบจะมีสัญญาเงินกู้ฉุกเฉินจากพ่อค้า คิดดอกเบี้ย 20% ทบต้นต่อวัน)
 3. **Campaign Clear Condition:**
    - ผ่านพ้นเหตุการณ์วันที่ 3 (ไม่ว่าจะเลือกขาย Toothless หรือเอาชนะบอส Merchant ได้สำเร็จ)
-   - หน้าจอจะแสดงสรุปเกรดรวมทั้ง 3 วัน บันทึกฉายาผู้ดูแล (Caretaker Title) และปลดล็อกสถิติการเล่น
+   - หน้าจอจะแสดงสรุปเกรดรวมทั้ง 3 วัน บันทึกฉายาผู้ดูแล (Caretaker Title) และฉากจบ Ending A หรือ B

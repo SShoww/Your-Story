@@ -123,9 +123,10 @@ Game1.Draw(GameTime)
   - `.config/`: Tool manifest (`dotnet-tools.json`) pinning `dotnet-mgcb` CLI tools.
 - `CoPoject/BePal.Tests/`: Unit test suite (45 tests, .NET 8 xUnit) covering domain logic, navigation, transitions, and UI.
 - `BEPAL/Docs/`: Game design documentation and agile planning.
-  - `NewGDD/`: **Active Game Design Document Suite (v2.0)** synthesizing the 64 presentation slides into 10 structured documents: 4-phase daily loop, 6 AP energy budget, 10-attempt care QTEs, Toothless taming encounter, multi-phase Merchant boss battle, and full economic/item system (`00-concept.md` through `08-technical-architecture.md`, `README.md`).
+  - `NewGDD/`: **Active Game Design Document Suite (v2.0)** strictly adhering to the canonical 6-document + README structure (`00-concept.md` through `05-asset-list.md`, `README.md`) synthesizing the 64 presentation slides: 4-phase daily loop, 6 AP energy budget, 10-attempt care QTEs, Toothless taming encounter, multi-phase Merchant boss battle, and full economic/item system.
+  - `NewAgile/`: **Active Agile Management Suite (v2.0)** mirroring canonical Agile structure (`01-product-backlog.md`, `02-sprint-backlog.md`, `03-kanban-board.md`, `04-Kanban-for-Obsidian.md`, `sprint-plan-01.md` through `sprint-plan-03.md`, `meeting-notes/`, `README.md`) with mathematically balanced 128 SP workload.
   - `GDD/`: Legacy baseline specifications (v1) preserved intact for historical reference.
-  - `Agile/`: Sprint plans, sprint backlogs, kanban setup, and MoSCoW breakdowns.
+  - `Agile/`: Legacy sprint plans, sprint backlogs, kanban setup, and MoSCoW breakdowns (v1).
 - `docs/`: Repository governance and architectural documentation.
   - `gitflow-workflow.md`: Complete Gitflow branching, PR, and release specification.
   - `handoff.md`: Cross-session developer progress and delivery tracker.
