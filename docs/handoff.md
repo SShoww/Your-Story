@@ -1,9 +1,8 @@
 # BePal — Session Handoff Document
 
-**Date:** 2026-09-14  
+**Date:** 2026-09-20  
 **Target Branch:** `Develop`  
-**Current Status:** Sprint 2 Technical Enablers & Audio Engine System (`TECH-03`, `TECH-01`, `TECH-02`, `TECH-04`, `US-07`, `US-08`, `US-09`, `US-10`, `US-12`), early Sprint 3 integration (`TECH-05`, `US-15`, `US-20`), Day Cycle Logic Bugfix (`PR #17`), and Scene Transition System (`PR #18`, `PR #19`) fully implemented, verified with 51 passing unit tests (51/51), validated with automated 27-frame screenshot harness (01–09 PNG captures), and merged into `Develop` adhering strictly to Atlassian Gitflow standards. Roadmap consolidated to 3 Sprints (2 weeks per sprint, final deadline before October 12, 2026).
-
+**Current Status:** New Game Design Document Suite (v2.0) authored across 10 structured documents in `BEPAL/Docs/NewGDD/`, synthesizing 64 presentation slides with mathematical deepening, full narrative scripting, multi-phase boss combat, complete item/economy systems, and MonoGame C# technical architecture. Unit test suite fully passing (83/83 tests), Gitflow feature branch `feature/new-gdd-v2` active.
 ---
 
 ## 1. Summary of Completed Work
@@ -93,22 +92,32 @@
 6. **Automated Visual Regression QA Pipeline:**
    - Headless `--screenshot` runner extended to 27 frames in `Game1.cs`.
    - Generates canonical visual regression captures in `screenshots/` (01–09 PNG captures).
+### 1.3. New Game Design Document Suite (GDD v2.0 Overhaul)
+- **Location:** `BEPAL/Docs/NewGDD/` (Legacy GDD v1 preserved untouched in `BEPAL/Docs/GDD/`).
+- **Source Material:** Comprehensive synthesis of 64 presentation slides (`C:\Users\Windows 11\Downloads;\New GDD`).
+- **Document Suite Structure (10 documents):**
+  1. `00-concept.md`: High-concept, core pillars, setting, starter pets (Coco, Sproutlet, Gloomtail), aesthetic direction.
+  2. `01-core-loop.md`: 4-phase daily cycle (Narrative, Care, Defense, Progression), Day 1-3 vertical slice timeline, state machines.
+  3. `02-core-rules-and-stats.md`: Pet stats (HP, Stomach, Clean, EXP/Level), daily decay formulas, 6 AP budget, 500G revive & loan rules.
+  4. `03-care-and-qte-systems.md`: 4 care actions (Feed, Clean, Train, Heal), 10-attempt QTE wheel, angular tolerances (+-0.20 rad Perfect, +-0.45 rad Good), day progress scaling (+10% hit, +15% miss), S-F grading.
+  5. `04-events-and-encounters.md`: Day 1 Thunderstorm disaster, Day 2 Toothless "Knock Knock !!" wild encounter, Chase vs Tame branching, Combat taming QTE (Acid Spit, Tail Swipe, Counter-attack).
+  6. `05-merchant-and-combat.md`: Day 3 Traveling Collector, 5,000G buyout dilemma, Ending A (Sell) vs Boss Battle (Refuse), 3-phase fight (Greed's Splash, Gold Gatling, Collector's Cane), Ending B.
+  7. `06-economy-shop-inventory.md`: Gold economy, 5-item Shop catalog, equipment matrix (Ballet Shoes, Toy Knife, Faded Ribbon, Stick, Golden Bell), 8-slot inventory modal.
+  8. `07-ui-ux-flow.md`: UI wireframes for Title, Dialogue Box, Choose Pet, Base Room HUD, Care Wheel, Combat Arena, Revive Modal, Summary Card.
+  9. `08-technical-architecture.md`: MonoGame C# 12 decoupled architecture, domain models, IScreen lifecycle, JSON save schema, 5-phase migration roadmap.
+  10. `README.md`: Suite index, executive summary, cross-comparison matrix between v1 and v2.
 
 ---
 
 ## 2. Codebase Health & Verification
 
-- **Branch:** `Develop` (Up to date with `origin/Develop`)
+- **Branch:** `feature/new-gdd-v2` (off `Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes 51/51 tests (`dotnet test CoPoject/CoPoject.slnx`):
-  - `PrototypeRunTests.cs`: 11 tests
-  - `DialogueBoxTests.cs`: 8 tests
-  - `PanoramicRoomTests.cs`: 5 tests
-  - `NarrativeScreenTests.cs`: 4 tests
-  - `StripeWipeTransitionTests.cs`: 13 tests
-  - `AudioServiceTests.cs`: 6 tests
-  - `HarmType`, `PetCatalog`, `ActionPattern` domain tests: 4 tests
+- **Test Suite:** `CoPoject/BePal.Tests` passes **83/83 tests** (`dotnet test CoPoject/CoPoject.slnx`):
+  - `ShrinkingQteZoneTests.cs`: Staggered care slot tests updated to match `DefaultSlotDuration = 4.5f`.
+  - `CareQteScreenTests.cs`: Teleport displacement and dead-zone absorption verified.
+  - All domain, navigation, dialogue, and audio tests green.
 - **Visual Regression:** `dotnet run --project CoPoject/BePal -- --screenshot` completes cleanly in ~4s.
 
 ---
