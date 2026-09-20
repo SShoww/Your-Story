@@ -92,32 +92,44 @@
 6. **Automated Visual Regression QA Pipeline:**
    - Headless `--screenshot` runner extended to 27 frames in `Game1.cs`.
    - Generates canonical visual regression captures in `screenshots/` (01–09 PNG captures).
-### 1.3. New Game Design Document Suite (GDD v2.0 Overhaul)
+### 1.3. New Game Design Document Suite (Canonical GDD v2.0 Structure)
 - **Location:** `BEPAL/Docs/NewGDD/` (Legacy GDD v1 preserved untouched in `BEPAL/Docs/GDD/`).
-- **Source Material:** Comprehensive synthesis of 64 presentation slides (`C:\Users\Windows 11\Downloads;\New GDD`).
-- **Document Suite Structure (10 documents):**
+- **Structure:** Strictly realigned to the canonical 6-document + README structure matching `BEPAL/Docs/GDD/`:
   1. `00-concept.md`: High-concept, core pillars, setting, starter pets (Coco, Sproutlet, Gloomtail), aesthetic direction.
-  2. `01-core-loop.md`: 4-phase daily cycle (Narrative, Care, Defense, Progression), Day 1-3 vertical slice timeline, state machines.
-  3. `02-core-rules-and-stats.md`: Pet stats (HP, Stomach, Clean, EXP/Level), daily decay formulas, 6 AP budget, 500G revive & loan rules.
-  4. `03-care-and-qte-systems.md`: 4 care actions (Feed, Clean, Train, Heal), 10-attempt QTE wheel, angular tolerances (+-0.20 rad Perfect, +-0.45 rad Good), day progress scaling (+10% hit, +15% miss), S-F grading.
-  5. `04-events-and-encounters.md`: Day 1 Thunderstorm disaster, Day 2 Toothless "Knock Knock !!" wild encounter, Chase vs Tame branching, Combat taming QTE (Acid Spit, Tail Swipe, Counter-attack).
-  6. `05-merchant-and-combat.md`: Day 3 Traveling Collector, 5,000G buyout dilemma, Ending A (Sell) vs Boss Battle (Refuse), 3-phase fight (Greed's Splash, Gold Gatling, Collector's Cane), Ending B.
-  7. `06-economy-shop-inventory.md`: Gold economy, 5-item Shop catalog, equipment matrix (Ballet Shoes, Toy Knife, Faded Ribbon, Stick, Golden Bell), 8-slot inventory modal.
-  8. `07-ui-ux-flow.md`: UI wireframes for Title, Dialogue Box, Choose Pet, Base Room HUD, Care Wheel, Combat Arena, Revive Modal, Summary Card.
-  9. `08-technical-architecture.md`: MonoGame C# 12 decoupled architecture, domain models, IScreen lifecycle, JSON save schema, 5-phase migration roadmap.
-  10. `README.md`: Suite index, executive summary, cross-comparison matrix between v1 and v2.
+  2. `01-core-loop.md`: 4-phase daily cycle (Narrative, Care, Defense, Progression), Day 1-3 vertical slice timeline, scene breakdown, controls mapping, win/lose rules.
+  3. `02-scope-features.md`: USP, MoSCoW feature priorities matrix, out of scope, risk mitigation.
+  4. `03-mechanics.md`: Pet stats (HP, Stomach, Clean, EXP/Level), daily decay formulas, 6 AP budget, 10-attempt QTE wheel, encounters, Merchant boss fight 3 phases, Gold economy, 5-item Shop, 8-slot inventory, 500G revive & loan rules.
+  5. `04-class-diagram.md`: Clean Architecture MonoGame presentation vs Pure C# domain, comprehensive Mermaid class diagrams, Day 1-3 state machines, JSON save schema, migration roadmap.
+  6. `05-asset-list.md`: Master Asset checklist for Dear (2D art), Pooh (audio SFX/BGM), Zunk (fonts), and Show (pipeline).
+  7. `README.md`: Suite index, team members roster, naming conventions, role assignments, and executive comparison matrix.
+
+### 1.4. New Agile Management Suite (NewAgile v2.0)
+- **Location:** `BEPAL/Docs/NewAgile/` (Legacy Agile v1 preserved untouched in `BEPAL/Docs/Agile/`).
+- **Structure:** Mirrors the complete canonical structure of `BEPAL/Docs/Agile/`:
+  1. `01-product-backlog.md`: GDD Feature Traceability Matrix, User Stories with Acceptance Criteria, MoSCoW prioritization, and verified workload summary.
+  2. `02-sprint-backlog.md`: Timeline & Velocity overview, Mermaid Gantt Chart, detailed Sprint 1-3 tables, capacity matrix, Gitflow PR traceability.
+  3. `03-kanban-board.md`: Role-based workload methodologies, Mermaid Kanban board, task tracking table (T-01 to T-32), Definition of Done.
+  4. `04-Kanban-for-Obsidian.md`: Interactive Kanban cards for Obsidian Community Plugin with `@Owner`, `#SP/x`, `#Priority/x` tags and settings block.
+  5. `sprint-plan-01.md`: Sprint 1 Plan (MVP Core & Care Foundations — 29 SP).
+  6. `sprint-plan-02.md`: Sprint 2 Plan (Toothless Taming, Combat Arena & Systems Polish — 45 SP).
+  7. `sprint-plan-03.md`: Sprint 3 Plan (Merchant Shop, 3-Phase Boss Battle & Release — 54 SP).
+  8. `meeting-notes/standup-week-09.md`: Weekly standup meeting notes template.
+  9. `README.md`: Suite index and navigation.
+- **Verified Mathematical Balance:** Exactly 128 SP across 3 Sprints:
+  - Show (Lead Prog): 60 SP (Sprint 1: 14, Sprint 2: 25, Sprint 3: 21)
+  - Zunk (Game Designer): 28 SP (Sprint 1: 15, Sprint 2: 6, Sprint 3: 7)
+  - Pooh (Flex / Audio): 21 SP (Sprint 1: 0, Sprint 2: 7, Sprint 3: 14)
+  - Dear (2D Art Lead): 19 SP (Sprint 1: 0, Sprint 2: 7, Sprint 3: 12)
+  - Sprints: 29 SP + 45 SP + 54 SP = 128 SP.
 
 ---
 
 ## 2. Codebase Health & Verification
 
-- **Branch:** `feature/new-gdd-v2` (off `Develop`)
+- **Branch:** `feature/align-new-gdd-agile` (off `Develop`)
 - **Solution:** `CoPoject/CoPoject.slnx`
 - **Build Status:** Builds with 0 errors and 0 warnings (`dotnet build CoPoject/CoPoject.slnx`).
-- **Test Suite:** `CoPoject/BePal.Tests` passes **83/83 tests** (`dotnet test CoPoject/CoPoject.slnx`):
-  - `ShrinkingQteZoneTests.cs`: Staggered care slot tests updated to match `DefaultSlotDuration = 4.5f`.
-  - `CareQteScreenTests.cs`: Teleport displacement and dead-zone absorption verified.
-  - All domain, navigation, dialogue, and audio tests green.
+- **Test Suite:** `CoPoject/BePal.Tests` passes **83/83 tests** (`dotnet test CoPoject/CoPoject.slnx`).
 - **Visual Regression:** `dotnet run --project CoPoject/BePal -- --screenshot` completes cleanly in ~4s.
 
 ---

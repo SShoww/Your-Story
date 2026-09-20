@@ -1,14 +1,14 @@
 ---
-type: gdd-technical-architecture
+type: gdd-class-diagram
 version: 2.0
 date: 2026-09-20
 ---
 
-# BePal — Technical Architecture & Implementation Blueprint (v2)
+# Class Diagram — BePal Architecture (v2.0)
 
-## 1. High-Level Engine & Architecture Overview
+## Architecture Overview
 
-BePal ได้รับการพัฒนาบนเฟรมเวิร์ก **MonoGame DesktopGL (.NET 8 C# 12)** โดยยึดหลักการออกแบบสถาปัตยกรรมที่แยกชั้นความรับผิดชอบอย่างเด็ดขาด (Clean Architecture / Domain-Driven Separation) ระหว่างชั้นการแสดงผลกราฟิก (MonoGame Presentation Layer) และตรรกะเชิงธุรกิจของเกม (Pure C# Domain Model)
+BePal ได้รับการพัฒนาบนเฟรมเวิร์ก **MonoGame DesktopGL (.NET 8 C# 12)** โดยยึดหลักการออกแบบสถาปัตยกรรมที่แยกชั้นความรับผิดชอบอย่างเด็ดขาด (Clean Architecture / Domain-Driven Separation) ระหว่างชั้นการแสดงผลกราฟิก (MonoGame Presentation Layer) และตรรกะเชิงธุรกิจของเกม (Pure C# Domain Model):
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -53,10 +53,69 @@ BePal ได้รับการพัฒนาบนเฟรมเวิร�
 
 ---
 
-## 2. Core Domain Models & Class Specifications
+## Comprehensive Mermaid Class Diagram
 
 ```mermaid
 classDiagram
+    class Game1 {
+        -GraphicsDeviceManager _graphics
+        -SpriteBatch _spriteBatch
+        -ScreenManager _screenManager
+        -RunSaveState _activeRun
+        +Initialize()
+        +LoadContent()
+        +Update(GameTime)
+        +Draw(GameTime)
+    }
+
+    class ScreenManager {
+        -Stack~IScreen~ _screenStack
+        -StripeWipeTransition _activeTransition
+        +ScreenContext Context
+        +PushScreen(IScreen screen)
+        +PopScreen()
+        +SetScreen(IScreen screen, bool withTransition)
+        +Update(GameTime)
+        +Draw(SpriteBatch, GameTime)
+    }
+
+    class IScreen {
+        <<interface>>
+        +bool IsOverlay
+        +Initialize()
+        +LoadContent(ContentManager, GraphicsDevice)
+        +Update(GameTime, InputState)
+        +Draw(SpriteBatch, GameTime)
+        +OnEntering()
+        +OnExiting()
+    }
+
+    class BaseHabitatScreen {
+        -DialogueBox _dialogue
+        -StatusBarRenderer _hudRenderer
+        +HandleCareAction(CareActionType action)
+        +OpenInventory()
+        +OpenShop()
+        +OpenLog()
+    }
+
+    class CareQteScreen {
+        -RadialWheelRenderer _wheelRenderer
+        -float _needleAngle
+        -int _attemptCounter
+        -int _currentStreak
+        +ConfirmNeedle()
+        +EvaluateHit()
+    }
+
+    class CombatArenaScreen {
+        -CombatEngine _combatEngine
+        -float _telegraphTimer
+        -bool _isCounterWindowOpen
+        +ExecuteDodge()
+        +ExecuteCounterAttack()
+    }
+
     class PetEntity {
         +string Id
         +string SpeciesName
@@ -111,12 +170,30 @@ classDiagram
         +bool EquipItem(int slotIndex, PetEntity target)
     }
 
+    class DialogueBox {
+        +string TextToDisplay
+        +bool IsFastRevealed
+        +bool HasChoices
+        +ShowPrompt(string prompt, string[] options, Action~int~ onSelected)
+        +AdvanceText()
+    }
+
+    Game1 --> ScreenManager
+    ScreenManager --> IScreen
+    IScreen <|.. BaseHabitatScreen
+    IScreen <|.. CareQteScreen
+    IScreen <|.. CombatArenaScreen
+    BaseHabitatScreen --> DialogueBox
+    BaseHabitatScreen --> PetEntity
+    BaseHabitatScreen --> EnergyAccount
+    BaseHabitatScreen --> EconomyManager
+    BaseHabitatScreen --> InventoryService
     PetEntity --> PetStats
 ```
 
 ---
 
-## 3. Screen Lifecycle & Navigation (IScreen & ScreenManager)
+## Screen Lifecycle & Navigation (IScreen & ScreenManager)
 
 ระบบหน้าจอได้รับการจัดการผ่าน `ScreenManager` ซึ่งสนับสนุนทั้งการสลับหน้าจอหลัก (Full Screen Transition) และการเปิดหน้าต่างซ้อนทับ (Modal / Overlay Stack):
 
@@ -152,7 +229,7 @@ public interface IScreen
 
 ---
 
-## 4. State Machine Implementation for Days 1–3
+## State Machine Implementation for Days 1–3
 
 ลำดับเหตุการณ์ตั้งแต่ต้นจนจบถูกควบคุมผ่าน `RunStateMachine`:
 
@@ -196,7 +273,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Persistence & Save Schema (JSON Specification)
+## Persistence & Save Schema (JSON Specification)
 
 ความคืบหน้าของเกมจะถูกบันทึกลงในไฟล์ `savegame.json` ทุกครั้งที่ผ่านเข้าสู่ `DailySummaryScreen`:
 
@@ -245,7 +322,7 @@ stateDiagram-v2
 
 ---
 
-## 6. Migration Roadmap from Legacy Codebase (แผนการปรับปรุงโค้ดจาก v1 สู่ v2)
+## Technical Migration Roadmap from Legacy Codebase
 
 เพื่อให้โปรแกรมเมอร์สามารถนำ GDD v2 ไปต่อยอดกับโค้ดปัจจุบันในโฟลเดอร์ `CoPoject/BePal/` ได้อย่างราบรื่น:
 
