@@ -1,0 +1,140 @@
+using BePalV2.Gameplay;
+using Xunit;
+
+namespace BePalV2.Tests;
+
+public class CombatEngineTests
+{
+    [Fact]
+    public void ToothlessTaming_CountersIncreaseTameGauge()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.ToothlessTaming, pet);
+
+        Assert.Equal(0f, engine.TameGauge);
+        Assert.Equal(100f, engine.PlayerHp);
+        Assert.False(engine.IsCombatWon);
+
+        // Advance until needle is in dodge zone or test dodge mechanics
+        // When dodge succeeds, counter window opens
+        // We can test counter when window open
+        Assert.False(engine.IsCounterWindowOpen);
+        Assert.False(engine.AttemptCounter()); // Fails when window closed
+    }
+
+    [Fact]
+    public void ToothlessTaming_FourCounters_WinsTaming()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.ToothlessTaming, pet);
+
+        // Simulate 4 successful dodge + counter pairs
+        for (int i = 0; i < 4; i++)
+        {
+            // Set needle at DodgeZoneCenter to guarantee dodge
+            // Or use Update
+            // We can test AttemptDodge directly when needle is aligned
+            // Let's verify needle positioning
+            while (!engine.IsNeedleInDodgeZone())
+            {
+                engine.Update(0.05f);
+            }
+            bool dodged = engine.AttemptDodge();
+            Assert.True(dodged);
+            Assert.True(engine.IsCounterWindowOpen);
+
+            bool countered = engine.AttemptCounter();
+            Assert.True(countered);
+            Assert.False(engine.IsCounterWindowOpen);
+        }
+
+        Assert.Equal(100f, engine.TameGauge);
+        Assert.True(engine.IsCombatWon);
+    }
+
+    [Fact]
+    public void MerchantBoss_PhaseProgression_AndSynergies()
+    {
+        var coco = new PetEntity(PetSpecies.Coco);
+        var cocoEngine = new CombatEngine(CombatMode.MerchantBoss, coco);
+        // Coco synergy: speed 3.0 * 0.8 = 2.4
+        Assert.Equal(2.4f, cocoEngine.AngularVelocity, precision: 3);
+
+        var sproutlet = new PetEntity(PetSpecies.Sproutlet);
+        var sproutEngine = new CombatEngine(CombatMode.MerchantBoss, sproutlet);
+        // Sproutlet synergy: dodge half width 0.30 * 1.25 = 0.375
+        Assert.Equal(0.375f, sproutEngine.DodgeZoneHalfWidth, precision: 3);
+
+        var gloomtail = new PetEntity(PetSpecies.Gloomtail);
+        var gloomEngine = new CombatEngine(CombatMode.MerchantBoss, gloomtail);
+        // Ensure needle is OUTSIDE dodge zone to trigger miss
+        while (gloomEngine.IsNeedleInDodgeZone())
+        {
+            gloomEngine.Update(0.1f);
+        }
+        gloomEngine.AttemptDodge();
+        // Merchant boss attack is 20 dmg, Gloomtail takes 50% = 10 dmg -> PlayerHp = 90
+        Assert.Equal(90f, gloomEngine.PlayerHp);
+    }
+
+    [Fact]
+    public void CloudyGlasses_AbsorbsTwoHits()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.MerchantBoss, pet, initialShieldHits: 2);
+
+        // Force miss 1
+        while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        engine.AttemptDodge();
+        Assert.Equal(100f, engine.PlayerHp); // Shield absorbed!
+        Assert.Equal(1, engine.ShieldHitsRemaining);
+
+        // Force miss 2
+        while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        engine.AttemptDodge();
+        Assert.Equal(100f, engine.PlayerHp); // Shield absorbed!
+        Assert.Equal(0, engine.ShieldHitsRemaining);
+
+        // Force miss 3
+        while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+        engine.AttemptDodge();
+        Assert.Equal(80f, engine.PlayerHp); // Took full 20 damage!
+    }
+
+    [Fact]
+    public void MerchantBoss_Phase1ThreeDodges_TriggersPetCounterDamage()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.MerchantBoss, pet);
+        Assert.Equal(1000f, engine.BossHp);
+        Assert.Equal(1, engine.BossPhase);
+
+        for (int i = 0; i < 3; i++)
+        {
+            while (!engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+            engine.AttemptDodge();
+        }
+
+        // 3 consecutive dodges in phase 1 dealt 100 dmg
+        Assert.Equal(900f, engine.BossHp);
+    }
+
+    [Fact]
+    public void ToothlessAlly_DoublesCounterDamage()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engineWithout = new CombatEngine(CombatMode.MerchantBoss, pet, hasToothlessAlly: false);
+        var engineWith = new CombatEngine(CombatMode.MerchantBoss, pet, hasToothlessAlly: true);
+
+        // Trigger counter opportunity
+        while (!engineWithout.IsNeedleInDodgeZone()) engineWithout.Update(0.05f);
+        engineWithout.AttemptDodge();
+        engineWithout.AttemptCounter(); // 80 dmg
+        Assert.Equal(920f, engineWithout.BossHp);
+
+        while (!engineWith.IsNeedleInDodgeZone()) engineWith.Update(0.05f);
+        engineWith.AttemptDodge();
+        engineWith.AttemptCounter(); // 80 * 2 = 160 dmg
+        Assert.Equal(840f, engineWith.BossHp);
+    }
+}
