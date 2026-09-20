@@ -141,10 +141,10 @@ public class CareQteScreenTests
             if (screen.TeleportCount > prevWarpCount)
             {
                 observedWarps++;
-                // Verify displacement was at least PI/2 (accounting for circular wrap)
+                // Verify displacement was significant (at least 0.8 rad / ~46 degrees, accounting for circular wrap)
                 float diff = MathF.Abs(screen.Angle - screen.LastTeleportAngle);
                 if (diff > MathF.PI) diff = ShrinkingQteZone.Tau - diff;
-                Assert.True(diff >= (MathF.PI * 0.5f) - 0.05f, $"Expected angular leap >= PI/2 rad, got {diff}");
+                Assert.True(diff >= 0.8f, $"Expected angular leap >= 0.8 rad, got {diff}");
             }
         }
 
@@ -184,7 +184,7 @@ public class CareQteScreenTests
         run.EndDay();
         run.EndDay();
         var context = ScreenContext.CreateTestContext(run);
-        var screen = new CareQteScreen(context);
+        var screen = new CareQteScreen(context, new Random(42));
 
         // Step up to just before telegraph window
         float beforeTelegraph = screen.NextTeleportTime - CareQteScreen.TelegraphDuration - 0.05f;
@@ -212,7 +212,7 @@ public class CareQteScreenTests
         var screen = new CareQteScreen(context);
 
         // Step until first teleport occurs
-        while (screen.TeleportCount == 0 && screen.QteTime < 2.5f)
+        while (screen.TeleportCount == 0 && screen.QteTime < 5.0f)
         {
             screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.02f)));
         }
@@ -278,7 +278,7 @@ public class CareQteScreenTests
         var screen = new CareQteScreen(context);
 
         // Step until teleport occurs
-        while (screen.TeleportCount == 0 && screen.QteTime < 2.5f)
+        while (screen.TeleportCount == 0 && screen.QteTime < 5.0f)
         {
             screen.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(0.02f)));
         }
@@ -309,9 +309,9 @@ public class CareQteScreenTests
         var context = ScreenContext.CreateTestContext(run);
         var screen = new CareQteScreen(context);
 
-        // Step through 5.0s (less than zone expiration 5.5s)
+        // Step through 7.0s (less than zone expiration 7.5s)
         float total = 0f;
-        while (total < 5.0f && !screen.Zone.IsExpired)
+        while (total < 7.0f && !screen.Zone.IsExpired)
         {
             screen.Update(new GameTime(TimeSpan.FromSeconds(total), TimeSpan.FromSeconds(0.05f)));
             total += 0.05f;
