@@ -2,8 +2,10 @@ using System.IO;
 using BePalV2.Audio;
 using BePalV2.Gameplay;
 using BePalV2.Screens;
+using BePalV2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace BePalV2;
 
@@ -16,6 +18,8 @@ public class Game1 : Game
     private ScreenContext _context = null!;
     private readonly string[] _args;
     private int _playtestFrame;
+    private KeyboardState _prevKeyboard;
+    private MouseState _prevMouse;
 
     public ScreenManager ScreenManager => _screenManager;
 
@@ -27,6 +31,17 @@ public class Game1 : Game
         _graphics.PreferredBackBufferHeight = 720;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
+        Window.IsBorderless = true;
+        try
+        {
+            var display = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+            Window.Position = new Point(Math.Max(0, (display.Width - 1280) / 2), Math.Max(0, (display.Height - 720) / 2));
+        }
+        catch
+        {
+            // Fallback for headless/CI environments
+        }
     }
 
     protected override void LoadContent()
@@ -86,16 +101,33 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
+        KeyboardState kstate = Keyboard.GetState();
+
+        if (kstate.IsKeyDown(Keys.F11) && !_prevKeyboard.IsKeyDown(Keys.F11))
+        {
+            _graphics.ToggleFullScreen();
+        }
+
         _screenManager.Update(gameTime);
         base.Update(gameTime);
+
+        _prevKeyboard = kstate;
+        _prevMouse = Mouse.GetState();
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(new Color(18, 20, 30));
+        GraphicsDevice.Clear(UITheme.BgDeep);
 
         _batch.Begin();
         _screenManager.Draw(gameTime, _batch);
+
+        MouseState mstate = Mouse.GetState();
+        bool mouseClicked = mstate.LeftButton == ButtonState.Released && _prevMouse.LeftButton == ButtonState.Pressed;
+        CleanUI.DrawWindowHeader(_batch, _context.Font, 1280, mstate.Position, mouseClicked,
+            onToggleFullscreen: () => _graphics.ToggleFullScreen(),
+            onClose: () => Exit());
+
         _batch.End();
 
         base.Draw(gameTime);
@@ -127,54 +159,67 @@ public class Game1 : Game
         switch (_playtestFrame)
         {
             case 2:
+                // 01: Main menu matching Slide 4 (Spacebar, WASD, mouse graphic)
                 SaveScreenshot("screenshots/v2/01_menu.png");
-                _screenManager.SetScreen(new ChoosePetScreen(_context), transition: false);
+                _screenManager.SetScreen(new ChoosePetScreen(_context, showIntro: false), transition: false);
                 break;
 
             case 5:
+                // 02: Pet selection matching Slide 9 (3 starter cards)
                 SaveScreenshot("screenshots/v2/02_choose_pet.png");
                 _context.Run = new V2RunState(PetSpecies.Coco);
                 _screenManager.SetScreen(new BaseHabitatScreen(_context), transition: false);
                 break;
 
             case 8:
+                // 03: Base habitat room matching Slide 13 (door, doctor, desk, bench, active pet)
                 SaveScreenshot("screenshots/v2/03_habitat_room.png");
-                _screenManager.SetScreen(new CareQteScreen(_context, CareActionType.Feed), transition: false);
+                _screenManager.SetScreen(new CareQteScreen(_context, CareActionType.Train), transition: false);
                 break;
 
             case 11:
+                // 04: Care QTE wheel matching Slide 15/17 (4 nodes, attempts counter, action behavior)
                 SaveScreenshot("screenshots/v2/04_care_qte.png");
-                _screenManager.SetScreen(new CalmingQteScreen(_context), transition: false);
+                var roomLog = new BaseHabitatScreen(_context);
+                roomLog.OpenLogModal(0);
+                _screenManager.SetScreen(roomLog, transition: false);
                 break;
 
             case 14:
-                SaveScreenshot("screenshots/v2/05_thunderstorm.png");
-                _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.ToothlessTaming), transition: false);
+                // 05: Survival Logbook matching Slide 22/25 (pet discovery & disaster tabs)
+                SaveScreenshot("screenshots/v2/05_survival_log.png");
+                var roomUpg = new BaseHabitatScreen(_context);
+                roomUpg.OpenUpgradeModal();
+                _screenManager.SetScreen(roomUpg, transition: false);
                 break;
 
             case 17:
-                SaveScreenshot("screenshots/v2/06_toothless_arena.png");
-                _context.Run.UnlockToothless();
-                _screenManager.SetScreen(new ShopModalScreen(_context), transition: false);
+                // 06: Upgrade Station matching Slide 27 (3 upgrade cards)
+                SaveScreenshot("screenshots/v2/06_upgrade_station.png");
+                _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.ToothlessTaming), transition: false);
                 break;
 
             case 20:
-                SaveScreenshot("screenshots/v2/07_merchant_shop.png");
-                _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.MerchantBoss), transition: false);
+                // 07: Day 2 Toothless Taming Combat Wheel matching Slide 38
+                SaveScreenshot("screenshots/v2/07_toothless_arena.png");
+                _screenManager.SetScreen(new ShopModalScreen(_context), transition: false);
                 break;
 
             case 23:
-                SaveScreenshot("screenshots/v2/08_boss_battle.png");
-                _screenManager.SetScreen(new DailySummaryScreen(_context), transition: false);
+                // 08: Day 3 Merchant Shop matching Slide 59 (5 items & merchant speech)
+                SaveScreenshot("screenshots/v2/08_merchant_shop.png");
+                _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.MerchantBoss), transition: false);
                 break;
 
             case 26:
-                SaveScreenshot("screenshots/v2/09_summary_report.png");
-                _screenManager.SetScreen(new EndingScreen(_context, StoryEnding.EndingB_Protector), transition: false);
+                // 09: Day 3 Merchant Boss Fight matching Slide 54 (5-hit gauge & gold theft)
+                SaveScreenshot("screenshots/v2/09_boss_battle.png");
+                _screenManager.SetScreen(new DailySummaryScreen(_context), transition: false);
                 break;
 
             case 29:
-                SaveScreenshot("screenshots/v2/10_ending.png");
+                // 10: Daily Debriefing and Shift Summary matching Slide 30
+                SaveScreenshot("screenshots/v2/10_summary_report.png");
                 Exit();
                 break;
         }

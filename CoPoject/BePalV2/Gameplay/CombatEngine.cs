@@ -16,35 +16,38 @@ public sealed class CombatEngine
     public float PlayerMaxHp { get; } = 100f;
     public float PlayerHp { get; private set; } = 100f;
 
-    // Toothless Taming
+    // Toothless Taming (Day 2)
     public float TameGauge { get; private set; } = 0f;
 
-    // Merchant Boss
+    // Merchant Boss (Day 3) - Slide 54: "เลือด = การกดโจมตีโดน 5 ครั้ง"
+    public const int MaxBossHits = 5;
     public float BossMaxHp { get; } = 1000f;
     public float BossHp { get; private set; } = 1000f;
+    public int BossHitsRemaining => (int)Math.Ceiling(Math.Max(0f, BossHp) / (BossMaxHp / MaxBossHits));
     public int BossPhase => BossHp > 700f ? 1 : (BossHp > 300f ? 2 : 3);
 
     // Needle & QTE State
     public float NeedleAngle { get; private set; }
     public float AngularVelocity { get; private set; } = 3.0f;
-    public float DodgeZoneCenter { get; private set; } = 1.5f * (float)Math.PI;
+    public float DodgeZoneCenter { get; private set; } = 1.75f * (float)Math.PI; // Top-right ~315 deg (Slide 38)
     public float DodgeZoneHalfWidth { get; private set; } = 0.30f;
 
-    // Counter / Parry Window
+    // Counter / Attack Window
     public bool IsCounterWindowOpen { get; private set; }
     public float CounterWindowTimer { get; private set; }
-    public const float CounterWindowDuration = 0.30f;
+    public const float CounterWindowDuration = 0.35f;
 
     public bool IsParryWindowOpen { get; private set; }
 
-    // Consecutive dodges for Phase 1 Greed's Splash
+    // Consecutive dodges and rewards
     public int ConsecutiveDodges { get; private set; }
     public int GoldEarnedInFight { get; private set; }
+    public int GoldStolenFromPlayer { get; private set; } // Slide 54: gold theft on miss
 
     // Shield hits from Cloudy Glasses
     public int ShieldHitsRemaining { get; private set; }
 
-    public bool IsPlayerDefeated => PlayerHp <= 0f;
+    public bool IsPlayerDefeated => PlayerHp <= 0f || ActivePet.Health <= 0f;
     public bool IsCombatWon => Mode == CombatMode.ToothlessTaming ? TameGauge >= 100f : BossHp <= 0f;
     public bool IsFinished => IsPlayerDefeated || IsCombatWon;
 
@@ -62,20 +65,17 @@ public sealed class CombatEngine
         EquippedItem = equipped;
         ShieldHitsRemaining = initialShieldHits;
 
-        // Base velocity & dodge width
         float speed = mode == CombatMode.MerchantBoss ? 3.0f : 2.5f;
         if (activePet.Species == PetSpecies.Coco)
         {
-            // Coco Synergy: reduces needle speed by 20%
-            speed *= 0.80f;
+            speed *= 0.80f; // Coco synergy
         }
         AngularVelocity = speed;
 
-        float width = mode == CombatMode.MerchantBoss && BossPhase == 2 ? 0.15f : 0.30f;
+        float width = 0.30f;
         if (activePet.Species == PetSpecies.Sproutlet)
         {
-            // Sproutlet Synergy: +25% dodge zone width
-            width *= 1.25f;
+            width *= 1.25f; // Sproutlet synergy (0.30 * 1.25 = 0.375)
         }
         if (consumableDodgeBonus > 0f)
         {
@@ -123,26 +123,39 @@ public sealed class CombatEngine
 
             if (Mode == CombatMode.MerchantBoss && BossPhase == 2)
             {
-                // Gold Gatling reward: +2 gold per dodge
                 GoldEarnedInFight += 2;
             }
 
             if (Mode == CombatMode.MerchantBoss && BossPhase == 1 && ConsecutiveDodges >= 3)
             {
-                // Greed's Splash counter: 100 dmg
                 ApplyDamageToBoss(100f);
                 ConsecutiveDodges = 0;
             }
 
-            // Shift dodge zone to new angle for dynamic challenge
-            DodgeZoneCenter = (DodgeZoneCenter + 1.8f) % (float)(2.0 * Math.PI);
+            // Slide 38: "ปุ่มจะค่อยๆหดสั้นลง" (Dodge window dynamically shrinks each dodge)
+            DodgeZoneHalfWidth = Math.Max(0.12f, DodgeZoneHalfWidth * 0.95f);
+
+            // Shift dodge zone to new angle
+            DodgeZoneCenter = (DodgeZoneCenter + 1.6f) % (float)(2.0 * Math.PI);
             return true;
         }
         else
         {
             ConsecutiveDodges = 0;
             IsCounterWindowOpen = false;
-            TakePlayerDamage(Mode == CombatMode.MerchantBoss ? 20f : 15f);
+
+            // Slide 38 & 54 consequences:
+            if (Mode == CombatMode.ToothlessTaming)
+            {
+                ActivePet.TakeDamage(25f);
+                TakePlayerDamage(15f);
+            }
+            else if (Mode == CombatMode.MerchantBoss)
+            {
+                GoldStolenFromPlayer += 200;
+                TakePlayerDamage(20f);
+            }
+
             return false;
         }
     }
@@ -152,12 +165,10 @@ public sealed class CombatEngine
         if (IsFinished || !IsCounterWindowOpen) return false;
 
         IsCounterWindowOpen = false;
-        float baseCounter = 25f;
 
         if (Mode == CombatMode.ToothlessTaming)
         {
-            // Tame gauge +25%
-            TameGauge = Math.Min(100f, TameGauge + baseCounter);
+            TameGauge = Math.Min(100f, TameGauge + 25f);
             return true;
         }
         else
@@ -180,7 +191,6 @@ public sealed class CombatEngine
     {
         if (IsFinished || Mode != CombatMode.MerchantBoss || BossPhase != 3) return false;
 
-        // In Phase 3, purple parry window when needle is near target
         if (IsNeedleInDodgeZone())
         {
             float parryDmg = 150f;
@@ -191,26 +201,15 @@ public sealed class CombatEngine
         }
         else
         {
+            GoldStolenFromPlayer += 200;
             TakePlayerDamage(25f);
             return false;
-        }
-    }
-
-    public void TeleportNeedle()
-    {
-        if (Mode == CombatMode.MerchantBoss && BossPhase == 3)
-        {
-            NeedleAngle = (NeedleAngle + (float)Math.PI) % (float)(2.0 * Math.PI);
         }
     }
 
     private void ApplyDamageToBoss(float damage)
     {
         BossHp = Math.Max(0f, BossHp - damage);
-        if (BossPhase == 2)
-        {
-            DodgeZoneHalfWidth = 0.15f * (ActivePet.Species == PetSpecies.Sproutlet ? 1.25f : 1.0f);
-        }
     }
 
     private void TakePlayerDamage(float rawDamage)
@@ -224,7 +223,7 @@ public sealed class CombatEngine
         float damage = rawDamage;
         if (ActivePet.Species == PetSpecies.Gloomtail)
         {
-            damage *= 0.50f; // 50% damage reduction
+            damage *= 0.50f;
         }
 
         PlayerHp = Math.Max(0f, PlayerHp - damage);

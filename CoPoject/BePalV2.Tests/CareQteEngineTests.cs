@@ -65,6 +65,61 @@ public class CareQteEngineTests
     }
 
     [Fact]
+    public void Train_IncreasesSpeed_AndShrinksPerfectWindowForNonSproutlet()
+    {
+        var coco = new PetEntity(PetSpecies.Coco);
+        var engineTrain = new CareQteEngine(coco, CareActionType.Train);
+        var engineFeed = new CareQteEngine(coco, CareActionType.Feed);
+
+        // Slide 18: Train needle speed is 1.4x faster
+        Assert.Equal(engineFeed.AngularVelocity * 1.4f, engineTrain.AngularVelocity, precision: 4);
+        // Slide 18: Train perfect window is 0.75x narrower
+        Assert.Equal(engineFeed.PerfectWindow * 0.75f, engineTrain.PerfectWindow, precision: 4);
+    }
+
+    [Fact]
+    public void Feed_ReversesRotationDirectionDynamically()
+    {
+        var coco = new PetEntity(PetSpecies.Coco);
+        var engine = new CareQteEngine(coco, CareActionType.Feed);
+
+        Assert.Equal(1.0f, engine.RotationDirection);
+
+        // Updating for 1.7 seconds triggers direction flip (timer threshold is 1.6s)
+        engine.Update(1.7f);
+        Assert.Equal(-1.0f, engine.RotationDirection);
+
+        engine.Update(1.7f);
+        Assert.Equal(1.0f, engine.RotationDirection);
+    }
+
+    [Fact]
+    public void Clean_ShiftsTargetZoneAngle()
+    {
+        var coco = new PetEntity(PetSpecies.Coco);
+        var engine = new CareQteEngine(coco, CareActionType.Clean);
+
+        float initialTarget = engine.CurrentTargetCenterAngle;
+        engine.Update(1.0f);
+        Assert.NotEqual(initialTarget, engine.CurrentTargetCenterAngle);
+        Assert.True(engine.TargetOffsetAngle > 0f);
+    }
+
+    [Fact]
+    public void Heal_TogglesTargetVisibility()
+    {
+        var coco = new PetEntity(PetSpecies.Coco);
+        var engine = new CareQteEngine(coco, CareActionType.Heal);
+
+        Assert.True(engine.IsTargetVisible);
+        // Threshold is 0.35s
+        engine.Update(0.40f);
+        Assert.False(engine.IsTargetVisible);
+        engine.Update(0.40f);
+        Assert.True(engine.IsTargetVisible);
+    }
+
+    [Fact]
     public void BalletShoes_ExpandsPerfectWindow()
     {
         var pet = new PetEntity(PetSpecies.Coco);

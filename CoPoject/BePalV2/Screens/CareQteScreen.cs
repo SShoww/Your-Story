@@ -1,5 +1,6 @@
 using BePalV2.Audio;
 using BePalV2.Gameplay;
+using BePalV2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,33 +23,33 @@ public sealed class CareQteScreen : IScreen
     private const float WheelCenterX = 640f;
     private const float WheelCenterY = 350f;
     private const float WheelRadius = 150f;
-
     public CareQteScreen(ScreenContext ctx, CareActionType action)
     {
         _ctx = ctx;
         _action = action;
-        _engine = new CareQteEngine(_ctx.Run.ActivePet, action, _ctx.Run.Inventory.EquippedItem);
+        _engine = new CareQteEngine(ctx.Run.ActivePet, action, ctx.Run.Inventory.EquippedItem);
     }
 
     public void Update(GameTime gameTime)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        _engine.Update(dt);
 
         if (_feedbackTimer > 0f)
         {
             _feedbackTimer -= dt;
-            if (_feedbackTimer <= 0f) _floatingFeedback = null;
+            if (_feedbackTimer <= 0f)
+            {
+                _floatingFeedback = null;
+            }
         }
-
-        _engine.Update(dt);
 
         var kbd = Keyboard.GetState();
         var mouse = Mouse.GetState();
 
-        bool space = kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space);
-        bool click = mouse.LeftButton == ButtonState.Pressed && _prevMouse.LeftButton == ButtonState.Released;
-
-        if ((space || click) && !_engine.IsCompleted)
+        bool spaceHit = kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space);
+        bool mouseHit = mouse.LeftButton == ButtonState.Pressed && _prevMouse.LeftButton == ButtonState.Released;
+        if ((spaceHit || mouseHit) && !_engine.IsCompleted)
         {
             var tier = _engine.RecordAttempt();
             ShowFeedback(tier);
@@ -56,7 +57,6 @@ public sealed class CareQteScreen : IScreen
             if (_engine.IsCompleted)
             {
                 FinishSession();
-                return;
             }
         }
 
@@ -66,22 +66,22 @@ public sealed class CareQteScreen : IScreen
 
     private void ShowFeedback(PrecisionTier tier)
     {
-        _feedbackTimer = 0.5f;
+        _feedbackTimer = 0.55f;
         switch (tier)
         {
             case PrecisionTier.Perfect:
                 _floatingFeedback = "PERFECT! +150";
-                _floatingColor = new Color(93, 176, 70);
+                _floatingColor = UITheme.AccentEmerald;
                 _ctx.Audio.PlaySuccess();
                 break;
             case PrecisionTier.Good:
                 _floatingFeedback = "GOOD! +100";
-                _floatingColor = new Color(255, 222, 89);
+                _floatingColor = UITheme.AccentGold;
                 _ctx.Audio.PlayConfirm();
                 break;
             case PrecisionTier.Miss:
                 _floatingFeedback = "MISS!";
-                _floatingColor = new Color(231, 25, 31);
+                _floatingColor = UITheme.AccentCoral;
                 _ctx.Audio.PlayFail();
                 break;
         }
@@ -146,53 +146,70 @@ public sealed class CareQteScreen : IScreen
 
     public void Draw(GameTime gameTime, SpriteBatch batch)
     {
-        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), new Color(22, 22, 26));
+        // Dark deep background
+        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), UITheme.BgDeep);
 
-        // Slide 17/18 Top Header: Action & "Attemp : 10"
+        // Top Header
         string actionTarget = _action switch
         {
-            CareActionType.Train => "EXP",
+            CareActionType.Train => "EXPERIENCE",
             CareActionType.Feed => "STOMACH",
-            CareActionType.Clean => "CLEAN",
+            CareActionType.Clean => "CLEANLINESS",
             CareActionType.Heal => "HEALTH",
             _ => "CARE"
         };
-        batch.DrawString(_ctx.Font, $"QTE ACTION: {_action.ToString().ToUpper()} ({actionTarget})", new Vector2(60, 40), Color.White, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, $"CARE PROTOCOL: {_action.ToString().ToUpper()} ({actionTarget})", new Vector2(60, 32), UITheme.TextPrimary, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
 
-        // Slide 17 concept: "Attemp : 10"
-        string attemptStr = $"Attemp : {Math.Max(0, CareQteEngine.TotalAttempts - _engine.CurrentAttemptIndex)} / 10";
-        batch.DrawString(_ctx.Font, attemptStr, new Vector2(60, 85), Color.Gold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        // Attempt Badge
+        int attemptsLeft = Math.Max(0, CareQteEngine.TotalAttempts - _engine.CurrentAttemptIndex);
+        Rectangle attBadge = new(60, 72, 160, 28);
+        CleanUI.DrawBadge(batch, _ctx.Font, attBadge, $"ATTEMPTS: {attemptsLeft} / 10", new Color(34, 42, 58), UITheme.AccentGold);
 
-        // Right Info Box matching Slide 17 / 27
+        // Action mechanic guide text
+        string mechanicNote = _action switch
+        {
+            CareActionType.Train => "Train: Accelerated needle speed with narrow calibration window",
+            CareActionType.Feed => "Feed: Erratic rotation dynamically inverting needle vector",
+            CareActionType.Clean => "Clean: Evasive target zone actively shifting around perimeter",
+            CareActionType.Heal => "Heal: Fluctuating sensory signal intermittently flickering target",
+            _ => ""
+        };
+        batch.DrawString(_ctx.Font, mechanicNote, new Vector2(60, 114), UITheme.TextSecondary);
+
+        // Right Research Score Panel
         int rx = 960;
-        batch.FillRectangle(new Rectangle(rx, 110, 270, 440), new Color(30, 30, 35));
-        batch.DrawRectangle(new Rectangle(rx, 110, 270, 440), new Color(70, 70, 80), 1);
+        Rectangle scorePanel = new(rx, 110, 270, 440);
+        CleanUI.DrawPanel(batch, scorePanel, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
+        batch.FillRectangle(new Rectangle(scorePanel.X, scorePanel.Y, scorePanel.Width, 3), UITheme.AccentGold);
 
-        // Slide 27 concept: "Points : 9999"
-        batch.DrawString(_ctx.Font, $"Points : {_engine.GetFinalScore()}", new Vector2(rx + 20, 135), Color.Gold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
-        batch.DrawLine(rx + 20, 175, rx + 250, 175, Color.Gray, 1f);
+        batch.DrawString(_ctx.Font, "EVALUATION LOG", new Vector2(rx + 20, 130), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+        batch.DrawLine(rx + 20, 162, rx + 250, 162, UITheme.BorderSubtle, 1f);
 
-        batch.DrawString(_ctx.Font, $"Streak:      {_engine.CurrentStreak}", new Vector2(rx + 20, 200), Color.White);
-        batch.DrawString(_ctx.Font, $"Max Streak:  {_engine.MaxStreak}", new Vector2(rx + 20, 235), Color.White);
-        batch.DrawString(_ctx.Font, $"Base Score:  {_engine.TotalScore}", new Vector2(rx + 20, 270), new Color(180, 220, 255));
-        batch.DrawString(_ctx.Font, $"Streak Bonus:+{_engine.GetStreakBonus()}", new Vector2(rx + 20, 305), new Color(255, 222, 89));
+        batch.DrawString(_ctx.Font, $"Score:       {_engine.GetFinalScore()}", new Vector2(rx + 20, 180), UITheme.TextPrimary);
+        batch.DrawString(_ctx.Font, $"Current Streak:{_engine.CurrentStreak}", new Vector2(rx + 20, 215), UITheme.TextSecondary);
+        batch.DrawString(_ctx.Font, $"Max Streak:  {_engine.MaxStreak}", new Vector2(rx + 20, 250), UITheme.TextSecondary);
+        batch.DrawString(_ctx.Font, $"Base Points: {_engine.TotalScore}", new Vector2(rx + 20, 285), UITheme.AccentCyan);
+        batch.DrawString(_ctx.Font, $"Streak Bonus:+{_engine.GetStreakBonus()}", new Vector2(rx + 20, 320), UITheme.AccentGold);
 
-        batch.DrawString(_ctx.Font, "[ SPACEBAR ]", new Vector2(rx + 20, 430), Color.White, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-        batch.DrawString(_ctx.Font, "Hit top green sector", new Vector2(rx + 20, 465), new Color(150, 200, 150));
+        Rectangle keycapBox = new(rx + 30, 430, 210, 44);
+        CleanUI.DrawKeycap(batch, _ctx.Font, keycapBox, "SPACEBAR", isPressed: false, isAccent: true);
 
-        // Draw Radial Wheel matching Slide 15
+        Vector2 subPrompt = _ctx.Font.MeasureString("Align needle inside target");
+        batch.DrawString(_ctx.Font, "Align needle inside target", new Vector2(scorePanel.Center.X - subPrompt.X / 2f, 486), UITheme.TextMuted);
+
+        // Draw Radial Wheel
         DrawRadialWheel(batch);
 
-        // Slide 27 / 28 concept: "QTE Energy Progress Bar"
-        DrawProgressBar(batch);
+        // Bottom Stat Progress Bar
+        DrawStatProgressBar(batch);
 
         // Floating feedback
         if (!string.IsNullOrEmpty(_floatingFeedback))
         {
             Vector2 fbSize = _ctx.Font.MeasureString(_floatingFeedback);
-            Vector2 fbPos = new(WheelCenterX - fbSize.X / 2f, WheelCenterY - 40);
-            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos + new Vector2(2, 2), Color.Black, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos, _floatingColor, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+            Vector2 fbPos = new(WheelCenterX - (fbSize.X * 1.3f) / 2f, WheelCenterY - 40);
+            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos + new Vector2(2, 2), Color.Black * 0.7f, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos, _floatingColor, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
         }
     }
 
@@ -200,72 +217,91 @@ public sealed class CareQteScreen : IScreen
     {
         Vector2 center = new(WheelCenterX, WheelCenterY);
 
-        // Slide 15 4 Action Nodes around the wheel
-        DrawActionNode(batch, new Vector2(center.X, center.Y - WheelRadius - 26), "TRAIN", new Color(93, 176, 70), _action == CareActionType.Train);
-        DrawActionNode(batch, new Vector2(center.X + WheelRadius + 26, center.Y), "CLEAN", new Color(13, 153, 255), _action == CareActionType.Clean);
-        DrawActionNode(batch, new Vector2(center.X - WheelRadius - 26, center.Y), "HEAL", new Color(231, 25, 31), _action == CareActionType.Heal);
-        DrawActionNode(batch, new Vector2(center.X, center.Y + WheelRadius + 26), "FEED", new Color(255, 222, 89), _action == CareActionType.Feed);
+        // 4 Fixed Action Nodes around the wheel
+        DrawActionNode(batch, new Vector2(center.X - 120, center.Y - 120), "TRAIN", UITheme.AccentGold, _action == CareActionType.Train);
+        DrawActionNode(batch, new Vector2(center.X + 120, center.Y - 120), "HEAL", UITheme.AccentEmerald, _action == CareActionType.Heal);
+        DrawActionNode(batch, new Vector2(center.X - 120, center.Y + 120), "CLEAN", UITheme.AccentCyan, _action == CareActionType.Clean);
+        DrawActionNode(batch, new Vector2(center.X + 120, center.Y + 120), "FEED", new Color(230, 130, 60), _action == CareActionType.Feed);
 
-        // Outer wheel border
-        batch.DrawCircle(center, WheelRadius, 64, new Color(55, 55, 65), 6f);
-        batch.DrawCircle(center, WheelRadius - 10, 64, new Color(35, 35, 45), 4f);
+        // Concentric track circles
+        batch.DrawCircle(center, WheelRadius + 8, 64, UITheme.BorderSubtle, 1f);
+        batch.DrawCircle(center, WheelRadius, 64, UITheme.BorderLight, 3f);
+        batch.DrawCircle(center, WheelRadius - 16, 64, UITheme.BorderSubtle, 1f);
 
-        // Good zone (yellow)
-        DrawArcZone(batch, center, WheelRadius - 8, CareQteEngine.TargetCenterAngle, _engine.GoodWindow, new Color(255, 222, 89, 130), 16f);
-
-        // Perfect zone (green)
-        DrawArcZone(batch, center, WheelRadius - 8, CareQteEngine.TargetCenterAngle, _engine.PerfectWindow, new Color(93, 176, 70, 220), 16f);
+        // Good & Perfect zones
+        if (_engine.IsTargetVisible)
+        {
+            float targetAngle = _engine.CurrentTargetCenterAngle;
+            // Good zone (warm amber)
+            DrawArcZone(batch, center, WheelRadius - 8, targetAngle, _engine.GoodWindow, UITheme.AccentGold * 0.65f, 14f);
+            // Perfect zone (emerald)
+            DrawArcZone(batch, center, WheelRadius - 8, targetAngle, _engine.PerfectWindow, UITheme.AccentEmerald, 14f);
+        }
 
         // Center hub
-        batch.DrawCircle(center, 10f, 16, new Color(40, 40, 50), 20f);
-        batch.DrawCircle(center, 20f, 20, Color.White, 2f);
+        batch.DrawCircle(center, 12f, 24, UITheme.BgPanel, 14f);
+        batch.DrawCircle(center, 18f, 24, UITheme.BorderHighlight, 2f);
 
-        // Needle
+        // Laser Needle
         float nx = center.X + (float)Math.Cos(_engine.CurrentAngle) * (WheelRadius - 4);
         float ny = center.Y + (float)Math.Sin(_engine.CurrentAngle) * (WheelRadius - 4);
-        batch.DrawLine(center.X, center.Y, nx, ny, Color.White, 3f);
-        batch.DrawCircle(new Vector2(nx, ny), 5f, 12, Color.Cyan, 3f);
-
-        // Arrow
-        Vector2 arrowPos = new(center.X, center.Y - WheelRadius - 12);
-        batch.DrawString(_ctx.Font, "V", new Vector2(arrowPos.X - 5, arrowPos.Y), Color.Gold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        batch.DrawLine(center.X, center.Y, nx, ny, UITheme.TextPrimary, 2f);
+        // Needle tip pip
+        batch.DrawCircle(new Vector2(nx, ny), 5f, 16, UITheme.AccentCyan, 2f);
+        batch.FillRectangle(new Rectangle((int)nx - 2, (int)ny - 2, 4, 4), UITheme.AccentCyan);
     }
 
     private void DrawActionNode(SpriteBatch batch, Vector2 pos, string label, Color color, bool isActive)
     {
-        Rectangle rect = new((int)(pos.X - 35), (int)(pos.Y - 14), 70, 28);
-        batch.FillRectangle(rect, isActive ? color : color * 0.4f);
-        batch.DrawRectangle(rect, isActive ? Color.White : Color.Gray, isActive ? 2 : 1);
+        Rectangle rect = new((int)(pos.X - 38), (int)(pos.Y - 14), 76, 28);
+        Color bg = isActive ? color * 0.35f : UITheme.BgCardRecessed;
+        Color border = isActive ? color : UITheme.BorderSubtle;
+
+        CleanUI.DrawPanel(batch, rect, bg, border, borderWidth: isActive ? 2 : 1, shadow: false);
+
         Vector2 sz = _ctx.Font.MeasureString(label);
-        Color txtCol = (color == new Color(255, 222, 89) && isActive) ? Color.Black : Color.White;
-        batch.DrawString(_ctx.Font, label, new Vector2(rect.Center.X - sz.X / 2f, rect.Center.Y - sz.Y / 2f), txtCol);
+        Color textCol = isActive ? UITheme.TextPrimary : UITheme.TextMuted;
+        batch.DrawString(_ctx.Font, label, new Vector2(rect.Center.X - sz.X / 2f, rect.Center.Y - sz.Y / 2f), textCol);
     }
 
-    private void DrawProgressBar(SpriteBatch batch)
+    private void DrawStatProgressBar(SpriteBatch batch)
     {
-        // Slide 27 / 28 concept: "QTE Energy Progress Bar"
-        Rectangle barBox = new(180, 580, 920, 40);
-        batch.FillRectangle(barBox, new Color(30, 30, 35));
-        batch.DrawRectangle(barBox, new Color(70, 70, 80), 1);
+        Rectangle barBox = new(180, 590, 920, 48);
+        CleanUI.DrawPanel(batch, barBox, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 1, shadow: true);
 
-        batch.DrawString(_ctx.Font, "PROGRESS BAR:", new Vector2(barBox.X + 16, barBox.Y + 11), Color.White);
+        var pet = _ctx.Run.ActivePet;
+        string statLabel = _action switch
+        {
+            CareActionType.Train => $"EXP: LV. {pet.Level}",
+            CareActionType.Feed => $"STOMACH: {pet.Stomach}%",
+            CareActionType.Clean => $"CLEAN: {pet.Clean}%",
+            CareActionType.Heal => $"HEALTH: {pet.Health} / 100",
+            _ => "STAT"
+        };
+        batch.DrawString(_ctx.Font, statLabel, new Vector2(barBox.X + 20, barBox.Y + 14), UITheme.AccentGold);
 
-        Rectangle fillBg = new(barBox.X + 160, barBox.Y + 10, 560, 20);
+        Rectangle fillBg = new(barBox.X + 220, barBox.Y + 12, 510, 24);
         float ratio = Math.Clamp(_engine.DayProgressPercent / 100f, 0f, 1f);
-        Rectangle fill = new(barBox.X + 160, barBox.Y + 10, (int)(560 * ratio), 20);
 
-        batch.FillRectangle(fillBg, new Color(45, 45, 50));
-        batch.FillRectangle(fill, new Color(93, 176, 70));
-        batch.DrawRectangle(fillBg, Color.White, 1);
-        batch.DrawString(_ctx.Font, $"{(int)_engine.DayProgressPercent}%", new Vector2(fillBg.Center.X - 15, fillBg.Y + 1), Color.White);
+        Color fillColor = _action switch
+        {
+            CareActionType.Train => UITheme.AccentGold,
+            CareActionType.Feed => new Color(230, 130, 60),
+            CareActionType.Clean => UITheme.AccentCyan,
+            CareActionType.Heal => UITheme.AccentEmerald,
+            _ => UITheme.AccentCyan
+        };
 
-        // AP Indicator
-        batch.DrawString(_ctx.Font, $"AP: {_ctx.Run.Energy.CurrentEnergy} / 6", new Vector2(barBox.Right - 140, barBox.Y + 11), Color.Gold);
+        CleanUI.DrawProgressBar(batch, _ctx.Font, fillBg, ratio, fillColor, leftText: null, rightText: $"{(int)_engine.DayProgressPercent}%");
+
+        // AP Indicator badge
+        Rectangle apPill = new(barBox.Right - 150, barBox.Y + 12, 130, 24);
+        CleanUI.DrawBadge(batch, _ctx.Font, apPill, $"AP: {_ctx.Run.Energy.CurrentEnergy} / 6", new Color(28, 36, 48), UITheme.AccentCyan);
     }
 
     private void DrawArcZone(SpriteBatch batch, Vector2 center, float radius, float targetAngle, float halfWindow, Color color, float thickness)
     {
-        int segments = 16;
+        int segments = 24;
         float start = targetAngle - halfWindow;
         float step = (halfWindow * 2f) / segments;
 

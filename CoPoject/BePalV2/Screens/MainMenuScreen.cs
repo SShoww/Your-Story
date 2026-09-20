@@ -1,4 +1,5 @@
 using BePalV2.Audio;
+using BePalV2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -13,11 +14,15 @@ public sealed class MainMenuScreen : IScreen
     private MouseState _prevMouse;
     private bool _showHelp;
 
-    // Stylized buttons matching Slide 4
-    private readonly Rectangle _playBtn = new(460, 380, 360, 60);
-    private readonly Rectangle _optionBtn = new(460, 460, 360, 50);
-    private readonly Rectangle _quitBtn = new(460, 530, 360, 50);
-    private readonly Rectangle _closeHelpBtn = new(540, 590, 200, 40);
+    // Center Buttons matching canonical layout
+    private readonly Rectangle _titleBox = new(460, 110, 360, 110);
+    private readonly Rectangle _playBtn = new(520, 340, 240, 52);
+    private readonly Rectangle _optionBtn = new(520, 410, 240, 50);
+    private readonly Rectangle _quitBtn = new(520, 480, 240, 50);
+    private readonly Rectangle _closeHelpBtn = new(530, 600, 220, 44);
+
+    // Left Spacebar keycap
+    private readonly Rectangle _spacebarKeycap = new(170, 320, 220, 64);
 
     public MainMenuScreen(ScreenContext ctx)
     {
@@ -33,11 +38,13 @@ public sealed class MainMenuScreen : IScreen
 
         if (_showHelp)
         {
-            if (kbd.IsKeyDown(Keys.Escape) && !_prevKeyboard.IsKeyDown(Keys.Escape))
+            if ((kbd.IsKeyDown(Keys.Escape) && !_prevKeyboard.IsKeyDown(Keys.Escape)) ||
+                (kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space)))
             {
                 _showHelp = false;
                 _ctx.Audio.PlayConfirm();
             }
+
             if (click && _closeHelpBtn.Contains(mPos))
             {
                 _showHelp = false;
@@ -63,7 +70,10 @@ public sealed class MainMenuScreen : IScreen
 
             if (click)
             {
-                if (_playBtn.Contains(mPos)) StartNewGame();
+                if (_playBtn.Contains(mPos) || _spacebarKeycap.Contains(mPos))
+                {
+                    StartNewGame();
+                }
                 else if (_optionBtn.Contains(mPos))
                 {
                     _showHelp = true;
@@ -88,97 +98,125 @@ public sealed class MainMenuScreen : IScreen
 
     public void Draw(GameTime gameTime, SpriteBatch batch)
     {
-        // Dark charcoal background RGB(29, 29, 27) matching Slide 4
-        Color bgCharcoal = new(29, 29, 27);
-        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), bgCharcoal);
+        // Dark atmospheric slate background
+        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), UITheme.BgDeep);
 
-        // Subtle tech grid lines
-        for (int x = 0; x < _ctx.ScreenWidth; x += 60)
+        // Subtle geometric grid
+        Color gridColor = new(26, 30, 40, 120);
+        for (int x = 0; x < _ctx.ScreenWidth; x += 64)
         {
-            batch.DrawLine(x, 0, x, _ctx.ScreenHeight, new Color(42, 42, 40));
+            batch.DrawLine(x, 0, x, _ctx.ScreenHeight, gridColor, 1);
         }
-        for (int y = 0; y < _ctx.ScreenHeight; y += 60)
+        for (int y = 0; y < _ctx.ScreenHeight; y += 64)
         {
-            batch.DrawLine(0, y, _ctx.ScreenWidth, y, new Color(42, 42, 40));
+            batch.DrawLine(0, y, _ctx.ScreenWidth, y, gridColor, 1);
         }
-
-        // Title "BePal" - massive bold minimalist font
-        string title = "BePal";
-        Vector2 titleSize = _ctx.Font.MeasureString(title);
-        Vector2 titlePos = new(640 - titleSize.X * 1.8f, 150);
-        batch.DrawString(_ctx.Font, title, titlePos + new Vector2(4, 4), Color.Black, 0f, Vector2.Zero, 3.6f, SpriteEffects.None, 0f);
-        batch.DrawString(_ctx.Font, title, titlePos, Color.White, 0f, Vector2.Zero, 3.6f, SpriteEffects.None, 0f);
-
-        string subtitle = "Abnormal Creature Daycare & Research Facility";
-        Vector2 subSize = _ctx.Font.MeasureString(subtitle);
-        batch.DrawString(_ctx.Font, subtitle, new Vector2(640 - subSize.X / 2f, 280), new Color(160, 160, 160));
 
         Point mPos = Mouse.GetState().Position;
 
-        // Big Play Button with Spacebar Keycap (Slide 4 concept: "Spacebar Play / Space to Enter")
-        bool playHovered = _playBtn.Contains(mPos);
-        batch.FillRectangle(_playBtn, playHovered ? new Color(50, 50, 48) : new Color(38, 38, 36));
-        batch.DrawRectangle(_playBtn, Color.White, playHovered ? 3 : 2);
+        // --- LEFT WING: Prominent Spacebar Keycap ---
+        bool spaceHovered = _spacebarKeycap.Contains(mPos);
+        CleanUI.DrawKeycap(batch, _ctx.Font, _spacebarKeycap, "SPACE", isPressed: spaceHovered, isAccent: true);
 
-        // Keycap icon
-        Rectangle keyCap = new(_playBtn.X + 24, _playBtn.Y + 12, 110, 36);
-        batch.FillRectangle(keyCap, Color.White);
-        batch.DrawString(_ctx.Font, "SPACE", new Vector2(keyCap.X + 24, keyCap.Y + 8), Color.Black);
+        string spaceSubtitle = "Press [ SPACE ] to Start";
+        Vector2 spaceSubSize = _ctx.Font.MeasureString(spaceSubtitle);
+        batch.DrawString(_ctx.Font, spaceSubtitle, new Vector2(_spacebarKeycap.Center.X - spaceSubSize.X / 2f, _spacebarKeycap.Bottom + 16), UITheme.TextSecondary);
 
-        batch.DrawString(_ctx.Font, "PLAY GAME", new Vector2(_playBtn.X + 160, _playBtn.Y + 18), Color.White, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        // --- CENTER COLUMN: Clean Minimalist Title & Menu Buttons ---
+        CleanUI.DrawPanel(batch, _titleBox, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 1);
+        // Accent line on top of title box
+        batch.FillRectangle(new Rectangle(_titleBox.X, _titleBox.Y, _titleBox.Width, 3), UITheme.AccentGold);
 
-        // Option Button (Slide 4 concept)
-        DrawMenuButton(batch, _optionBtn, "OPTION / GUIDE", _optionBtn.Contains(mPos));
+        string title = "BePal";
+        Vector2 titleSize = _ctx.Font.MeasureString(title);
+        Vector2 titlePos = new(_titleBox.Center.X - (titleSize.X * 3.2f) / 2f, _titleBox.Center.Y - (titleSize.Y * 3.2f) / 2f - 4);
+        batch.DrawString(_ctx.Font, title, titlePos + new Vector2(2, 2), Color.Black * 0.6f, 0f, Vector2.Zero, 3.2f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, title, titlePos, UITheme.TextPrimary, 0f, Vector2.Zero, 3.2f, SpriteEffects.None, 0f);
 
-        // Quit Button (Slide 4 concept)
-        DrawMenuButton(batch, _quitBtn, "QUIT", _quitBtn.Contains(mPos));
+        string subtitle = "Abnormal Creature Daycare & Research Facility";
+        Vector2 subSize = _ctx.Font.MeasureString(subtitle);
+        batch.DrawString(_ctx.Font, subtitle, new Vector2(640 - subSize.X / 2f, 240), UITheme.TextMuted);
 
-        // Footer prompt matching Slide 4
-        string footer = "[ SPACEBAR ] Play   |   [ O ] Option   |   [ Q ] Quit";
+        // Center Buttons
+        CleanUI.DrawButton(batch, _ctx.Font, _playBtn, "START GAME", _playBtn.Contains(mPos), accent: UITheme.AccentGold, isPrimary: true);
+        CleanUI.DrawButton(batch, _ctx.Font, _optionBtn, "SYSTEM GUIDE", _optionBtn.Contains(mPos), accent: UITheme.AccentCyan);
+        CleanUI.DrawButton(batch, _ctx.Font, _quitBtn, "QUIT FACILITY", _quitBtn.Contains(mPos), accent: UITheme.AccentCoral);
+
+        // --- RIGHT WING: WASD, Directional Cross & Mouse Graphic ---
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1050, 170, 44, 44), "W");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1000, 222, 44, 44), "A");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1050, 222, 44, 44), "S");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1100, 222, 44, 44), "D");
+
+        // Directional Cross / D-Pad
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1050, 290, 44, 44), "^");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1000, 342, 44, 44), "<");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1050, 342, 44, 44), "v");
+        CleanUI.DrawKeycap(batch, _ctx.Font, new Rectangle(1100, 342, 44, 44), ">");
+
+        // Computer Mouse Graphic with sleek slate styling
+        Rectangle mouseRect = new(1042, 416, 60, 94);
+        CleanUI.DrawPanel(batch, mouseRect, new Color(24, 28, 36), UITheme.BorderLight, borderWidth: 1);
+        // Left button highlight
+        batch.FillRectangle(new Rectangle(mouseRect.X + 2, mouseRect.Y + 2, 26, 36), new Color(44, 52, 68));
+        // Mouse button horizontal divider
+        batch.DrawLine(mouseRect.X, mouseRect.Y + 38, mouseRect.Right, mouseRect.Y + 38, UITheme.BorderSubtle, 1);
+        // Vertical divider between left and right button
+        batch.DrawLine(mouseRect.X + 29, mouseRect.Y, mouseRect.X + 29, mouseRect.Y + 38, UITheme.BorderSubtle, 1);
+        // Scroll wheel pill
+        batch.FillRectangle(new Rectangle(mouseRect.X + 26, mouseRect.Y + 12, 7, 16), UITheme.AccentCyan * 0.8f);
+
+        string interactText = "WASD / Mouse to Interact";
+        Vector2 interactSize = _ctx.Font.MeasureString(interactText);
+        batch.DrawString(_ctx.Font, interactText, new Vector2(1072 - interactSize.X / 2f, 526), UITheme.TextMuted);
+
+        // --- FOOTER PROMPT ---
+        string footer = "[ SPACE ] Play    *    [ O ] System Guide    *    [ Q ] Quit";
         Vector2 fSize = _ctx.Font.MeasureString(footer);
-        batch.DrawString(_ctx.Font, footer, new Vector2(640 - fSize.X / 2f, 660), new Color(140, 140, 140));
+        batch.DrawString(_ctx.Font, footer, new Vector2(640 - fSize.X / 2f, 666), UITheme.TextMuted);
 
-        // Help Modal
+        // Help Modal Overlay
         if (_showHelp)
         {
-            Rectangle modal = new(240, 100, 800, 550);
-            batch.FillRectangle(modal, new Color(20, 20, 20, 250));
-            batch.DrawRectangle(modal, Color.White, 2);
+            CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
 
-            batch.DrawString(_ctx.Font, "NEW GDD 2.0 - GAME RULES & SYSTEM GUIDE", new Vector2(280, 130), Color.White, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawLine(280, 165, 1000, 165, Color.Gray, 1f);
+            Rectangle modal = new(220, 80, 840, 580);
+            CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
+            batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentCyan);
+
+            batch.DrawString(_ctx.Font, "FACILITY SURVIVAL MANUAL - SYSTEM OVERVIEW", new Vector2(260, 108), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+            batch.DrawLine(260, 142, modal.Right - 40, 142, UITheme.BorderSubtle, 1f);
 
             string[] lines =
             {
                 "1. DAILY CYCLE: 4 Phases (Morning Briefing, Care Actions, Defense Resolution, Summary).",
-                "2. 6 ENERGY POINTS (AP): Spend 1 AP on Train, Clean, Heal, or Feed.",
-                "3. 10-ATTEMPT CARE QTE: Circular needle evaluation. Perfect (1.5 Pi) gives +150 pts.",
-                "4. NATURAL DECAY: Stomach -20, Clean -15 each morning. Grimy/Starving causes damage.",
-                "5. DAY 1 DISASTER: Thunderstorm panic emergency calming QTE.",
-                "6. DAY 2 KNOCK KNOCK: Toothless acid monster encounter -> Chase or Tame into shelter.",
+                "2. 6 ENERGY POINTS (AP): Spend 1 AP per Care Action (Train, Clean, Heal, or Feed).",
+                "3. 10-ATTEMPT CARE QTE: Radial needle evaluation with preferred action timing.",
+                "4. NATURAL DECAY: Stomach -20, Clean -15 each morning. Unattended pets panic!",
+                "5. DAY 1 DISASTER: Thunderstorm panic emergency calming sequence.",
+                "6. DAY 2 KNOCK KNOCK: Toothless creature encounter -> Chase or Tame into shelter.",
                 "7. DAY 3 MERCHANT: Buyout dilemma (5,000G buyout vs 3-Phase Boss Battle).",
-                "8. 500G REVIVE LOAN: 20% compound daily interest. Unpaid debt triggers foreclosure!"
+                "8. 500G EMERGENCY LOAN: 20% compound daily interest. Foreclosure upon default!"
             };
 
-            int ly = 185;
-            foreach (var l in lines)
+            int ly = 160;
+            for (int i = 0; i < lines.Length; i++)
             {
-                batch.DrawString(_ctx.Font, l, new Vector2(280, ly), new Color(220, 220, 220));
-                ly += 44;
+                // Number badge
+                Rectangle numBadge = new(260, ly + 2, 22, 22);
+                CleanUI.DrawBadge(batch, _ctx.Font, numBadge, (i + 1).ToString(), new Color(34, 42, 56), UITheme.AccentCyan);
+
+                // Line text
+                string lineContent = lines[i].Substring(lines[i].IndexOf(':') + 1).Trim();
+                string titlePart = lines[i].Substring(3, lines[i].IndexOf(':') - 3);
+                batch.DrawString(_ctx.Font, titlePart + ":", new Vector2(290, ly + 4), UITheme.TextPrimary);
+                Vector2 titlePartSize = _ctx.Font.MeasureString(titlePart + ":");
+                batch.DrawString(_ctx.Font, lineContent, new Vector2(295 + titlePartSize.X, ly + 4), UITheme.TextSecondary);
+
+                ly += 50;
             }
 
-            batch.FillRectangle(_closeHelpBtn, new Color(50, 50, 50));
-            batch.DrawRectangle(_closeHelpBtn, Color.White, 1);
-            batch.DrawString(_ctx.Font, "CLOSE [ ESC ]", new Vector2(_closeHelpBtn.X + 42, _closeHelpBtn.Y + 10), Color.White);
+            CleanUI.DrawButton(batch, _ctx.Font, _closeHelpBtn, "CLOSE MANUAL", _closeHelpBtn.Contains(mPos), accent: UITheme.AccentCyan, hotkey: "[ ESC ]");
         }
-    }
-
-    private void DrawMenuButton(SpriteBatch batch, Rectangle rect, string text, bool hovered)
-    {
-        batch.FillRectangle(rect, hovered ? new Color(50, 50, 48) : new Color(35, 35, 33));
-        batch.DrawRectangle(rect, hovered ? Color.White : new Color(120, 120, 120), hovered ? 2 : 1);
-        Vector2 size = _ctx.Font.MeasureString(text);
-        Vector2 pos = new(rect.Center.X - size.X / 2f, rect.Center.Y - size.Y / 2f);
-        batch.DrawString(_ctx.Font, text, pos, hovered ? Color.White : new Color(200, 200, 200));
     }
 }
