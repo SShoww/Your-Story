@@ -285,8 +285,8 @@ public class ShrinkingQteZoneTests
         Assert.Equal(2.0f, zone.Slots[2].AppearTime);
         Assert.Equal(3.0f, zone.Slots[3].AppearTime);
 
-        // Total duration: (4 - 1) * 1.0s + 2.5s = 5.5s
-        Assert.Equal(5.5f, zone.Duration);
+        // Total duration: (4 - 1) * 1.0s + 4.5s = 7.5s
+        Assert.Equal(7.5f, zone.Duration);
     }
 
     [Fact]

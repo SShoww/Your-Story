@@ -221,7 +221,7 @@ public sealed class CareQteScreen : IScreen
             }
         }
 
-        if (foundEligible)
+        if (foundEligible && maxDisp >= MathF.PI * 0.5f - 0.05f)
         {
             return bestCandidate;
         }

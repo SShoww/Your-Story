@@ -287,9 +287,9 @@ public class CareQteScreenTests
         Assert.True(screen.TeleportGraceTimer > 0f);
 
         // Ensure needle is in dead zone (null hovered action)
-        if (screen.GetHoveredAction() != null)
+        while (screen.GetHoveredAction() != null)
         {
-            screen.Zone.NeedleAngle = (screen.Zone.NeedleAngle + MathF.PI * 0.5f) % ShrinkingQteZone.Tau;
+            screen.Zone.NeedleAngle = (screen.Zone.NeedleAngle + 0.1f) % ShrinkingQteZone.Tau;
         }
 
         int hpBefore = run.Health;
