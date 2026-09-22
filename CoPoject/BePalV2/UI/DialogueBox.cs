@@ -191,6 +191,11 @@ public class DialogueBox
     {
         if (!IsActive) return;
 
+        // Dynamically anchor buttons inside provided bounds
+        NextButtonRect = new(bounds.Right - 160, bounds.Bottom - 52, 130, 38);
+        YesButtonRect = new(bounds.Center.X - 160, bounds.Bottom - 52, 140, 38);
+        NoButtonRect = new(bounds.Center.X + 20, bounds.Bottom - 52, 140, 38);
+
         // Background box
         batch.FillRectangle(bounds, new Color(14, 16, 24, 235));
         batch.DrawRectangle(bounds, new Color(200, 200, 220), 2);
@@ -204,10 +209,33 @@ public class DialogueBox
             batch.DrawString(font, HeaderText, new Vector2(bounds.X + 34, bounds.Y - 10), Color.Gold);
         }
 
-        // Text
+        // Text with word wrapping
         int textX = bounds.X + 30;
-        int textY = bounds.Y + 30;
-        batch.DrawString(font, DisplayedText, new Vector2(textX, textY), Color.White);
+        int textY = bounds.Y + 28;
+        float maxTextWidth = bounds.Width - 60;
+        string displayed = DisplayedText;
+
+        string[] words = displayed.Split(' ');
+        string currentLine = "";
+        float curY = textY;
+        foreach (string word in words)
+        {
+            string testLine = string.IsNullOrEmpty(currentLine) ? word : $"{currentLine} {word}";
+            if (font.MeasureString(testLine).X > maxTextWidth && !string.IsNullOrEmpty(currentLine))
+            {
+                batch.DrawString(font, currentLine, new Vector2(textX, curY), Color.White);
+                curY += font.LineSpacing * 0.9f;
+                currentLine = word;
+            }
+            else
+            {
+                currentLine = testLine;
+            }
+        }
+        if (!string.IsNullOrEmpty(currentLine))
+        {
+            batch.DrawString(font, currentLine, new Vector2(textX, curY), Color.White);
+        }
 
         // Prompt Buttons or Next button
         if (IsPromptActive)
@@ -228,7 +256,10 @@ public class DialogueBox
         batch.FillRectangle(bounds, bgColor);
         batch.DrawRectangle(bounds, Color.White, 1);
         Vector2 size = font.MeasureString(label);
-        Vector2 pos = new(bounds.Center.X - size.X / 2f, bounds.Center.Y - size.Y / 2f);
-        batch.DrawString(font, label, pos, Color.White);
+        float maxW = Math.Max(1f, bounds.Width - 12);
+        float maxH = Math.Max(1f, bounds.Height - 6);
+        float scale = Math.Min(1f, Math.Min(maxW / size.X, maxH / size.Y));
+        Vector2 pos = new(bounds.Center.X - (size.X * scale) / 2f, bounds.Center.Y - (size.Y * scale) / 2f);
+        batch.DrawString(font, label, pos, Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 }

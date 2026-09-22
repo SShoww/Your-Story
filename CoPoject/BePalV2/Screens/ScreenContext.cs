@@ -18,6 +18,6 @@ public sealed class ScreenContext
     public V2RunState Run { get; set; } = new();
     public ScreenManager ScreenManager { get; set; } = null!;
 
-    public int ScreenWidth => 1280;
-    public int ScreenHeight => 720;
+    public int ScreenWidth => 1920;
+    public int ScreenHeight => 1080;
 }

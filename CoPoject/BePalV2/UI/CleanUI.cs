@@ -86,13 +86,16 @@ public static class CleanUI
         batch.FillRectangle(drawRect, bg);
         batch.DrawRectangle(drawRect, border, isHovered ? 2 : 1);
 
-        // Text rendering
+        // Text rendering with responsive boundary scaling
         string fullLabel = string.IsNullOrEmpty(hotkey) ? text : $"{text}  {hotkey}";
         Vector2 size = font.MeasureString(fullLabel);
-        Vector2 pos = new(drawRect.Center.X - size.X / 2f, drawRect.Center.Y - size.Y / 2f);
+        float maxW = Math.Max(1f, drawRect.Width - 16);
+        float maxH = Math.Max(1f, drawRect.Height - 8);
+        float scale = Math.Min(1f, Math.Min(maxW / size.X, maxH / size.Y));
+        Vector2 pos = new(drawRect.Center.X - (size.X * scale) / 2f, drawRect.Center.Y - (size.Y * scale) / 2f);
 
         Color textCol = isHovered ? UITheme.TextPrimary : (isPrimary ? UITheme.AccentGold : UITheme.TextSecondary);
-        batch.DrawString(font, fullLabel, pos, textCol);
+        batch.DrawString(font, fullLabel, pos, textCol, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 
     public static void DrawProgressBar(
@@ -119,18 +122,21 @@ public static class CleanUI
             batch.FillRectangle(fillRect, fillColor);
         }
 
-        // Labels
+        // Labels with responsive height scaling
+        float maxH = Math.Max(1f, rect.Height - 4);
+        float textScale = Math.Min(1f, maxH / Math.Max(1f, font.LineSpacing));
+
         if (!string.IsNullOrEmpty(leftText))
         {
-            Vector2 lPos = new(rect.X + 6, rect.Center.Y - font.LineSpacing / 2f + 1);
-            batch.DrawString(font, leftText, lPos, UITheme.TextPrimary);
+            Vector2 lPos = new(rect.X + 6, rect.Center.Y - (font.LineSpacing * textScale) / 2f);
+            batch.DrawString(font, leftText, lPos, UITheme.TextPrimary, 0f, Vector2.Zero, textScale, SpriteEffects.None, 0f);
         }
 
         if (!string.IsNullOrEmpty(rightText))
         {
-            Vector2 rSize = font.MeasureString(rightText);
-            Vector2 rPos = new(rect.Right - rSize.X - 6, rect.Center.Y - font.LineSpacing / 2f + 1);
-            batch.DrawString(font, rightText, rPos, UITheme.TextSecondary);
+            Vector2 rSize = font.MeasureString(rightText) * textScale;
+            Vector2 rPos = new(rect.Right - rSize.X - 6, rect.Center.Y - (font.LineSpacing * textScale) / 2f);
+            batch.DrawString(font, rightText, rPos, UITheme.TextSecondary, 0f, Vector2.Zero, textScale, SpriteEffects.None, 0f);
         }
     }
 
@@ -154,9 +160,12 @@ public static class CleanUI
         batch.DrawRectangle(drawRect, border, 1);
 
         Vector2 size = font.MeasureString(label);
-        Vector2 pos = new(drawRect.Center.X - size.X / 2f, drawRect.Center.Y - size.Y / 2f);
-        Color textCol = isAccent ? UITheme.AccentGold : UITheme.TextPrimary;
-        batch.DrawString(font, label, pos, textCol);
+        float maxW = Math.Max(1f, drawRect.Width - 10);
+        float maxH = Math.Max(1f, drawRect.Height - 6);
+        float scale = Math.Min(1f, Math.Min(maxW / size.X, maxH / size.Y));
+        Vector2 pos = new(drawRect.Center.X - (size.X * scale) / 2f, drawRect.Center.Y - (size.Y * scale) / 2f);
+        Color textCol = isAccent ? (isPressed ? Color.Black : UITheme.AccentGold) : UITheme.TextPrimary;
+        batch.DrawString(font, label, pos, textCol, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 
     public static void DrawBadge(
@@ -170,8 +179,11 @@ public static class CleanUI
         batch.FillRectangle(rect, bg);
         batch.DrawRectangle(rect, bg * 1.3f, 1);
         Vector2 size = font.MeasureString(text);
-        Vector2 pos = new(rect.Center.X - size.X / 2f, rect.Center.Y - size.Y / 2f);
-        batch.DrawString(font, text, pos, textCol);
+        float maxW = Math.Max(1f, rect.Width - 8);
+        float maxH = Math.Max(1f, rect.Height - 4);
+        float scale = Math.Min(1f, Math.Min(maxW / size.X, maxH / size.Y));
+        Vector2 pos = new(rect.Center.X - (size.X * scale) / 2f, rect.Center.Y - (size.Y * scale) / 2f);
+        batch.DrawString(font, text, pos, textCol, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 
     public static void DrawModalBackdrop(SpriteBatch batch, int screenWidth, int screenHeight, float alpha = 0.75f)

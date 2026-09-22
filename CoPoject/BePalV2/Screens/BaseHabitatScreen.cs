@@ -17,22 +17,16 @@ public sealed class BaseHabitatScreen : IScreen
 
     private float _breathTimer;
 
-    // Room Interactive Zones
-    private readonly Rectangle _doorRect = new(540, 190, 200, 340);
-    private readonly Rectangle _upgradeStationRect = new(60, 300, 140, 130);
-    private readonly Rectangle _survivalDeskRect = new(220, 430, 150, 90);
-    private readonly Rectangle _doctorRect = new(70, 460, 110, 130);
-    private readonly Rectangle _petStageRect = new(840, 390, 220, 200);
+    // Room Interactive Zones (1920x1080)
+    private readonly Rectangle _doorRect = new(860, 260, 200, 460);
+    private readonly Rectangle _upgradeStationRect = new(120, 420, 220, 220);
+    private readonly Rectangle _survivalDeskRect = new(380, 560, 240, 160);
+    private readonly Rectangle _doctorRect = new(130, 680, 180, 200);
+    private readonly Rectangle _petStageRect = new(1440, 480, 320, 280);
 
-    // Bottom action buttons (Quick Bag & Shop)
-    private readonly Rectangle _bagBtn = new(1060, 650, 180, 46);
-    private readonly Rectangle _shopBtn = new(860, 650, 180, 46);
-
-    // Shortcut care buttons along bottom-left
-    private readonly Rectangle _trainShortcut = new(50, 650, 145, 46);
-    private readonly Rectangle _feedShortcut = new(210, 650, 145, 46);
-    private readonly Rectangle _cleanShortcut = new(370, 650, 145, 46);
-    private readonly Rectangle _healShortcut = new(530, 650, 145, 46);
+    // Bottom action buttons (Quick Bag & Shop only - Care actions moved to QTE)
+    private readonly Rectangle _bagBtn = new(1640, 970, 220, 56);
+    private readonly Rectangle _shopBtn = new(1380, 970, 220, 56);
 
     // Modal Active States
     private bool _showDoctorModal;
@@ -48,25 +42,25 @@ public sealed class BaseHabitatScreen : IScreen
     private bool _showDoorModal;
 
     // Doctor modal buttons
-    private readonly Rectangle _doctorYesBtn = new(450, 410, 160, 46);
-    private readonly Rectangle _doctorNoBtn = new(670, 410, 160, 46);
-    private readonly Rectangle _doctorReviveBtn = new(490, 450, 300, 50);
-    private readonly Rectangle _doctorCloseBtn = new(560, 530, 160, 42);
+    private readonly Rectangle _doctorYesBtn = new(720, 580, 200, 52);
+    private readonly Rectangle _doctorNoBtn = new(1000, 580, 200, 52);
+    private readonly Rectangle _doctorReviveBtn = new(760, 620, 400, 56);
+    private readonly Rectangle _doctorCloseBtn = new(860, 740, 200, 50);
 
-    // Upgrade cards
-    private readonly Rectangle _upgCard1 = new(230, 220, 250, 320);
-    private readonly Rectangle _upgCard2 = new(515, 220, 250, 320);
-    private readonly Rectangle _upgCard3 = new(800, 220, 250, 320);
-    private readonly Rectangle _upgCloseBtn = new(560, 570, 160, 44);
+    // Upgrade cards (1920x1080)
+    private readonly Rectangle _upgCard1 = new(420, 280, 320, 460);
+    private readonly Rectangle _upgCard2 = new(800, 280, 320, 460);
+    private readonly Rectangle _upgCard3 = new(1180, 280, 320, 460);
+    private readonly Rectangle _upgCloseBtn = new(860, 780, 200, 50);
 
     // Survival log tabs & close
-    private readonly Rectangle _tabPetDiscovery = new(220, 160, 190, 42);
-    private readonly Rectangle _tabDisaster = new(430, 160, 190, 42);
-    private readonly Rectangle _logCloseBtn = new(560, 580, 160, 44);
+    private readonly Rectangle _tabPetDiscovery = new(420, 210, 240, 50);
+    private readonly Rectangle _tabDisaster = new(690, 210, 240, 50);
+    private readonly Rectangle _logCloseBtn = new(860, 800, 200, 50);
 
     // Door event choices
-    private readonly Rectangle _doorOption1Btn = new(430, 470, 190, 50);
-    private readonly Rectangle _doorOption2Btn = new(660, 470, 190, 50);
+    private readonly Rectangle _doorOption1Btn = new(660, 640, 280, 56);
+    private readonly Rectangle _doorOption2Btn = new(980, 640, 280, 56);
 
     public BaseHabitatScreen(ScreenContext ctx)
     {
@@ -102,28 +96,39 @@ public sealed class BaseHabitatScreen : IScreen
     private void SetupMorningBriefing()
     {
         var run = _ctx.Run;
-        if (run.CurrentPhase != DailyPhase.MorningEvent) return;
-
-        switch (run.DayNumber)
+        if (run.CurrentPhase == DailyPhase.MorningEvent)
         {
-            case 1:
-                _dialogue.StartDialogue(
-                    "CHIEF OVERSEER",
-                    new[] { "Welcome to Shelter Sector 7. A violent thunderstorm is approaching tonight. Tend to your pet's needs before the storm hits!" },
-                    () => run.SetPhase(DailyPhase.CareAction)
-                );
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
+            switch (run.DayNumber)
+            {
+                case 1:
+                    _dialogue.StartDialogue(
+                        "CHIEF OVERSEER",
+                        new[] { "Welcome to Shelter Sector 7. A violent thunderstorm is approaching tonight. Tend to your pet's needs before the storm hits!" },
+                        () => run.SetPhase(DailyPhase.CareAction)
+                    );
+                    break;
+                case 2:
+                    _dialogue.StartDialogue(
+                        "SECURITY PROTOCOL",
+                        new[] { "Morning alert! Strange noises detected at the outer hatch. A wild creature is knocking outside." },
+                        () => run.SetPhase(DailyPhase.CareAction)
+                    );
+                    break;
+                case 3:
+                    _dialogue.StartDialogue(
+                        "TRADING POST DISPATCH",
+                        new[] { "Final day of operation. A shady Traveling Merchant has parked his wagon outside your facility door." },
+                        () => run.SetPhase(DailyPhase.CareAction)
+                    );
+                    break;
+            }
         }
     }
 
     public void Update(GameTime gameTime)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        _breathTimer += dt * 3f;
+        _breathTimer += dt * 3.2f;
 
         var kbd = Keyboard.GetState();
         var mouse = Mouse.GetState();
@@ -139,7 +144,7 @@ public sealed class BaseHabitatScreen : IScreen
             return;
         }
 
-        // Modal Handling
+        // Modals
         if (_showDoctorModal)
         {
             UpdateDoctorModal(kbd, click, mPos);
@@ -171,6 +176,7 @@ public sealed class BaseHabitatScreen : IScreen
         {
             _showDoctorModal = false;
             _doctorInReviveStep = false;
+            _doctorFeedback = null;
             _ctx.Audio.PlayConfirm();
         }
 
@@ -183,19 +189,26 @@ public sealed class BaseHabitatScreen : IScreen
                     _doctorInReviveStep = true;
                     _ctx.Audio.PlayConfirm();
                 }
-                else if (_doctorNoBtn.Contains(mPos))
+                else if (_doctorNoBtn.Contains(mPos) || _doctorCloseBtn.Contains(mPos))
                 {
                     _showDoctorModal = false;
+                    _doctorFeedback = null;
                     _ctx.Audio.PlayConfirm();
                 }
             }
             else
             {
-                var pet = _ctx.Run.ActivePet;
-                if (pet.Health <= 0 && _doctorReviveBtn.Contains(mPos))
+                if (_doctorReviveBtn.Contains(mPos))
                 {
-                    if (_ctx.Run.Economy.SpendGold(500))
+                    var pet = _ctx.Run.ActivePet;
+                    if (pet.Health > 0)
                     {
+                        _doctorFeedback = "Pet is not fainted! Revive not needed.";
+                        _ctx.Audio.PlayWarning();
+                    }
+                    else if (_ctx.Run.Economy.CanAfford(500))
+                    {
+                        _ctx.Run.Economy.SpendGold(500);
                         pet.Revive(1);
                         _doctorFeedback = "Pet revived to 1 HP! (Spent 500 G)";
                         _ctx.Audio.PlaySuccess();
@@ -233,43 +246,49 @@ public sealed class BaseHabitatScreen : IScreen
 
         if (click)
         {
+            var eco = _ctx.Run.Economy;
+            // Card 1: QTE Upgrade (Cost: 60 Player Points)
             if (_upgCard1.Contains(mPos))
             {
-                if (_ctx.Run.Economy.SpendGold(200))
+                if (eco.SpendPlayerPoints(60))
                 {
-                    _upgradeFeedback = "Purchased QTE Upgrade (+15% needle zone)!";
+                    _upgradeFeedback = "Purchased QTE Upgrade (+15% Needle Zone)! (Spent 60 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Not enough Gold! Needs 200 G.";
+                    _upgradeFeedback = "Not enough Research Points! Needs 60 PTS.";
                     _ctx.Audio.PlayWarning();
                 }
             }
+            // Card 2: Energy Upgrade (Cost: 150 Gold + 80 Player Points)
             else if (_upgCard2.Contains(mPos))
             {
-                if (_ctx.Run.Economy.SpendGold(300))
+                if (eco.CanAfford(150) && eco.CanAffordPoints(80))
                 {
+                    eco.SpendGold(150);
+                    eco.SpendPlayerPoints(80);
                     _ctx.Run.Energy.AddBonus(2);
-                    _upgradeFeedback = "Purchased Energy Upgrade (+2 AP)!";
+                    _upgradeFeedback = "Purchased Energy Upgrade (+2 AP)! (150 G + 80 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Not enough Gold! Needs 300 G.";
+                    _upgradeFeedback = "Needs both 150 Gold AND 80 Research Points to upgrade!";
                     _ctx.Audio.PlayWarning();
                 }
             }
+            // Card 3: Care Booster (Cost: 70 Player Points)
             else if (_upgCard3.Contains(mPos))
             {
-                if (_ctx.Run.Economy.SpendGold(250))
+                if (eco.SpendPlayerPoints(70))
                 {
-                    _upgradeFeedback = "Purchased Care Booster (+50% Stat Gains)!";
+                    _upgradeFeedback = "Purchased Care Booster (+50% Stat Gains)! (Spent 70 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Not enough Gold! Needs 250 G.";
+                    _upgradeFeedback = "Not enough Research Points! Needs 70 PTS.";
                     _ctx.Audio.PlayWarning();
                 }
             }
@@ -312,7 +331,6 @@ public sealed class BaseHabitatScreen : IScreen
         {
             if (_ctx.Run.DayNumber == 2)
             {
-                // Day 2 Toothless: Option 1 = Chase, Option 2 = Tame
                 if (_doorOption1Btn.Contains(mPos))
                 {
                     _ctx.Run.ResolveDay2Encounter(chooseTame: false, tameSuccess: false);
@@ -336,7 +354,6 @@ public sealed class BaseHabitatScreen : IScreen
             }
             else if (_ctx.Run.DayNumber == 3)
             {
-                // Day 3 Merchant: Option 1 = Yes (Sell), Option 2 = No (Fight)
                 if (_doorOption1Btn.Contains(mPos))
                 {
                     _ctx.Run.AcceptMerchantBuyout();
@@ -367,9 +384,8 @@ public sealed class BaseHabitatScreen : IScreen
         var run = _ctx.Run;
         bool hasKnockEvent = (run.DayNumber == 2 && !run.Day2EncounterResolved) ||
                              (run.DayNumber == 3 && !run.Day3BossDefeated);
-        bool energyDepleted = run.Energy.CurrentEnergy == 0;
 
-        // Press E for door action or End Day (NewGDD.txt)
+        // Press E for door action or End Day
         if (kbd.IsKeyDown(Keys.E) && !_prevKeyboard.IsKeyDown(Keys.E))
         {
             if (hasKnockEvent)
@@ -383,13 +399,16 @@ public sealed class BaseHabitatScreen : IScreen
             }
         }
 
-        // Shortcut Keys: 1=Train, 2=Feed, 3=Clean, 4=Heal
-        if (kbd.IsKeyDown(Keys.D1) && !_prevKeyboard.IsKeyDown(Keys.D1)) TryCareAction(CareActionType.Train);
-        else if (kbd.IsKeyDown(Keys.D2) && !_prevKeyboard.IsKeyDown(Keys.D2)) TryCareAction(CareActionType.Feed);
-        else if (kbd.IsKeyDown(Keys.D3) && !_prevKeyboard.IsKeyDown(Keys.D3)) TryCareAction(CareActionType.Clean);
-        else if (kbd.IsKeyDown(Keys.D4) && !_prevKeyboard.IsKeyDown(Keys.D4)) TryCareAction(CareActionType.Heal);
-        else if (kbd.IsKeyDown(Keys.B) && !_prevKeyboard.IsKeyDown(Keys.B)) OpenBag();
+        // Quick Bag [B] and Shop [S]
+        if (kbd.IsKeyDown(Keys.B) && !_prevKeyboard.IsKeyDown(Keys.B)) OpenBag();
         else if (kbd.IsKeyDown(Keys.S) && !_prevKeyboard.IsKeyDown(Keys.S)) OpenShop();
+
+        // Spacebar or Click on Pet -> Launch Care QTE!
+        if (kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space))
+        {
+            TryLaunchCareQte();
+            return;
+        }
 
         if (click)
         {
@@ -426,33 +445,37 @@ public sealed class BaseHabitatScreen : IScreen
                 _doctorFeedback = null;
                 _ctx.Audio.PlayConfirm();
             }
-            // Active Pet -> Care QTE
+            // Active Pet -> Launch Care QTE!
             else if (_petStageRect.Contains(mPos))
             {
-                TryCareAction(CareActionType.Train);
+                TryLaunchCareQte();
             }
             // Quick Buttons
             else if (_bagBtn.Contains(mPos)) OpenBag();
             else if (_shopBtn.Contains(mPos)) OpenShop();
-            // Care shortcuts
-            else if (_trainShortcut.Contains(mPos)) TryCareAction(CareActionType.Train);
-            else if (_feedShortcut.Contains(mPos)) TryCareAction(CareActionType.Feed);
-            else if (_cleanShortcut.Contains(mPos)) TryCareAction(CareActionType.Clean);
-            else if (_healShortcut.Contains(mPos)) TryCareAction(CareActionType.Heal);
         }
     }
 
-    private void TryCareAction(CareActionType action)
+    private void TryLaunchCareQte()
     {
-        if (_ctx.Run.Energy.Spend(1))
-        {
-            _ctx.Audio.PlayConfirm();
-            _ctx.ScreenManager.SetScreen(new CareQteScreen(_ctx, action));
-        }
-        else
+        var run = _ctx.Run;
+        if (run.Energy.CurrentEnergy <= 0)
         {
             _ctx.Audio.PlayWarning();
+            _dialogue.ShowPrompt("OUT OF ENERGY", "You have exhausted all daily Energy Points (AP). Proceed to the shelter door to end the shift!", () => _dialogue.Close());
+            return;
         }
+
+        var pet = run.ActivePet;
+        if (pet.Health <= 0)
+        {
+            _ctx.Audio.PlayWarning();
+            _dialogue.ShowPrompt("PET FAINTED", $"{pet.Name} has fainted! Visit the Doctor NPC to revive your specimen before administering care.", () => _dialogue.Close());
+            return;
+        }
+
+        _ctx.Audio.PlayConfirm();
+        _ctx.ScreenManager.SetScreen(new CareQteScreen(_ctx));
     }
 
     private void OpenBag()
@@ -484,23 +507,21 @@ public sealed class BaseHabitatScreen : IScreen
     {
         Point mPos = Mouse.GetState().Position;
 
-        // 1. Back Wall
-        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, 530), UITheme.BgDeep);
-
-        // Subtle vertical room seams
-        Color seamColor = new(24, 28, 38, 120);
-        for (int x = 160; x < _ctx.ScreenWidth; x += 180)
+        // 1. Wallpaper Background
+        batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), new Color(18, 22, 30));
+        Color seamColor = new(26, 32, 44);
+        for (int x = 0; x <= _ctx.ScreenWidth; x += 120)
         {
-            batch.DrawLine(x, 56, x, 530, seamColor, 1);
+            batch.DrawLine(x, 70, x, 780, seamColor, 1);
         }
 
         // 2. Hardwood Floor
-        Color floorBase = new(28, 24, 22);
-        batch.FillRectangle(new Rectangle(0, 530, _ctx.ScreenWidth, 190), floorBase);
-        batch.DrawLine(0, 530, _ctx.ScreenWidth, 530, UITheme.BorderSubtle, 2f);
+        Color floorBase = new(28, 22, 18);
+        batch.FillRectangle(new Rectangle(0, 780, _ctx.ScreenWidth, 300), floorBase);
+        batch.DrawLine(0, 780, _ctx.ScreenWidth, 780, UITheme.BorderSubtle, 2f);
 
         Color plankColor = new(38, 32, 28);
-        for (int y = 530; y <= 720; y += 38)
+        for (int y = 780; y <= 1080; y += 45)
         {
             batch.DrawLine(0, y, _ctx.ScreenWidth, y, plankColor, 1f);
         }
@@ -512,7 +533,7 @@ public sealed class BaseHabitatScreen : IScreen
         DrawDoctorCharacter(batch, mPos);
         DrawActivePet(batch, mPos);
 
-        // 4. Bottom Controls & Shortcuts
+        // 4. Bottom Controls (Bag & Shop only)
         DrawBottomBar(batch, mPos);
 
         // 5. Top Bar HUD
@@ -521,7 +542,7 @@ public sealed class BaseHabitatScreen : IScreen
         // 6. Dialogue Box
         if (_dialogue.IsActive)
         {
-            _dialogue.Draw(batch, _ctx.Font, _ctx.Pixel, new Rectangle(140, 480, 1000, 180));
+            _dialogue.Draw(batch, _ctx.Font, _ctx.Pixel, new Rectangle(360, 720, 1200, 240));
         }
 
         // 7. Modals
@@ -534,31 +555,37 @@ public sealed class BaseHabitatScreen : IScreen
     private void DrawTopBar(SpriteBatch batch)
     {
         var run = _ctx.Run;
-        Rectangle topBar = new(0, 0, _ctx.ScreenWidth, 54);
+        Rectangle topBar = new(0, 0, _ctx.ScreenWidth, 70);
         CleanUI.DrawPanel(batch, topBar, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 1, shadow: true);
 
-        // Top-Left: Gold Coin + Amount
-        Rectangle goldPill = new(24, 12, 130, 30);
+        // Gold Pill
+        Rectangle goldPill = new(40, 15, 170, 40);
         CleanUI.DrawPanel(batch, goldPill, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
-        // Coin icon dot
-        batch.FillRectangle(new Rectangle(goldPill.X + 8, goldPill.Y + 7, 16, 16), UITheme.AccentGold);
-        batch.DrawString(_ctx.Font, $"{run.Economy.Gold} G", new Vector2(goldPill.X + 32, goldPill.Y + 5), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(goldPill.X + 10, goldPill.Y + 10, 20, 20), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, $"{run.Economy.Gold} G", new Vector2(goldPill.X + 40, goldPill.Y + 8), UITheme.AccentGold);
 
-        // Top-Center: Day X Pill
-        Rectangle dayPill = new(400, 12, 120, 30);
+        // Research Points Pill
+        Rectangle ptsPill = new(230, 15, 190, 40);
+        CleanUI.DrawPanel(batch, ptsPill, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
+        batch.FillRectangle(new Rectangle(ptsPill.X + 10, ptsPill.Y + 10, 20, 20), UITheme.AccentCyan);
+        batch.DrawString(_ctx.Font, $"{run.Economy.PlayerPoints} PTS", new Vector2(ptsPill.X + 40, ptsPill.Y + 8), UITheme.AccentCyan);
+
+        // Day Number Badge
+        Rectangle dayPill = new(600, 15, 160, 40);
         CleanUI.DrawBadge(batch, _ctx.Font, dayPill, $"DAY {run.DayNumber}", new Color(34, 42, 58), UITheme.AccentGold);
 
-        // Center-Right: Player EXP Bar
-        Rectangle expBarBg = new(540, 16, 260, 22);
-        CleanUI.DrawProgressBar(batch, _ctx.Font, expBarBg, 0.45f, UITheme.AccentEmerald, leftText: "EXP", rightText: "LV. 1");
+        // EXP Progress Bar
+        Rectangle expBarBg = new(800, 18, 380, 34);
+        float expRatio = Math.Clamp((float)run.ActivePet.CurrentExp / run.ActivePet.MaxExp, 0f, 1f);
+        CleanUI.DrawProgressBar(batch, _ctx.Font, expBarBg, expRatio, UITheme.AccentEmerald, leftText: "EXP", rightText: $"LV. {run.ActivePet.Level}");
 
         // Top-Right: Energy Battery Pips
         int maxEnergy = run.Energy.MaxEnergy;
         int curEnergy = run.Energy.CurrentEnergy;
-        int boltStartX = 840;
+        int boltStartX = 1360;
         for (int i = 0; i < maxEnergy; i++)
         {
-            Rectangle boltRect = new(boltStartX + (i * 32), 14, 24, 26);
+            Rectangle boltRect = new(boltStartX + (i * 44), 16, 34, 38);
             bool filled = i < curEnergy;
             Color boltBg = filled ? UITheme.AccentCyan : UITheme.BgCardRecessed;
             Color boltBorder = filled ? Color.White : UITheme.BorderSubtle;
@@ -579,43 +606,36 @@ public sealed class BaseHabitatScreen : IScreen
         Color doorBorder = hovered ? UITheme.AccentGold : UITheme.BorderSubtle;
 
         CleanUI.DrawPanel(batch, _doorRect, doorBg, doorBorder, borderWidth: hovered ? 2 : 1, shadow: true);
-
-        // Double door seam
         batch.DrawLine(_doorRect.Center.X, _doorRect.Y, _doorRect.Center.X, _doorRect.Bottom, UITheme.BorderSubtle, 2f);
 
         // Window panes
-        Rectangle leftWindow = new(_doorRect.X + 24, _doorRect.Y + 40, 64, 90);
-        Rectangle rightWindow = new(_doorRect.Right - 88, _doorRect.Y + 40, 64, 90);
+        Rectangle leftWindow = new(_doorRect.X + 24, _doorRect.Y + 50, 64, 120);
+        Rectangle rightWindow = new(_doorRect.Right - 88, _doorRect.Y + 50, 64, 120);
         CleanUI.DrawPanel(batch, leftWindow, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
         CleanUI.DrawPanel(batch, rightWindow, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
 
-        // Door handles
-        batch.FillRectangle(new Rectangle(_doorRect.Center.X - 16, _doorRect.Center.Y + 25, 8, 16), UITheme.AccentGold);
-        batch.FillRectangle(new Rectangle(_doorRect.Center.X + 8, _doorRect.Center.Y + 25, 8, 16), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(_doorRect.Center.X - 16, _doorRect.Center.Y + 30, 8, 20), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(_doorRect.Center.X + 8, _doorRect.Center.Y + 30, 8, 20), UITheme.AccentGold);
 
-        // Event Prompts
         var run = _ctx.Run;
-        bool hasKnock = (run.DayNumber == 2 && !run.Day2EncounterResolved) ||
-                        (run.DayNumber == 3 && !run.Day3BossDefeated);
-        if (hasKnock)
-        {
-            // Comic-style Knock Knock bubble with subtle floating bob
-            int bob = (int)(Math.Sin(_breathTimer * 1.5f) * 3f);
-            Rectangle bubble = new(_doorRect.Center.X - 100, _doorRect.Y - 60 + bob, 200, 46);
-            CleanUI.DrawPanel(batch, bubble, UITheme.BgPanelHover, UITheme.AccentCoral, borderWidth: 2, shadow: true);
+        bool hasKnockEvent = (run.DayNumber == 2 && !run.Day2EncounterResolved) ||
+                             (run.DayNumber == 3 && !run.Day3BossDefeated);
 
+        if (hasKnockEvent)
+        {
+            int bob = (int)(Math.Sin(_breathTimer * 2f) * 6f);
+            Rectangle bubble = new(_doorRect.Center.X - 110, _doorRect.Y - 70 + bob, 220, 50);
+            CleanUI.DrawPanel(batch, bubble, UITheme.BgPanelHover, UITheme.AccentCoral, borderWidth: 2, shadow: true);
             string knockText = "Knock Knock !!";
             Vector2 kSize = _ctx.Font.MeasureString(knockText);
             batch.DrawString(_ctx.Font, knockText, new Vector2(bubble.Center.X - kSize.X / 2f, bubble.Center.Y - kSize.Y / 2f), UITheme.AccentCoral);
         }
         else if (run.Energy.CurrentEnergy == 0)
         {
-            // [E] End Day prompt
-            int bob = (int)(Math.Sin(_breathTimer * 1.5f) * 3f);
-            Rectangle endBubble = new(_doorRect.Center.X - 90, _doorRect.Y - 55 + bob, 180, 42);
+            int bob = (int)(Math.Sin(_breathTimer * 1.5f) * 4f);
+            Rectangle endBubble = new(_doorRect.Center.X - 100, _doorRect.Y - 65 + bob, 200, 48);
             CleanUI.DrawPanel(batch, endBubble, new Color(24, 48, 72), UITheme.AccentCyan, borderWidth: 1, shadow: true);
-
-            string endText = "[E] End Day";
+            string endText = "[E] End Shift";
             Vector2 eSize = _ctx.Font.MeasureString(endText);
             batch.DrawString(_ctx.Font, endText, new Vector2(endBubble.Center.X - eSize.X / 2f, endBubble.Center.Y - eSize.Y / 2f), UITheme.TextPrimary);
         }
@@ -628,15 +648,14 @@ public sealed class BaseHabitatScreen : IScreen
         Color border = hovered ? UITheme.AccentGold : UITheme.BorderSubtle;
 
         CleanUI.DrawPanel(batch, _upgradeStationRect, bg, border, borderWidth: hovered ? 2 : 1, shadow: true);
-        batch.FillRectangle(new Rectangle(_upgradeStationRect.X, _upgradeStationRect.Y, _upgradeStationRect.Width, 3), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(_upgradeStationRect.X, _upgradeStationRect.Y, _upgradeStationRect.Width, 4), UITheme.AccentGold);
 
         Vector2 tSz = _ctx.Font.MeasureString("UPGRADES");
-        batch.DrawString(_ctx.Font, "UPGRADES", new Vector2(_upgradeStationRect.Center.X - tSz.X / 2f, _upgradeStationRect.Y + 16), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, "UPGRADES", new Vector2(_upgradeStationRect.Center.X - tSz.X / 2f, _upgradeStationRect.Y + 24), UITheme.AccentGold);
 
-        // Stylized wrench / gear outline
-        Rectangle iconRect = new(_upgradeStationRect.Center.X - 25, _upgradeStationRect.Y + 54, 50, 44);
+        Rectangle iconRect = new(_upgradeStationRect.Center.X - 35, _upgradeStationRect.Y + 80, 70, 60);
         CleanUI.DrawPanel(batch, iconRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
-        batch.DrawString(_ctx.Font, "[ + ]", new Vector2(iconRect.X + 11, iconRect.Y + 12), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, "[ + ]", new Vector2(iconRect.X + 16, iconRect.Y + 16), UITheme.AccentGold);
     }
 
     private void DrawSurvivalDesk(SpriteBatch batch, Point mPos)
@@ -647,14 +666,13 @@ public sealed class BaseHabitatScreen : IScreen
 
         CleanUI.DrawPanel(batch, _survivalDeskRect, bg, border, borderWidth: hovered ? 2 : 1, shadow: true);
 
-        // Book graphic on desk
-        Rectangle bookRect = new(_survivalDeskRect.Center.X - 44, _survivalDeskRect.Y + 14, 88, 48);
+        Rectangle bookRect = new(_survivalDeskRect.Center.X - 60, _survivalDeskRect.Y + 20, 120, 60);
         CleanUI.DrawPanel(batch, bookRect, new Color(24, 38, 54), UITheme.AccentCyan, borderWidth: 1, shadow: false);
         batch.DrawLine(bookRect.Center.X, bookRect.Y, bookRect.Center.X, bookRect.Bottom, UITheme.TextMuted, 1f);
 
         string bookLabel = "SURVIVAL LOG";
         Vector2 bSize = _ctx.Font.MeasureString(bookLabel);
-        batch.DrawString(_ctx.Font, bookLabel, new Vector2(_survivalDeskRect.Center.X - bSize.X / 2f, _survivalDeskRect.Bottom - 24), hovered ? UITheme.TextPrimary : UITheme.TextSecondary);
+        batch.DrawString(_ctx.Font, bookLabel, new Vector2(_survivalDeskRect.Center.X - bSize.X / 2f, _survivalDeskRect.Bottom - 36), hovered ? UITheme.TextPrimary : UITheme.TextSecondary);
     }
 
     private void DrawDoctorCharacter(SpriteBatch batch, Point mPos)
@@ -666,12 +684,12 @@ public sealed class BaseHabitatScreen : IScreen
         CleanUI.DrawPanel(batch, _doctorRect, bg, border, borderWidth: hovered ? 2 : 1, shadow: true);
 
         // Medical Cross
-        batch.FillRectangle(new Rectangle(_doctorRect.Center.X - 5, _doctorRect.Y + 16, 10, 32), UITheme.AccentCoral);
-        batch.FillRectangle(new Rectangle(_doctorRect.Center.X - 16, _doctorRect.Y + 27, 32, 10), UITheme.AccentCoral);
+        batch.FillRectangle(new Rectangle(_doctorRect.Center.X - 8, _doctorRect.Y + 24, 16, 44), UITheme.AccentCoral);
+        batch.FillRectangle(new Rectangle(_doctorRect.Center.X - 22, _doctorRect.Y + 38, 44, 16), UITheme.AccentCoral);
 
-        string docLabel = "MEDIC\n(Revive)";
-        Vector2 dSize = _ctx.Font.MeasureString("MEDIC");
-        batch.DrawString(_ctx.Font, docLabel, new Vector2(_doctorRect.Center.X - dSize.X / 2f, _doctorRect.Y + 62), UITheme.TextSecondary);
+        string docLabel = "MEDIC (500 G)";
+        Vector2 dSize = _ctx.Font.MeasureString("MEDIC (500 G)");
+        batch.DrawString(_ctx.Font, docLabel, new Vector2(_doctorRect.Center.X - dSize.X / 2f, _doctorRect.Y + 110), UITheme.TextSecondary);
     }
 
     private void DrawActivePet(SpriteBatch batch, Point mPos)
@@ -679,14 +697,15 @@ public sealed class BaseHabitatScreen : IScreen
         var pet = _ctx.Run.ActivePet;
         bool hovered = _petStageRect.Contains(mPos);
 
-        // Breathing motion
-        int bobY = (int)(Math.Sin(_breathTimer) * 4f);
-        Rectangle petBox = new(_petStageRect.X, _petStageRect.Y + bobY, _petStageRect.Width, _petStageRect.Height);
+        int bobY = (int)(Math.Sin(_breathTimer) * 6f);
+        int petH = _petStageRect.Height;
+        int petW = (int)(petH * (1298f / 1731f)); // 210px (3:4 ratio)
+        int petX = _petStageRect.Center.X - petW / 2;
+        Rectangle petBox = new(petX, _petStageRect.Y + bobY, petW, petH);
 
         // Floor shadow ellipse
-        batch.FillRectangle(new Rectangle(_petStageRect.X + 20, _petStageRect.Bottom - 16, _petStageRect.Width - 40, 12), Color.Black * 0.4f);
+        batch.FillRectangle(new Rectangle(_petStageRect.X + 30, _petStageRect.Bottom - 20, _petStageRect.Width - 60, 16), Color.Black * 0.4f);
 
-        // Pet Texture
         if (_ctx.PetIdleTex != null)
         {
             batch.Draw(_ctx.PetIdleTex, petBox, Color.White);
@@ -699,50 +718,43 @@ public sealed class BaseHabitatScreen : IScreen
         if (hovered)
         {
             batch.DrawRectangle(petBox, UITheme.AccentGold, 2);
-            string prompt = "Click to Care QTE!";
+            string prompt = "Click Pet for Care QTE!";
             Vector2 pSize = _ctx.Font.MeasureString(prompt);
-            batch.DrawString(_ctx.Font, prompt, new Vector2(petBox.Center.X - pSize.X / 2f, petBox.Y - 26), UITheme.AccentGold);
+            batch.DrawString(_ctx.Font, prompt, new Vector2(petBox.Center.X - pSize.X / 2f, petBox.Y - 36), UITheme.AccentGold);
         }
 
         // Pet Name tag
         string nameTag = $"{pet.Name} (LV. {pet.Level})";
         Vector2 nSize = _ctx.Font.MeasureString(nameTag);
-        batch.DrawString(_ctx.Font, nameTag, new Vector2(petBox.Center.X - nSize.X / 2f, petBox.Bottom + 4), UITheme.TextPrimary);
+        batch.DrawString(_ctx.Font, nameTag, new Vector2(petBox.Center.X - nSize.X / 2f, petBox.Bottom + 8), UITheme.TextPrimary);
 
         // Mini HP Bar
-        Rectangle hpBg = new(petBox.Center.X - 60, petBox.Bottom + 26, 120, 14);
+        Rectangle hpBg = new(petBox.Center.X - 80, petBox.Bottom + 36, 160, 22);
         CleanUI.DrawProgressBar(batch, _ctx.Font, hpBg, pet.Health / 100f, UITheme.AccentCoral, leftText: null, rightText: $"{pet.Health} HP");
     }
 
     private void DrawBottomBar(SpriteBatch batch, Point mPos)
     {
-        // Shortcut action buttons
-        CleanUI.DrawButton(batch, _ctx.Font, _trainShortcut, "Train", _trainShortcut.Contains(mPos), accent: UITheme.AccentGold, hotkey: "[ 1 ]");
-        CleanUI.DrawButton(batch, _ctx.Font, _feedShortcut, "Feed", _feedShortcut.Contains(mPos), accent: UITheme.AccentGold, hotkey: "[ 2 ]");
-        CleanUI.DrawButton(batch, _ctx.Font, _cleanShortcut, "Clean", _cleanShortcut.Contains(mPos), accent: UITheme.AccentCyan, hotkey: "[ 3 ]");
-        CleanUI.DrawButton(batch, _ctx.Font, _healShortcut, "Heal", _healShortcut.Contains(mPos), accent: UITheme.AccentEmerald, hotkey: "[ 4 ]");
-
-        // Quick Bag & Shop buttons
+        // Quick Bag & Shop buttons only (Care shortcuts removed per requirements)
         CleanUI.DrawButton(batch, _ctx.Font, _shopBtn, "Shop", _shopBtn.Contains(mPos), accent: UITheme.AccentPurple, hotkey: "[ S ]");
         CleanUI.DrawButton(batch, _ctx.Font, _bagBtn, "Bag / Item", _bagBtn.Contains(mPos), accent: UITheme.AccentEmerald, hotkey: "[ B ]");
     }
 
     private void DrawDoctorModal(SpriteBatch batch, Point mPos)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.75f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
 
-        Rectangle modal = new(340, 170, 600, 420);
+        Rectangle modal = new(560, 240, 800, 580);
         CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentCoral);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentCoral);
 
-        batch.DrawString(_ctx.Font, "FACILITY MEDICAL STATION", new Vector2(modal.X + 30, modal.Y + 24), UITheme.AccentCoral, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-        batch.DrawLine(modal.X + 30, modal.Y + 56, modal.Right - 30, modal.Y + 56, UITheme.BorderSubtle, 1f);
+        batch.DrawString(_ctx.Font, "FACILITY MEDICAL STATION", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentCoral, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+        batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
 
         if (!_doctorInReviveStep)
         {
-            string bubble = "\"Does your specimen require medical revival?\"";
-            Vector2 bSize = _ctx.Font.MeasureString(bubble);
-            batch.DrawString(_ctx.Font, bubble, new Vector2(modal.Center.X - bSize.X / 2f, modal.Y + 130), UITheme.TextPrimary);
+            string bubble = "\"Overseer, abnormal creatures require emergency revive if Health reaches zero.\nWould you like to review medical containment?\"";
+            batch.DrawString(_ctx.Font, bubble, new Vector2(modal.X + 50, modal.Y + 140), UITheme.TextPrimary);
 
             CleanUI.DrawButton(batch, _ctx.Font, _doctorYesBtn, "YES", _doctorYesBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
             CleanUI.DrawButton(batch, _ctx.Font, _doctorNoBtn, "NO", _doctorNoBtn.Contains(mPos), accent: UITheme.AccentCoral);
@@ -750,24 +762,23 @@ public sealed class BaseHabitatScreen : IScreen
         else
         {
             string prompt = "Select Specimen to Revive (Fainted Pets at 0 HP)";
-            batch.DrawString(_ctx.Font, prompt, new Vector2(modal.X + 40, modal.Y + 80), UITheme.AccentGold);
+            batch.DrawString(_ctx.Font, prompt, new Vector2(modal.X + 50, modal.Y + 120), UITheme.AccentGold);
 
             var pet = _ctx.Run.ActivePet;
             if (pet.Health <= 0)
             {
-                batch.DrawString(_ctx.Font, $"Fainted Specimen: {pet.Name} (0/100 HP)", new Vector2(modal.X + 40, modal.Y + 120), UITheme.AccentCoral);
-                batch.DrawString(_ctx.Font, "Emergency Revive Cost: 500 G", new Vector2(modal.X + 40, modal.Y + 150), UITheme.TextSecondary);
-
+                batch.DrawString(_ctx.Font, $"Fainted Specimen: {pet.Name} (0/100 HP)", new Vector2(modal.X + 50, modal.Y + 170), UITheme.AccentCoral);
+                batch.DrawString(_ctx.Font, "Emergency Revive Cost: 500 G", new Vector2(modal.X + 50, modal.Y + 210), UITheme.TextSecondary);
                 CleanUI.DrawButton(batch, _ctx.Font, _doctorReviveBtn, "REVIVE TO 1 HP (500 G)", _doctorReviveBtn.Contains(mPos), accent: UITheme.AccentCoral, isPrimary: true);
             }
             else
             {
-                batch.DrawString(_ctx.Font, $"All specimens healthy! Active: {pet.Name} ({pet.Health}/100 HP)", new Vector2(modal.X + 40, modal.Y + 140), UITheme.AccentEmerald);
+                batch.DrawString(_ctx.Font, $"All specimens healthy! Active: {pet.Name} ({pet.Health}/100 HP)", new Vector2(modal.X + 50, modal.Y + 180), UITheme.AccentEmerald);
             }
 
             if (!string.IsNullOrEmpty(_doctorFeedback))
             {
-                batch.DrawString(_ctx.Font, _doctorFeedback, new Vector2(modal.X + 40, modal.Y + 220), UITheme.AccentGold);
+                batch.DrawString(_ctx.Font, _doctorFeedback, new Vector2(modal.X + 50, modal.Y + 300), UITheme.AccentGold);
             }
 
             CleanUI.DrawButton(batch, _ctx.Font, _doctorCloseBtn, "CLOSE", _doctorCloseBtn.Contains(mPos), accent: UITheme.BorderSubtle, hotkey: "[ ESC ]");
@@ -776,24 +787,27 @@ public sealed class BaseHabitatScreen : IScreen
 
     private void DrawUpgradeModal(SpriteBatch batch, Point mPos)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.75f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
 
-        Rectangle modal = new(180, 110, 920, 530);
+        Rectangle modal = new(360, 160, 1200, 760);
         CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentGold);
 
-        batch.DrawString(_ctx.Font, "SHELTER UPGRADE STATION", new Vector2(modal.X + 30, modal.Y + 24), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
-        batch.DrawString(_ctx.Font, $"Gold: {_ctx.Run.Economy.Gold} G", new Vector2(modal.Right - 160, modal.Y + 28), UITheme.AccentGold);
-        batch.DrawLine(modal.X + 30, modal.Y + 62, modal.Right - 30, modal.Y + 62, UITheme.BorderSubtle, 1f);
+        batch.DrawString(_ctx.Font, "SHELTER UPGRADE STATION", new Vector2(modal.X + 40, modal.Y + 32), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
+        // Header displays both Gold and Player Points
+        string walletText = $"Gold: {_ctx.Run.Economy.Gold} G    |    Points: {_ctx.Run.Economy.PlayerPoints} PTS";
+        Vector2 wSize = _ctx.Font.MeasureString(walletText);
+        batch.DrawString(_ctx.Font, walletText, new Vector2(modal.Right - wSize.X - 40, modal.Y + 36), UITheme.AccentCyan);
+        batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
 
-        // 3 Cards
-        DrawUpgradeCard(batch, _upgCard1, "QTE Upgrade", "Cost: 200 G\n\nWidens needle hit zones by +15% and slows rotation speed.", _upgCard1.Contains(mPos));
-        DrawUpgradeCard(batch, _upgCard2, "Energy Upgrade", "Cost: 300 G\n\nIncreases daily energy reserves by +2 AP.", _upgCard2.Contains(mPos));
-        DrawUpgradeCard(batch, _upgCard3, "Progress Bar Upgrade", "Cost: 250 G\n\nIncreases stat gains by +50% per successful care session.", _upgCard3.Contains(mPos));
+        // 3 Cards with generous width (320px) and clean padding
+        DrawUpgradeCard(batch, _upgCard1, "QTE Upgrade", "Cost: 60 PTS\n\nWidens needle zones by\n+15% and slows rotation.", _upgCard1.Contains(mPos));
+        DrawUpgradeCard(batch, _upgCard2, "Energy Upgrade", "Cost: 150 G + 80 PTS\n\nIncreases daily energy\nreserves by +2 AP.", _upgCard2.Contains(mPos));
+        DrawUpgradeCard(batch, _upgCard3, "Progress Booster", "Cost: 70 PTS\n\nIncreases stat gains by\n+50% per care session.", _upgCard3.Contains(mPos));
 
         if (!string.IsNullOrEmpty(_upgradeFeedback))
         {
-            batch.DrawString(_ctx.Font, _upgradeFeedback, new Vector2(modal.X + 40, modal.Bottom - 95), UITheme.AccentGold);
+            batch.DrawString(_ctx.Font, _upgradeFeedback, new Vector2(modal.X + 50, modal.Bottom - 80), UITheme.AccentGold);
         }
 
         CleanUI.DrawButton(batch, _ctx.Font, _upgCloseBtn, "CLOSE", _upgCloseBtn.Contains(mPos), accent: UITheme.BorderSubtle, hotkey: "[ ESC ]");
@@ -806,70 +820,85 @@ public sealed class BaseHabitatScreen : IScreen
 
         CleanUI.DrawPanel(batch, card, bg, border, borderWidth: hovered ? 2 : 1, shadow: false);
 
-        Rectangle header = new(card.X, card.Y, card.Width, 38);
+        Rectangle header = new(card.X, card.Y, card.Width, 48);
         CleanUI.DrawPanel(batch, header, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 0, shadow: false);
-        batch.DrawString(_ctx.Font, title, new Vector2(card.X + 16, card.Y + 10), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, title, new Vector2(card.X + 20, card.Y + 14), UITheme.AccentGold, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
-        batch.DrawString(_ctx.Font, description, new Vector2(card.X + 16, card.Y + 54), UITheme.TextSecondary);
+        string[] descLines = description.Split('\n');
+        float dy = card.Y + 68;
+        float lineScale = 0.90f;
+        foreach (string line in descLines)
+        {
+            if (!string.IsNullOrEmpty(line))
+            {
+                batch.DrawString(_ctx.Font, line, new Vector2(card.X + 20, dy), UITheme.TextSecondary, 0f, Vector2.Zero, lineScale, SpriteEffects.None, 0f);
+            }
+            dy += _ctx.Font.LineSpacing * lineScale * 1.0f;
+        }
 
-        Rectangle btn = new(card.X + 16, card.Bottom - 48, card.Width - 32, 34);
+        Rectangle btn = new(card.X + 20, card.Bottom - 58, card.Width - 40, 44);
         CleanUI.DrawButton(batch, _ctx.Font, btn, "UPGRADE", hovered, accent: UITheme.AccentGold, isPrimary: true);
     }
 
     private void DrawLogModal(SpriteBatch batch, Point mPos)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.75f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
 
-        Rectangle modal = new(180, 90, 920, 560);
+        Rectangle modal = new(360, 140, 1200, 800);
         CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentCyan);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentCyan);
 
-        // Header
-        batch.DrawString(_ctx.Font, "SURVIVAL LOGBOOK (Specimen Archives)", new Vector2(modal.X + 30, modal.Y + 20), UITheme.AccentCyan, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+        // Header Title (Sized nicely to fit frame)
+        batch.DrawString(_ctx.Font, "SURVIVAL LOGBOOK (Specimen Archives)", new Vector2(modal.X + 40, modal.Y + 30), UITheme.AccentCyan, 0f, Vector2.Zero, 1.25f, SpriteEffects.None, 0f);
 
         // Tabs
         CleanUI.DrawButton(batch, _ctx.Font, _tabPetDiscovery, "Pet Discovery", _tabPetDiscovery.Contains(mPos), accent: _logActiveTab == 0 ? UITheme.AccentCyan : null, isPrimary: _logActiveTab == 0);
         CleanUI.DrawButton(batch, _ctx.Font, _tabDisaster, "Disasters", _tabDisaster.Contains(mPos), accent: _logActiveTab == 1 ? UITheme.AccentCyan : null, isPrimary: _logActiveTab == 1);
 
-        batch.DrawLine(modal.X + 30, 212, modal.Right - 30, 212, UITheme.BorderSubtle, 1f);
+        batch.DrawLine(modal.X + 40, 275, modal.Right - 40, 275, UITheme.BorderSubtle, 1f);
 
         if (_logActiveTab == 0)
         {
-            // Pet Discovery Tab
             var pet = _ctx.Run.ActivePet;
-            Rectangle picRect = new(modal.X + 40, 240, 160, 160);
+            Rectangle picRect = new(modal.X + 60, 310, 240, 240);
             CleanUI.DrawPanel(batch, picRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
-            if (_ctx.PetIdleTex != null) batch.Draw(_ctx.PetIdleTex, picRect, Color.White);
+            if (_ctx.PetIdleTex != null)
+            {
+                int sprH = 200;
+                int sprW = (int)(sprH * (1298f / 1731f)); // 150px
+                Rectangle sprRect = new(picRect.Center.X - sprW / 2, picRect.Center.Y - sprH / 2, sprW, sprH);
+                batch.Draw(_ctx.PetIdleTex, sprRect, Color.White);
+            }
 
-            int sx = modal.X + 230;
-            batch.DrawString(_ctx.Font, $"NAME: {pet.Name}", new Vector2(sx, 240), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, $"LV. {pet.Level}", new Vector2(sx + 240, 240), UITheme.TextSecondary, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+            int sx = modal.X + 340;
+            // Clean separation: Name on row 1, Level on row 2 (NO OVERLAP!)
+            batch.DrawString(_ctx.Font, $"NAME: {pet.Name}", new Vector2(sx, 310), UITheme.AccentGold, 0f, Vector2.Zero, 1.25f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, $"LEVEL: {pet.Level}", new Vector2(sx, 350), UITheme.TextSecondary, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
-            int barW = 320;
-            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 280, barW, 20), pet.Health / 100f, UITheme.AccentCoral, leftText: "HEALTH", rightText: $"{pet.Health}/100");
-            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 310, barW, 20), pet.Stomach / 100f, UITheme.AccentGold, leftText: "STOMACH", rightText: $"{pet.Stomach}%");
-            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 340, barW, 20), pet.Clean / 100f, UITheme.AccentCyan, leftText: "CLEANLINESS", rightText: $"{pet.Clean}%");
+            int barW = 480;
+            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 400, barW, 26), pet.Health / 100f, UITheme.AccentCoral, leftText: "HEALTH", rightText: $"{pet.Health}/100");
+            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 440, barW, 26), pet.Stomach / 100f, UITheme.AccentGold, leftText: "STOMACH", rightText: $"{pet.Stomach}%");
+            CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(sx, 480, barW, 26), pet.Clean / 100f, UITheme.AccentCyan, leftText: "CLEANLINESS", rightText: $"{pet.Clean}%");
 
-            batch.DrawString(_ctx.Font, "Abnormal Traits: Photosynthetic skin, elevated curiosity.", new Vector2(sx, 385), UITheme.TextPrimary);
-            batch.DrawString(_ctx.Font, "Favorite Routine: Train in morning, Clean in evening.", new Vector2(sx, 415), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, "Abnormal Traits: Photosynthetic skin, elevated curiosity.", new Vector2(sx, 535), UITheme.TextPrimary);
+            batch.DrawString(_ctx.Font, "Favorite Routine: Train in morning, Clean in evening.", new Vector2(sx, 575), UITheme.TextSecondary);
         }
         else
         {
-            // Disaster Tab
-            Rectangle picRect = new(modal.X + 40, 240, 180, 160);
+            Rectangle picRect = new(modal.X + 60, 310, 240, 240);
             CleanUI.DrawPanel(batch, picRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
             Vector2 stmSz = _ctx.Font.MeasureString("[ STORM ]");
             batch.DrawString(_ctx.Font, "[ STORM ]", new Vector2(picRect.Center.X - stmSz.X / 2f, picRect.Center.Y - stmSz.Y / 2f), UITheme.AccentGold);
 
-            int sx = modal.X + 250;
-            batch.DrawString(_ctx.Font, "DISASTER: THUNDER STORM", new Vector2(sx, 240), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            int sx = modal.X + 340;
+            batch.DrawString(_ctx.Font, "DISASTER: THUNDER STORM", new Vector2(sx, 310), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
 
             string desc = "Severe atmospheric storm inducing panic in abnormal pets.\n" +
-                          "During the storm, abnormal creatures experience severe anxiety spikes.\n" +
+                          "During the storm, creatures experience severe anxiety spikes.\n" +
                           "Failing to calm them before nightfall will inflict massive stress damage.";
-            batch.DrawString(_ctx.Font, desc, new Vector2(sx, 285), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, desc, new Vector2(sx, 360), UITheme.TextSecondary);
 
-            batch.DrawString(_ctx.Font, "Countermeasure Protocol: Emergency Calming QTE at end of Day 1.", new Vector2(sx, 385), UITheme.AccentCyan);
+            batch.DrawString(_ctx.Font, "Countermeasure Protocol: Emergency Calming QTE at end of Day 1.", new Vector2(sx, 480), UITheme.AccentCyan);
         }
 
         CleanUI.DrawButton(batch, _ctx.Font, _logCloseBtn, "CLOSE", _logCloseBtn.Contains(mPos), accent: UITheme.BorderSubtle, hotkey: "[ ESC ]");
@@ -877,38 +906,38 @@ public sealed class BaseHabitatScreen : IScreen
 
     private void DrawDoorModal(SpriteBatch batch, Point mPos)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.75f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
 
-        Rectangle modal = new(280, 130, 720, 460);
+        Rectangle modal = new(510, 220, 900, 640);
         CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentGold);
 
         if (_ctx.Run.DayNumber == 2)
         {
-            batch.DrawString(_ctx.Font, "DAY 2 - MORNING ENCOUNTER: TOOTHLESS", new Vector2(modal.X + 30, modal.Y + 24), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawLine(modal.X + 30, modal.Y + 58, modal.Right - 30, modal.Y + 58, UITheme.BorderSubtle, 1f);
+            batch.DrawString(_ctx.Font, "DAY 2 - MORNING ENCOUNTER: TOOTHLESS", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
 
             string dialogue = "\"Arrrrrrhrhrhrhhrrhrhrha\"";
             Vector2 dSize = _ctx.Font.MeasureString(dialogue);
-            batch.DrawString(_ctx.Font, dialogue, new Vector2(modal.Center.X - (dSize.X * 1.3f) / 2f, modal.Y + 110), UITheme.AccentEmerald, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, dialogue, new Vector2(modal.Center.X - (dSize.X * 1.3f) / 2f, modal.Y + 150), UITheme.AccentEmerald, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
 
             string desc = "An acid-dripping wild beast stands outside your shelter door!\nWill you chase it away or attempt to tame it as your companion?";
-            batch.DrawString(_ctx.Font, desc, new Vector2(modal.X + 50, modal.Y + 170), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, desc, new Vector2(modal.X + 80, modal.Y + 230), UITheme.TextSecondary);
 
             CleanUI.DrawButton(batch, _ctx.Font, _doorOption1Btn, "CHASE AWAY", _doorOption1Btn.Contains(mPos), accent: UITheme.AccentCoral);
             CleanUI.DrawButton(batch, _ctx.Font, _doorOption2Btn, "TAME CREATURE", _doorOption2Btn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
         }
         else if (_ctx.Run.DayNumber == 3)
         {
-            batch.DrawString(_ctx.Font, "DAY 3 - MORNING ENCOUNTER: MERCHANT", new Vector2(modal.X + 30, modal.Y + 24), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawLine(modal.X + 30, modal.Y + 58, modal.Right - 30, modal.Y + 58, UITheme.BorderSubtle, 1f);
+            batch.DrawString(_ctx.Font, "DAY 3 - MORNING ENCOUNTER: MERCHANT", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
 
             string dialogue = "\"I'm quite interested in your toothless... will you sell?\"";
             Vector2 dSize = _ctx.Font.MeasureString(dialogue);
-            batch.DrawString(_ctx.Font, dialogue, new Vector2(modal.Center.X - (dSize.X * 1.1f) / 2f, modal.Y + 110), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, dialogue, new Vector2(modal.Center.X - (dSize.X * 1.15f) / 2f, modal.Y + 150), UITheme.AccentGold, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
             string desc = "The shady collector offers an astronomical buyout for Toothless!\nIf you refuse, he will attack to confiscate your specimen!";
-            batch.DrawString(_ctx.Font, desc, new Vector2(modal.X + 50, modal.Y + 170), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, desc, new Vector2(modal.X + 80, modal.Y + 230), UITheme.TextSecondary);
 
             CleanUI.DrawButton(batch, _ctx.Font, _doorOption1Btn, "ACCEPT BUYOUT", _doorOption1Btn.Contains(mPos), accent: UITheme.AccentGold);
             CleanUI.DrawButton(batch, _ctx.Font, _doorOption2Btn, "REFUSE / FIGHT", _doorOption2Btn.Contains(mPos), accent: UITheme.AccentCoral, isPrimary: true);

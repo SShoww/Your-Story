@@ -16,12 +16,14 @@ public sealed class InventoryOverlayScreen : IScreen
     private MouseState _prevMouse;
 
     private int _selectedIndex = -1;
-    private readonly Rectangle _panelRect = new(200, 60, 880, 600);
-    private readonly Rectangle _closeBtn = new(1000, 76, 48, 36);
+
+    // 1920x1080 Layout Constants
+    private readonly Rectangle _panelRect = new(310, 120, 1300, 840);
+    private readonly Rectangle _closeBtn = new(1520, 144, 60, 42);
 
     // Action Buttons
-    private readonly Rectangle _useBtn = new(660, 485, 170, 46);
-    private readonly Rectangle _infoBtn = new(850, 485, 170, 46);
+    private readonly Rectangle _useBtn = new(1070, 810, 220, 52);
+    private readonly Rectangle _infoBtn = new(1320, 810, 220, 52);
 
     private string? _actionFeedback;
     private float _feedbackTimer;
@@ -65,19 +67,19 @@ public sealed class InventoryOverlayScreen : IScreen
 
         if (click)
         {
-            if (_closeBtn.Contains(mPos) || !_panelRect.Contains(mPos))
+            if (_closeBtn.Contains(mPos))
             {
                 _ctx.Audio.PlayConfirm();
                 _ctx.ScreenManager.PopOverlay();
                 return;
             }
 
-            // Click slot
+            var slots = _ctx.Run.Inventory.Slots;
             for (int i = 0; i < InventoryService.MaxSlots; i++)
             {
                 int row = i / 4;
                 int col = i % 4;
-                Rectangle slotRect = new(_panelRect.X + 40 + col * 195, _panelRect.Y + 75 + row * 125, 185, 110);
+                Rectangle slotRect = new(_panelRect.X + 50 + col * 295, _panelRect.Y + 90 + row * 155, 280, 135);
                 if (slotRect.Contains(mPos))
                 {
                     _selectedIndex = i;
@@ -86,31 +88,31 @@ public sealed class InventoryOverlayScreen : IScreen
                 }
             }
 
-            // Action buttons
-            var inv = _ctx.Run.Inventory;
-            if (_selectedIndex >= 0 && _selectedIndex < inv.Slots.Count)
+            if (_selectedIndex >= 0 && _selectedIndex < InventoryService.MaxSlots && slots[_selectedIndex] != null)
             {
-                var item = inv.Slots[_selectedIndex];
-                if (item != null)
+                var item = slots[_selectedIndex]!;
+                if (_useBtn.Contains(mPos))
                 {
-                    if (_useBtn.Contains(mPos))
+                    if (item.Category == ItemCategory.Equipment)
                     {
-                        if (item.Category == ItemCategory.Equipment)
+                        bool equipped = _ctx.Run.Inventory.Equip(_selectedIndex);
+                        if (equipped)
                         {
-                            inv.Equip(_selectedIndex);
-                            _actionFeedback = $"Equipped {item.Name}!";
+                            _actionFeedback = $"EQUIPPED: {item.Name} active on specimen!";
                             _feedbackTimer = 2.0f;
                             _ctx.Audio.PlaySuccess();
                         }
-                        else
-                        {
-                            UseConsumableItem(item, _selectedIndex);
-                        }
                     }
-                    else if (_infoBtn.Contains(mPos))
+                    else
                     {
-                        _ctx.Audio.PlayConfirm();
+                        UseConsumableItem(item, _selectedIndex);
                     }
+                }
+                else if (_infoBtn.Contains(mPos))
+                {
+                    _actionFeedback = $"{item.Name}: {item.Description}";
+                    _feedbackTimer = 3.0f;
+                    _ctx.Audio.PlayConfirm();
                 }
             }
         }
@@ -121,33 +123,32 @@ public sealed class InventoryOverlayScreen : IScreen
 
     private void UseConsumableItem(ItemDefinition item, int slotIndex)
     {
-        var pet = _ctx.Run.ActivePet;
-        if (item.HealthRestore > 0) pet.Heal(item.HealthRestore);
-        if (item.StomachRestore > 0) pet.ExecuteCareAction(CareActionType.Feed, PrecisionTier.Perfect);
-        if (item.EnergyRestore > 0) _ctx.Run.Energy.AddBonus(item.EnergyRestore);
-        if (item.DodgeZoneBonus > 0f) _ctx.Run.Inventory.ActiveDodgeBonus += item.DodgeZoneBonus;
-        if (item.ShieldHits > 0) _ctx.Run.Inventory.ActiveShieldHits += item.ShieldHits;
-        if (item.TrainExpMultiplier > 1f) _ctx.Run.Inventory.PermanentTrainExpMultiplier *= item.TrainExpMultiplier;
+        var run = _ctx.Run;
+        var pet = run.ActivePet;
 
-        _ctx.Run.Inventory.RemoveItemAt(slotIndex);
-        _actionFeedback = $"Applied {item.Name} to {pet.Name}!";
-        _feedbackTimer = 2.0f;
+        if (item.HealthRestore > 0) pet.Heal(item.HealthRestore);
+        if (item.StomachRestore > 0) pet.FeedDirect(item.StomachRestore);
+        if (item.CleanRestore > 0) pet.CleanDirect(item.CleanRestore);
+        if (item.ExpGain > 0) pet.AddExp(item.ExpGain);
+
+        run.Inventory.RemoveItemAt(slotIndex);
+        _actionFeedback = $"DEPLOYED: {item.Name}! Specimen stats restored.";
+        _feedbackTimer = 2.5f;
         _ctx.Audio.PlaySuccess();
-        _selectedIndex = -1;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch batch)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.85f);
 
         // Frame
         CleanUI.DrawPanel(batch, _panelRect, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(_panelRect.X, _panelRect.Y, _panelRect.Width, 3), UITheme.AccentEmerald);
+        batch.FillRectangle(new Rectangle(_panelRect.X, _panelRect.Y, _panelRect.Width, 4), UITheme.AccentEmerald);
 
-        batch.DrawString(_ctx.Font, "FACILITY INVENTORY & SPECIMEN GEAR", new Vector2(_panelRect.X + 30, _panelRect.Y + 22), UITheme.AccentEmerald, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, "FACILITY INVENTORY & SPECIMEN GEAR", new Vector2(_panelRect.X + 40, _panelRect.Y + 28), UITheme.AccentEmerald, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
 
         string eqName = _ctx.Run.Inventory.EquippedItem?.Name ?? "None";
-        batch.DrawString(_ctx.Font, $"Equipped: {eqName}", new Vector2(_panelRect.X + 460, _panelRect.Y + 24), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, $"Equipped Gear: {eqName}", new Vector2(_panelRect.X + 680, _panelRect.Y + 30), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
 
         Point mPos = Mouse.GetState().Position;
 
@@ -161,7 +162,7 @@ public sealed class InventoryOverlayScreen : IScreen
         {
             int row = i / 4;
             int col = i % 4;
-            Rectangle slotRect = new(_panelRect.X + 40 + col * 195, _panelRect.Y + 75 + row * 125, 185, 110);
+            Rectangle slotRect = new(_panelRect.X + 50 + col * 295, _panelRect.Y + 90 + row * 155, 280, 135);
 
             var item = slots[i];
             bool isSelected = _selectedIndex == i;
@@ -174,7 +175,7 @@ public sealed class InventoryOverlayScreen : IScreen
 
             if (item != null)
             {
-                batch.DrawString(_ctx.Font, item.Name, new Vector2(slotRect.X + 12, slotRect.Y + 12), UITheme.TextPrimary);
+                batch.DrawString(_ctx.Font, item.Name, new Vector2(slotRect.X + 16, slotRect.Y + 14), UITheme.TextPrimary, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
                 Color catCol = item.Category switch
                 {
@@ -184,10 +185,10 @@ public sealed class InventoryOverlayScreen : IScreen
                     _ => UITheme.AccentEmerald
                 };
 
-                Rectangle catBadge = new(slotRect.X + 12, slotRect.Y + 40, 95, 20);
+                Rectangle catBadge = new(slotRect.X + 16, slotRect.Y + 48, 120, 26);
                 CleanUI.DrawBadge(batch, _ctx.Font, catBadge, item.Category.ToString(), catCol * 0.25f, catCol);
 
-                batch.DrawString(_ctx.Font, $"SLOT 0{i + 1}", new Vector2(slotRect.X + 12, slotRect.Bottom - 26), UITheme.TextMuted);
+                batch.DrawString(_ctx.Font, $"SLOT 0{i + 1}", new Vector2(slotRect.X + 16, slotRect.Bottom - 30), UITheme.TextMuted);
             }
             else
             {
@@ -196,35 +197,35 @@ public sealed class InventoryOverlayScreen : IScreen
             }
         }
 
-        // Details and Use Section
-        Rectangle detailBox = new(_panelRect.X + 40, _panelRect.Y + 345, 600, 210);
+        // Details and Use Section (Cleanly spanning 1200px width)
+        Rectangle detailBox = new(_panelRect.X + 50, _panelRect.Y + 430, 1200, 340);
         CleanUI.DrawPanel(batch, detailBox, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
 
         if (_selectedIndex >= 0 && _selectedIndex < InventoryService.MaxSlots && slots[_selectedIndex] != null)
         {
             var item = slots[_selectedIndex]!;
-            batch.DrawString(_ctx.Font, $"ITEM: {item.Name}", new Vector2(detailBox.X + 20, detailBox.Y + 18), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, $"Category: {item.Category}   |   Value: {item.Price} G", new Vector2(detailBox.X + 20, detailBox.Y + 54), UITheme.AccentCyan);
-            batch.DrawString(_ctx.Font, item.Description, new Vector2(detailBox.X + 20, detailBox.Y + 86), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, $"ITEM: {item.Name}", new Vector2(detailBox.X + 30, detailBox.Y + 24), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, $"Category: {item.Category}   |   Value: {item.Price} Gold", new Vector2(detailBox.X + 30, detailBox.Y + 68), UITheme.AccentCyan, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, item.Description, new Vector2(detailBox.X + 30, detailBox.Y + 110), UITheme.TextSecondary, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
 
-            // Use / Equip Button
+            // Use / Equip Button (Cleanly contained inside detailBox)
             string useLabel = item.Category == ItemCategory.Equipment ? "EQUIP GEAR" : "DEPLOY ITEM";
             CleanUI.DrawButton(batch, _ctx.Font, _useBtn, useLabel, _useBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
-            CleanUI.DrawButton(batch, _ctx.Font, _infoBtn, "INSPECT", _infoBtn.Contains(mPos), accent: UITheme.AccentCyan);
+            CleanUI.DrawButton(batch, _ctx.Font, _infoBtn, "INSPECT ITEM", _infoBtn.Contains(mPos), accent: UITheme.AccentCyan);
         }
         else
         {
-            batch.DrawString(_ctx.Font, "Select an item slot from the inventory to view specifications.", new Vector2(detailBox.X + 20, detailBox.Y + 40), UITheme.TextMuted);
+            batch.DrawString(_ctx.Font, "Select an item slot from the inventory grid to view specifications and deploy.", new Vector2(detailBox.X + 30, detailBox.Y + 50), UITheme.TextMuted);
         }
 
         // Action Feedback Notification
         if (!string.IsNullOrEmpty(_actionFeedback))
         {
-            batch.DrawString(_ctx.Font, _actionFeedback, new Vector2(_panelRect.X + 40, _panelRect.Bottom - 28), UITheme.AccentEmerald);
+            batch.DrawString(_ctx.Font, _actionFeedback, new Vector2(_panelRect.X + 50, _panelRect.Bottom - 36), UITheme.AccentEmerald);
         }
         else
         {
-            batch.DrawString(_ctx.Font, "Press [ ESC ] to return to shelter", new Vector2(_panelRect.X + 40, _panelRect.Bottom - 28), UITheme.TextMuted);
+            batch.DrawString(_ctx.Font, "Press [ ESC ] to return to sanctuary", new Vector2(_panelRect.X + 50, _panelRect.Bottom - 36), UITheme.TextMuted);
         }
     }
 }

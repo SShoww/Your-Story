@@ -15,15 +15,16 @@ public sealed class ChoosePetScreen : IScreen
     private MouseState _prevMouse;
 
     private bool _showingIntroCutscene;
-    private int _selectedPetIndex = 0; // 0 = Coco (Red), 1 = Gloomtail (Log), 2 = Sproutlet (Green)
+    private int _selectedPetIndex = 0; // 0 = Mossling, 1 = BlinkBun, 2 = NibbleClaw
 
-    private readonly Rectangle _continueBtn = new(490, 530, 300, 52);
+    private readonly Rectangle _continueBtn = new(760, 780, 400, 56);
 
-    private readonly Rectangle _card1 = new(120, 145, 320, 460);
-    private readonly Rectangle _card2 = new(480, 145, 320, 460);
-    private readonly Rectangle _card3 = new(840, 145, 320, 460);
+    // 3 Cards spaced symmetrically in 1920x1080
+    private readonly Rectangle _card1 = new(180, 160, 460, 710);
+    private readonly Rectangle _card2 = new(730, 160, 460, 710);
+    private readonly Rectangle _card3 = new(1280, 160, 460, 710);
 
-    private readonly Rectangle _confirmChoiceBtn = new(480, 625, 320, 52);
+    private readonly Rectangle _confirmChoiceBtn = new(760, 910, 400, 56);
 
     public ChoosePetScreen(ScreenContext ctx, bool showIntro = true)
     {
@@ -40,14 +41,12 @@ public sealed class ChoosePetScreen : IScreen
 
         if (_showingIntroCutscene)
         {
-            if ((kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space)) ||
-                (kbd.IsKeyDown(Keys.Enter) && !_prevKeyboard.IsKeyDown(Keys.Enter)))
+            if (kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space))
             {
                 _showingIntroCutscene = false;
                 _ctx.Audio.PlayConfirm();
             }
-
-            if (click && _continueBtn.Contains(mPos))
+            else if (click && _continueBtn.Contains(mPos))
             {
                 _showingIntroCutscene = false;
                 _ctx.Audio.PlayConfirm();
@@ -55,20 +54,25 @@ public sealed class ChoosePetScreen : IScreen
         }
         else
         {
-            // Keyboard selection
-            if (kbd.IsKeyDown(Keys.D1) || kbd.IsKeyDown(Keys.NumPad1))
+            // Number hotkeys 1, 2, 3
+            if (kbd.IsKeyDown(Keys.D1) && !_prevKeyboard.IsKeyDown(Keys.D1))
             {
-                if (_selectedPetIndex != 0) { _selectedPetIndex = 0; _ctx.Audio.PlayConfirm(); }
+                _selectedPetIndex = 0;
+                _ctx.Audio.PlayConfirm();
             }
-            else if (kbd.IsKeyDown(Keys.D2) || kbd.IsKeyDown(Keys.NumPad2))
+            else if (kbd.IsKeyDown(Keys.D2) && !_prevKeyboard.IsKeyDown(Keys.D2))
             {
-                if (_selectedPetIndex != 1) { _selectedPetIndex = 1; _ctx.Audio.PlayConfirm(); }
+                _selectedPetIndex = 1;
+                _ctx.Audio.PlayConfirm();
             }
-            else if (kbd.IsKeyDown(Keys.D3) || kbd.IsKeyDown(Keys.NumPad3))
+            else if (kbd.IsKeyDown(Keys.D3) && !_prevKeyboard.IsKeyDown(Keys.D3))
             {
-                if (_selectedPetIndex != 2) { _selectedPetIndex = 2; _ctx.Audio.PlayConfirm(); }
+                _selectedPetIndex = 2;
+                _ctx.Audio.PlayConfirm();
             }
-            else if (kbd.IsKeyDown(Keys.Left) && !_prevKeyboard.IsKeyDown(Keys.Left))
+
+            // Arrow keys
+            if (kbd.IsKeyDown(Keys.Left) && !_prevKeyboard.IsKeyDown(Keys.Left))
             {
                 _selectedPetIndex = (_selectedPetIndex + 2) % 3;
                 _ctx.Audio.PlayConfirm();
@@ -78,13 +82,8 @@ public sealed class ChoosePetScreen : IScreen
                 _selectedPetIndex = (_selectedPetIndex + 1) % 3;
                 _ctx.Audio.PlayConfirm();
             }
-            else if ((kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space)) ||
-                     (kbd.IsKeyDown(Keys.Enter) && !_prevKeyboard.IsKeyDown(Keys.Enter)))
-            {
-                ConfirmSelection();
-            }
 
-            // Mouse selection
+            // Mouse card selection
             if (click)
             {
                 if (_card1.Contains(mPos))
@@ -107,6 +106,12 @@ public sealed class ChoosePetScreen : IScreen
                     ConfirmSelection();
                 }
             }
+
+            // Spacebar confirm
+            if (kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space))
+            {
+                ConfirmSelection();
+            }
         }
 
         _prevKeyboard = kbd;
@@ -116,16 +121,14 @@ public sealed class ChoosePetScreen : IScreen
     private void ConfirmSelection()
     {
         _ctx.Audio.PlayConfirm();
-
-        PetSpecies chosen = _selectedPetIndex switch
+        PetSpecies species = _selectedPetIndex switch
         {
             0 => PetSpecies.Coco,
             1 => PetSpecies.Gloomtail,
             2 => PetSpecies.Sproutlet,
             _ => PetSpecies.Coco
         };
-
-        _ctx.Run = new V2RunState(chosen);
+        _ctx.Run = new V2RunState(species);
         _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
     }
 
@@ -147,43 +150,26 @@ public sealed class ChoosePetScreen : IScreen
 
     private void DrawIntroCutscene(SpriteBatch batch, Point mPos)
     {
-        Rectangle card = new(220, 110, 840, 500);
-        CleanUI.DrawPanel(batch, card, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(card.X, card.Y, card.Width, 3), UITheme.AccentGold);
+        Rectangle modal = new(460, 220, 1000, 620);
+        CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentGold);
 
-        // Facility Intake Banner
-        string introHeader = "FACILITY INTAKE MANIFEST - DAY 1";
-        batch.DrawString(_ctx.Font, introHeader, new Vector2(card.X + 50, card.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, "FACILITY ORIENTATION - SECTOR 7", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
+        batch.DrawLine(modal.X + 40, modal.Y + 85, modal.Right - 40, modal.Y + 85, UITheme.BorderSubtle, 1f);
 
-        string classification = "CONFIDENTIAL RESEARCH SPECIMENS - CLEARANCE LEVEL 1";
-        batch.DrawString(_ctx.Font, classification, new Vector2(card.X + 50, card.Y + 76), UITheme.TextMuted);
+        string narrative =
+            "Welcome, Overseer.\n\n" +
+            "You have been assigned to Sanctuary Sector 7, a containment station for sentient\n" +
+            "abnormal bio-forms known colloquially as 'Pals'.\n\n" +
+            "Your shift spans 3 operational days. Each morning brings unexpected events,\n" +
+            "doorstep encounters, and natural biological degradation.\n\n" +
+            "Balance your daily 6 Energy Points (AP) wisely across care routines.\n" +
+            "A violent thunderstorm approaches on Night 1. Prepare your companion.\n\n" +
+            "Select your initial specimen to begin containment.";
 
-        batch.DrawLine(card.X + 50, card.Y + 104, card.Right - 50, card.Y + 104, UITheme.BorderSubtle, 1f);
+        batch.DrawString(_ctx.Font, narrative, new Vector2(modal.X + 40, modal.Y + 120), UITheme.TextSecondary, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
 
-        string[] story =
-        {
-            "Unidentified abnormal specimens have been delivered to the daycare containment facility.",
-            "Our research division requires a dedicated handler to nurture, monitor, and train them.",
-            "Each creature exhibits unique behavioral triggers, dietary needs, and defense reflexes.",
-            "Care routines and interaction profiles must be deduced through empirical observation.",
-            "Select your initial specimen assignment to initiate Shelter Operations."
-        };
-
-        int y = card.Y + 130;
-        for (int i = 0; i < story.Length; i++)
-        {
-            Rectangle dot = new(card.X + 54, y + 6, 6, 6);
-            batch.FillRectangle(dot, UITheme.AccentGold);
-            batch.DrawString(_ctx.Font, story[i], new Vector2(card.X + 72, y), UITheme.TextSecondary, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
-            y += 42;
-        }
-
-        // Continue Button
-        CleanUI.DrawButton(batch, _ctx.Font, _continueBtn, "ENTER SHELTER", _continueBtn.Contains(mPos), accent: UITheme.AccentGold, hotkey: "[ SPACE ]", isPrimary: true);
-
-        string hint = "Press [ SPACEBAR ] or Click to Continue";
-        Vector2 hintSize = _ctx.Font.MeasureString(hint);
-        batch.DrawString(_ctx.Font, hint, new Vector2(card.Center.X - hintSize.X / 2f, card.Bottom - 32), UITheme.TextMuted);
+        CleanUI.DrawButton(batch, _ctx.Font, _continueBtn, "PROCEED TO ASSIGNMENT", _continueBtn.Contains(mPos), accent: UITheme.AccentGold, hotkey: "[ SPACE ]", isPrimary: true);
     }
 
     private void DrawPetSelection(SpriteBatch batch, Point mPos)
@@ -191,43 +177,43 @@ public sealed class ChoosePetScreen : IScreen
         // Header
         string title = "SPECIMEN ASSIGNMENT";
         Vector2 titleSize = _ctx.Font.MeasureString(title);
-        batch.DrawString(_ctx.Font, title, new Vector2(640 - (titleSize.X * 1.6f) / 2f, 38), UITheme.TextPrimary, 0f, Vector2.Zero, 1.6f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, title, new Vector2(960 - (titleSize.X * 1.6f) / 2f, 48), UITheme.TextPrimary, 0f, Vector2.Zero, 1.6f, SpriteEffects.None, 0f);
 
         string subtitle = "Select your primary abnormal companion to begin shelter caretaking";
         Vector2 subSize = _ctx.Font.MeasureString(subtitle);
-        batch.DrawString(_ctx.Font, subtitle, new Vector2(640 - subSize.X / 2f, 86), UITheme.TextSecondary);
+        batch.DrawString(_ctx.Font, subtitle, new Vector2(960 - subSize.X / 2f, 106), UITheme.TextSecondary);
 
-        // Card 1: Red / Coco
+        // Card 1: Mossling
         DrawSpecimenCard(batch, _card1,
-            title: "Coco (Mossling)",
+            title: "Mossling",
             speciesCode: "SPECIMEN #01",
             element: "Fire",
             elementColor: UITheme.AccentCoral,
             hp: 100, stomach: 80, clean: 75,
             traitName: "Thermal Surge",
-            traitDesc: "Overnight warmth heal when Clean > 70.",
+            traitDesc: "Overnight warmth heal when Cleanliness > 70.",
             accent: UITheme.AccentCoral,
             isSelected: _selectedPetIndex == 0,
             isHovered: _card1.Contains(mPos),
             hotkey: "[ 1 ]");
 
-        // Card 2: Log / Gloomtail
+        // Card 2: BlinkBun
         DrawSpecimenCard(batch, _card2,
-            title: "Gloomtail (Blinkbun)",
+            title: "BlinkBun",
             speciesCode: "SPECIMEN #02",
             element: "Void",
             elementColor: UITheme.AccentPurple,
             hp: 110, stomach: 90, clean: 60,
             traitName: "Dark Resonance",
-            traitDesc: "-25% dodge damage, tough hide vs hazards.",
+            traitDesc: "-25% hazard damage, tough defensive skin.",
             accent: UITheme.AccentPurple,
             isSelected: _selectedPetIndex == 1,
             isHovered: _card2.Contains(mPos),
             hotkey: "[ 2 ]");
 
-        // Card 3: Green / Sproutlet
+        // Card 3: NibbleClaw
         DrawSpecimenCard(batch, _card3,
-            title: "Sproutlet (Nibbleclaw)",
+            title: "NibbleClaw",
             speciesCode: "SPECIMEN #03",
             element: "Flora",
             elementColor: UITheme.AccentEmerald,
@@ -266,55 +252,59 @@ public sealed class ChoosePetScreen : IScreen
         CleanUI.DrawPanel(batch, drawCard, bg, border, borderWidth: isSelected ? 2 : 1, shadow: true);
 
         // Header Accent Strip
-        batch.FillRectangle(new Rectangle(drawCard.X, drawCard.Y, drawCard.Width, 3), isSelected ? UITheme.AccentGold : accent);
+        batch.FillRectangle(new Rectangle(drawCard.X, drawCard.Y, drawCard.Width, 4), isSelected ? UITheme.AccentGold : accent);
 
         // Top Row: Code & Hotkey + Element Pill
-        batch.DrawString(_ctx.Font, $"{hotkey}  {speciesCode}", new Vector2(drawCard.X + 16, drawCard.Y + 14), UITheme.TextMuted);
+        batch.DrawString(_ctx.Font, $"{hotkey}  {speciesCode}", new Vector2(drawCard.X + 20, drawCard.Y + 16), UITheme.TextMuted, 0f, Vector2.Zero, 0.95f, SpriteEffects.None, 0f);
 
-        Rectangle elemBadge = new(drawCard.Right - 76, drawCard.Y + 12, 60, 20);
+        Rectangle elemBadge = new(drawCard.Right - 94, drawCard.Y + 14, 74, 26);
         CleanUI.DrawBadge(batch, _ctx.Font, elemBadge, element, elementColor * 0.25f, elementColor);
 
-        // Name
-        batch.DrawString(_ctx.Font, title, new Vector2(drawCard.X + 16, drawCard.Y + 36), UITheme.TextPrimary, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
-        // Pet Texture / Avatar box with recessed background
-        Rectangle iconRect = new(drawCard.Center.X - 48, drawCard.Y + 70, 96, 96);
+        // Name (Strictly: Mossling, BlinkBun, NibbleClaw)
+        batch.DrawString(_ctx.Font, title, new Vector2(drawCard.X + 20, drawCard.Y + 48), UITheme.TextPrimary, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
+
+        // Pet Texture / Avatar box - cleanly separated so it NEVER covers text
+        Rectangle iconRect = new(drawCard.Center.X - 75, drawCard.Y + 98, 150, 150);
         CleanUI.DrawPanel(batch, iconRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
 
-        // Floor shadow ellipse
-        batch.FillRectangle(new Rectangle(iconRect.X + 16, iconRect.Bottom - 10, 64, 6), Color.Black * 0.35f);
+        // Floor shadow ellipse inside box
+        batch.FillRectangle(new Rectangle(iconRect.X + 25, iconRect.Bottom - 14, 100, 8), Color.Black * 0.35f);
 
         if (_ctx.PetIdleTex != null)
         {
-            batch.Draw(_ctx.PetIdleTex, new Rectangle(iconRect.X + 8, iconRect.Y + 8, 80, 80), Color.White);
+            int sprH = 130;
+            int sprW = (int)(sprH * (1298f / 1731f)); // 97px (maintain 3:4 portrait aspect ratio)
+            Rectangle sprRect = new(iconRect.Center.X - sprW / 2, iconRect.Center.Y - sprH / 2, sprW, sprH);
+            batch.Draw(_ctx.PetIdleTex, sprRect, Color.White);
         }
 
-        // Stats with clean micro progress bars
-        int sy = drawCard.Y + 180;
-        int barW = drawCard.Width - 32;
+        // Stats with clean micro progress bars starting below the portrait
+        int sy = drawCard.Y + 268;
+        int barW = drawCard.Width - 40;
 
-        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 16, sy, barW, 20), hp / 120f, UITheme.AccentCoral, leftText: "HP", rightText: $"{hp}");
-        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 16, sy + 26, barW, 20), stomach / 100f, UITheme.AccentGold, leftText: "STOMACH", rightText: $"{stomach}%");
-        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 16, sy + 52, barW, 20), clean / 100f, UITheme.AccentCyan, leftText: "CLEAN", rightText: $"{clean}%");
+        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 20, sy, barW, 24), hp / 120f, UITheme.AccentCoral, leftText: "HP", rightText: $"{hp}");
+        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 20, sy + 32, barW, 24), stomach / 100f, UITheme.AccentGold, leftText: "STOMACH", rightText: $"{stomach}%");
+        CleanUI.DrawProgressBar(batch, _ctx.Font, new Rectangle(drawCard.X + 20, sy + 64, barW, 24), clean / 100f, UITheme.AccentCyan, leftText: "CLEAN", rightText: $"{clean}%");
 
         // Special Trait Box (Recessed)
-        Rectangle traitBox = new(drawCard.X + 16, sy + 82, barW, 86);
+        Rectangle traitBox = new(drawCard.X + 20, sy + 104, barW, 110);
         CleanUI.DrawPanel(batch, traitBox, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
 
-        batch.DrawString(_ctx.Font, $"TRAIT: {traitName}", new Vector2(traitBox.X + 10, traitBox.Y + 8), UITheme.AccentGold);
+        batch.DrawString(_ctx.Font, $"TRAIT: {traitName}", new Vector2(traitBox.X + 16, traitBox.Y + 12), UITheme.AccentGold, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
 
-        // Trait description wrapping
-        batch.DrawString(_ctx.Font, traitDesc, new Vector2(traitBox.X + 10, traitBox.Y + 32), UITheme.TextSecondary);
+        // Trait description wrapping neatly
+        batch.DrawString(_ctx.Font, traitDesc, new Vector2(traitBox.X + 16, traitBox.Y + 44), UITheme.TextSecondary, 0f, Vector2.Zero, 0.90f, SpriteEffects.None, 0f);
 
-        // Selection badge
+        // Selection badge / button
         if (isSelected)
         {
-            Rectangle selBadge = new(drawCard.X + 16, drawCard.Bottom - 38, barW, 26);
-            CleanUI.DrawBadge(batch, _ctx.Font, selBadge, "SELECTED", UITheme.AccentGold, Color.Black);
+            Rectangle selBadge = new(drawCard.X + 20, drawCard.Bottom - 54, barW, 36);
+            CleanUI.DrawBadge(batch, _ctx.Font, selBadge, "SELECTED SPECIMEN", UITheme.AccentGold, Color.Black);
         }
         else
         {
             Vector2 clickPrompt = _ctx.Font.MeasureString("Click to Select");
-            batch.DrawString(_ctx.Font, "Click to Select", new Vector2(drawCard.Center.X - clickPrompt.X / 2f, drawCard.Bottom - 32), UITheme.TextMuted);
+            batch.DrawString(_ctx.Font, "Click to Select", new Vector2(drawCard.Center.X - clickPrompt.X / 2f, drawCard.Bottom - 44), UITheme.TextMuted);
         }
     }
 }

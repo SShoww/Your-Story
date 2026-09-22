@@ -27,8 +27,10 @@ public class Game1 : Game
     {
         _args = args ?? Array.Empty<string>();
         _graphics = new GraphicsDeviceManager(this);
-        _graphics.PreferredBackBufferWidth = 1280;
-        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = 1920;
+        _graphics.PreferredBackBufferHeight = 1080;
+        _graphics.HardwareModeSwitch = false; // borderless fullscreen window
+        _graphics.IsFullScreen = true;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
@@ -36,7 +38,7 @@ public class Game1 : Game
         try
         {
             var display = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-            Window.Position = new Point(Math.Max(0, (display.Width - 1280) / 2), Math.Max(0, (display.Height - 720) / 2));
+            Window.Position = new Point(Math.Max(0, (display.Width - 1920) / 2), Math.Max(0, (display.Height - 1080) / 2));
         }
         catch
         {
@@ -82,6 +84,7 @@ public class Game1 : Game
         };
 
         _screenManager = new ScreenManager(_context);
+        _screenManager.OnExitGame = () => Exit();
 
         bool auto = Array.Exists(_args, a => a is "--screenshot" or "--playtest") ||
                     Environment.GetEnvironmentVariable("BEPAL_SCREENSHOT") == "1";
@@ -124,7 +127,7 @@ public class Game1 : Game
 
         MouseState mstate = Mouse.GetState();
         bool mouseClicked = mstate.LeftButton == ButtonState.Released && _prevMouse.LeftButton == ButtonState.Pressed;
-        CleanUI.DrawWindowHeader(_batch, _context.Font, 1280, mstate.Position, mouseClicked,
+        CleanUI.DrawWindowHeader(_batch, _context.Font, 1920, mstate.Position, mouseClicked,
             onToggleFullscreen: () => _graphics.ToggleFullScreen(),
             onClose: () => Exit());
 
@@ -144,7 +147,7 @@ public class Game1 : Game
         Color[] data = new Color[w * h];
         GraphicsDevice.GetBackBufferData(data);
         target.SetData(data);
-        using FileStream fs = File.Create(path);
+        using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
         target.SaveAsPng(fs, w, h);
     }
 
@@ -220,6 +223,18 @@ public class Game1 : Game
             case 29:
                 // 10: Daily Debriefing and Shift Summary matching Slide 30
                 SaveScreenshot("screenshots/v2/10_summary_report.png");
+                _screenManager.SetScreen(new CalmingQteScreen(_context), transition: false);
+                break;
+
+            case 32:
+                // Emergency Thunderstorm Calming QTE
+                SaveScreenshot("screenshots/v2/05_thunderstorm.png");
+                _screenManager.SetScreen(new EndingScreen(_context, StoryEnding.EndingB_Protector), transition: false);
+                break;
+
+            case 35:
+                // Story Conclusion / Ending Screen
+                SaveScreenshot("screenshots/v2/10_ending.png");
                 Exit();
                 break;
         }

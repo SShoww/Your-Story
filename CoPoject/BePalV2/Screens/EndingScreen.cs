@@ -1,5 +1,6 @@
 using BePalV2.Audio;
 using BePalV2.Gameplay;
+using BePalV2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,7 +15,8 @@ public sealed class EndingScreen : IScreen
     private KeyboardState _prevKeyboard;
     private MouseState _prevMouse;
 
-    private readonly Rectangle _menuBtn = new(480, 600, 320, 50);
+    // 1920x1080 Layout Constants
+    private readonly Rectangle _menuBtn = new(660, 880, 600, 60);
 
     public EndingScreen(ScreenContext ctx, StoryEnding ending)
     {
@@ -75,6 +77,7 @@ public sealed class EndingScreen : IScreen
                     "The shelter thrives as a true sanctuary of understanding."
                 };
                 break;
+
             case StoryEnding.Ending_VerticalSliceForcedDefeat:
                 title = "VERTICAL SLICE FINALE: FORCED RETREAT";
                 titleColor = new Color(255, 90, 90);
@@ -104,36 +107,33 @@ public sealed class EndingScreen : IScreen
 
         // Draw Title
         Vector2 tSize = _ctx.Font.MeasureString(title);
-        batch.DrawString(_ctx.Font, title, new Vector2(640 - tSize.X / 2f, 100), titleColor, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, title, new Vector2(960 - (tSize.X * 1.6f) / 2f, 110), titleColor, 0f, Vector2.Zero, 1.6f, SpriteEffects.None, 0f);
 
         // Narrative box
-        Rectangle textRect = new(200, 180, 880, 260);
-        batch.FillRectangle(textRect, new Color(20, 24, 34));
-        batch.DrawRectangle(textRect, titleColor, 1);
+        Rectangle textRect = new(360, 220, 1200, 480);
+        CleanUI.DrawPanel(batch, textRect, new Color(20, 24, 34), titleColor, borderWidth: 1, shadow: true);
 
-        int ny = textRect.Y + 30;
+        int ny = textRect.Y + 45;
         foreach (var line in narrative)
         {
             Vector2 lSize = _ctx.Font.MeasureString(line);
-            batch.DrawString(_ctx.Font, line, new Vector2(640 - lSize.X / 2f, ny), Color.White);
-            ny += 38;
+            batch.DrawString(_ctx.Font, line, new Vector2(960 - (lSize.X * 1.15f) / 2f, ny), Color.White, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
+            ny += 55;
         }
 
         // Stats summary
         var run = _ctx.Run;
         string stats = $"Total Sessions Completed: {run.TotalCareSessionsCompleted}   |   Perfect: {run.TotalPerfectAttempts}   |   Good: {run.TotalGoodAttempts}   |   Misses: {run.TotalMissAttempts}";
         Vector2 sSize = _ctx.Font.MeasureString(stats);
-        batch.DrawString(_ctx.Font, stats, new Vector2(640 - sSize.X / 2f, 480), Color.Gold);
+        batch.DrawString(_ctx.Font, stats, new Vector2(960 - sSize.X / 2f, 750), Color.Gold);
 
-        string walletInfo = $"Final Wallet: {run.Economy.Gold} G   |   Final Debt: {run.Economy.Debt} G";
+        string walletInfo = $"Final Wallet: {run.Economy.Gold} G   |   Final Debt: {run.Economy.Debt} G   |   Research Points: {run.Economy.PlayerPoints} PTS";
         Vector2 wSize = _ctx.Font.MeasureString(walletInfo);
-        batch.DrawString(_ctx.Font, walletInfo, new Vector2(640 - wSize.X / 2f, 520), new Color(180, 200, 220));
+        batch.DrawString(_ctx.Font, walletInfo, new Vector2(960 - wSize.X / 2f, 800), new Color(180, 200, 220));
 
         // Return button
-        batch.FillRectangle(_menuBtn, new Color(40, 120, 70));
-        batch.DrawRectangle(_menuBtn, Color.White, 1);
+        Point mPos = Mouse.GetState().Position;
         string btnLabel = "RETURN TO MAIN MENU [ ENTER ]";
-        Vector2 bSize = _ctx.Font.MeasureString(btnLabel);
-        batch.DrawString(_ctx.Font, btnLabel, new Vector2(_menuBtn.Center.X - bSize.X / 2f, _menuBtn.Center.Y - bSize.Y / 2f), Color.White);
+        CleanUI.DrawButton(batch, _ctx.Font, _menuBtn, btnLabel, _menuBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
     }
 }

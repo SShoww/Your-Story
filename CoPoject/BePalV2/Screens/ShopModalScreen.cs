@@ -15,15 +15,16 @@ public sealed class ShopModalScreen : IScreen
     private KeyboardState _prevKeyboard;
     private MouseState _prevMouse;
 
-    private readonly Rectangle _panelRect = new(180, 50, 920, 620);
-    private readonly Rectangle _exitBtn = new(970, 68, 110, 36);
+    // 1920x1080 Layout Constants
+    private readonly Rectangle _panelRect = new(260, 100, 1400, 880);
+    private readonly Rectangle _exitBtn = new(1480, 124, 140, 42);
 
-    // 5 Canonical Items Matching Slide 62
+    // 5 Canonical Items
     private readonly IReadOnlyList<ItemDefinition> _shopItems = ItemDefinition.CanonicalFive;
 
     private ItemDefinition? _pendingItem;
-    private readonly Rectangle _confirmYesBtn = new(690, 560, 120, 42);
-    private readonly Rectangle _confirmNoBtn = new(830, 560, 120, 42);
+    private readonly Rectangle _confirmYesBtn = new(1060, 800, 200, 52);
+    private readonly Rectangle _confirmNoBtn = new(1310, 800, 200, 52);
 
     private string? _purchaseFeedback;
     private float _feedbackTimer;
@@ -63,6 +64,7 @@ public sealed class ShopModalScreen : IScreen
 
         if (click)
         {
+            // Exit button
             if (_exitBtn.Contains(mPos))
             {
                 _ctx.Audio.PlayConfirm();
@@ -70,11 +72,11 @@ public sealed class ShopModalScreen : IScreen
                 return;
             }
 
-            // Click an item in the list
+            // Click item card to select
             for (int i = 0; i < _shopItems.Count; i++)
             {
-                int y = _panelRect.Y + 80 + i * 85;
-                Rectangle itemRect = new(_panelRect.X + 30, y, 430, 74);
+                int y = _panelRect.Y + 95 + i * 135;
+                Rectangle itemRect = new(_panelRect.X + 40, y, 640, 115);
                 if (itemRect.Contains(mPos))
                 {
                     _pendingItem = _shopItems[i];
@@ -107,7 +109,7 @@ public sealed class ShopModalScreen : IScreen
         var run = _ctx.Run;
         if (!run.Economy.CanAfford(item.Price))
         {
-            _purchaseFeedback = "INSUFFICIENT FUNDS! Cannot afford this item.";
+            _purchaseFeedback = $"Not enough Gold! Needs {item.Price} G.";
             _feedbackTimer = 2.0f;
             _ctx.Audio.PlayWarning();
             return;
@@ -115,50 +117,52 @@ public sealed class ShopModalScreen : IScreen
 
         if (run.Inventory.IsFull)
         {
-            _purchaseFeedback = "STORAGE CAPACITY FULL! Discard or use an item first.";
+            _purchaseFeedback = "Inventory is full (8/8 slots occupied)!";
             _feedbackTimer = 2.0f;
             _ctx.Audio.PlayWarning();
             return;
         }
 
-        run.Economy.SpendGold(item.Price);
-        run.Inventory.AddItem(item);
-        _ctx.Audio.PlaySuccess();
-
-        _purchaseFeedback = $"TRANSACTION CONFIRMED: Acquired {item.Name} for {item.Price} G";
-        _feedbackTimer = 2.0f;
+        bool spent = run.Economy.SpendGold(item.Price);
+        if (spent)
+        {
+            run.Inventory.AddItem(item);
+            _purchaseFeedback = $"PURCHASE CONFIRMED: {item.Name} acquired!";
+            _feedbackTimer = 2.5f;
+            _ctx.Audio.PlaySuccess();
+        }
     }
 
     public void Draw(GameTime gameTime, SpriteBatch batch)
     {
-        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.8f);
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.85f);
 
         // Shop Frame
         CleanUI.DrawPanel(batch, _panelRect, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(_panelRect.X, _panelRect.Y, _panelRect.Width, 3), UITheme.AccentGold);
+        batch.FillRectangle(new Rectangle(_panelRect.X, _panelRect.Y, _panelRect.Width, 4), UITheme.AccentGold);
 
-        // Header: "Shop" & Gold & Bag capacity
-        batch.DrawString(_ctx.Font, $"MERCHANT OUTPOST - DAY {_ctx.Run.DayNumber}", new Vector2(_panelRect.X + 30, _panelRect.Y + 22), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        // Header: "MERCHANT OUTPOST" & Gold & Bag capacity
+        batch.DrawString(_ctx.Font, $"MERCHANT OUTPOST - DAY {_ctx.Run.DayNumber}", new Vector2(_panelRect.X + 40, _panelRect.Y + 28), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
 
-        Rectangle goldPill = new(_panelRect.X + 410, _panelRect.Y + 18, 140, 28);
+        Rectangle goldPill = new(_panelRect.X + 640, _panelRect.Y + 24, 180, 38);
         CleanUI.DrawBadge(batch, _ctx.Font, goldPill, $"GOLD: {_ctx.Run.Economy.Gold} G", new Color(34, 42, 58), UITheme.AccentGold);
 
         int occupied = _ctx.Run.Inventory.Count;
         Color bagColor = occupied >= 8 ? UITheme.AccentCoral : UITheme.AccentEmerald;
-        Rectangle bagPill = new(_panelRect.X + 570, _panelRect.Y + 18, 140, 28);
+        Rectangle bagPill = new(_panelRect.X + 840, _panelRect.Y + 24, 180, 38);
         CleanUI.DrawBadge(batch, _ctx.Font, bagPill, $"BAG: {occupied} / {InventoryService.MaxSlots}", new Color(28, 36, 44), bagColor);
 
         Point mPos = Mouse.GetState().Position;
 
-        // Exit Shop Button
-        CleanUI.DrawButton(batch, _ctx.Font, _exitBtn, "CLOSE", _exitBtn.Contains(mPos), accent: UITheme.BorderSubtle, hotkey: "[ ESC ]");
+        // Exit Shop Button (cleanly sized and positioned at top-right)
+        CleanUI.DrawButton(batch, _ctx.Font, _exitBtn, "EXIT SHOP", _exitBtn.Contains(mPos), accent: UITheme.BorderSubtle, hotkey: "[ ESC ]");
 
         // 5 Canonical Items
         for (int i = 0; i < _shopItems.Count; i++)
         {
             var item = _shopItems[i];
-            int y = _panelRect.Y + 80 + i * 85;
-            Rectangle itemRect = new(_panelRect.X + 30, y, 430, 74);
+            int y = _panelRect.Y + 95 + i * 135;
+            Rectangle itemRect = new(_panelRect.X + 40, y, 640, 115);
 
             bool isSelected = _pendingItem == item;
             bool hovered = itemRect.Contains(mPos);
@@ -168,35 +172,38 @@ public sealed class ShopModalScreen : IScreen
 
             CleanUI.DrawPanel(batch, itemRect, bg, border, borderWidth: isSelected ? 2 : 1, shadow: false);
 
-            batch.DrawString(_ctx.Font, item.Name, new Vector2(itemRect.X + 16, y + 10), UITheme.TextPrimary);
+            // Item Name
+            batch.DrawString(_ctx.Font, item.Name, new Vector2(itemRect.X + 20, y + 16), UITheme.TextPrimary, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
-            // Price pill
-            Rectangle pricePill = new(itemRect.Right - 90, y + 10, 76, 22);
+            // Price badge
+            Rectangle pricePill = new(itemRect.Right - 110, y + 14, 90, 28);
             CleanUI.DrawBadge(batch, _ctx.Font, pricePill, $"{item.Price} G", UITheme.AccentGold * 0.25f, UITheme.AccentGold);
 
-            batch.DrawString(_ctx.Font, item.Description, new Vector2(itemRect.X + 16, y + 36), UITheme.TextSecondary);
+            // Description: clear vertical separation from item name (NOT cramped!)
+            batch.DrawString(_ctx.Font, item.Description, new Vector2(itemRect.X + 20, y + 54), UITheme.TextSecondary, 0f, Vector2.Zero, 0.88f, SpriteEffects.None, 0f);
         }
 
-        // Merchant Portrait & Dialogue Frame
-        Rectangle merchRect = new(_panelRect.X + 480, _panelRect.Y + 80, 410, 460);
+        // Merchant Counter Frame
+        Rectangle merchRect = new(_panelRect.X + 710, _panelRect.Y + 95, 650, 750);
         CleanUI.DrawPanel(batch, merchRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
 
-        batch.DrawString(_ctx.Font, "MERCHANT'S COUNTER", new Vector2(merchRect.X + 20, merchRect.Y + 16), UITheme.AccentGold);
-        batch.DrawLine(merchRect.X + 20, merchRect.Y + 44, merchRect.Right - 20, merchRect.Y + 44, UITheme.BorderSubtle, 1f);
+        batch.DrawString(_ctx.Font, "MERCHANT'S COUNTER", new Vector2(merchRect.X + 30, merchRect.Y + 24), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+        batch.DrawLine(merchRect.X + 30, merchRect.Y + 65, merchRect.Right - 30, merchRect.Y + 65, UITheme.BorderSubtle, 1f);
 
-        string dialogue = "\"I carry rare specimen sundries... care to trade?\"";
-        batch.DrawString(_ctx.Font, dialogue, new Vector2(merchRect.X + 20, merchRect.Y + 62), UITheme.TextSecondary);
+        // Speech line (NO redundant "Merchant:" prefix!)
+        string dialogue = "\"What are you lookin for? Care to trade some rare specimen sundries?\"";
+        batch.DrawString(_ctx.Font, dialogue, new Vector2(merchRect.X + 30, merchRect.Y + 90), UITheme.TextSecondary, 0f, Vector2.Zero, 0.95f, SpriteEffects.None, 0f);
 
         if (_pendingItem != null)
         {
-            batch.DrawString(_ctx.Font, _pendingItem.Name, new Vector2(merchRect.X + 20, merchRect.Y + 110), UITheme.TextPrimary, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, $"Price: {_pendingItem.Price} Gold", new Vector2(merchRect.X + 20, merchRect.Y + 144), UITheme.AccentGold);
-            batch.DrawString(_ctx.Font, _pendingItem.Description, new Vector2(merchRect.X + 20, merchRect.Y + 178), UITheme.TextSecondary);
+            batch.DrawString(_ctx.Font, _pendingItem.Name, new Vector2(merchRect.X + 30, merchRect.Y + 160), UITheme.TextPrimary, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, $"Price: {_pendingItem.Price} Gold   |   Category: {_pendingItem.Category}", new Vector2(merchRect.X + 30, merchRect.Y + 215), UITheme.AccentCyan, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, _pendingItem.Description, new Vector2(merchRect.X + 30, merchRect.Y + 265), UITheme.TextSecondary, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
 
             // Purchase confirmation prompt
-            batch.DrawString(_ctx.Font, $"Acquire {_pendingItem.Name} for containment?", new Vector2(merchRect.X + 20, merchRect.Y + 270), UITheme.AccentCyan);
+            batch.DrawString(_ctx.Font, $"Acquire {_pendingItem.Name} for facility containment?", new Vector2(merchRect.X + 30, merchRect.Y + 420), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
 
-            CleanUI.DrawButton(batch, _ctx.Font, _confirmYesBtn, "BUY", _confirmYesBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
+            CleanUI.DrawButton(batch, _ctx.Font, _confirmYesBtn, "BUY ITEM", _confirmYesBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
             CleanUI.DrawButton(batch, _ctx.Font, _confirmNoBtn, "CANCEL", _confirmNoBtn.Contains(mPos), accent: UITheme.AccentCoral);
         }
 
@@ -204,7 +211,7 @@ public sealed class ShopModalScreen : IScreen
         if (!string.IsNullOrEmpty(_purchaseFeedback))
         {
             Color fbCol = _purchaseFeedback.Contains("CONFIRMED") ? UITheme.AccentEmerald : UITheme.AccentCoral;
-            batch.DrawString(_ctx.Font, _purchaseFeedback, new Vector2(_panelRect.X + 30, _panelRect.Bottom - 36), fbCol);
+            batch.DrawString(_ctx.Font, _purchaseFeedback, new Vector2(_panelRect.X + 40, _panelRect.Bottom - 45), fbCol, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
         }
     }
 }

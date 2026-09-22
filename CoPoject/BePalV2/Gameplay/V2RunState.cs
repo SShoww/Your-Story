@@ -15,6 +15,11 @@ public sealed class V2RunState
     public InventoryService Inventory { get; } = new();
 
     public StoryEnding Ending { get; private set; } = StoryEnding.None;
+
+    public void SetEnding(StoryEnding ending)
+    {
+        Ending = ending;
+    }
     public bool IsRunComplete => Ending != StoryEnding.None || DayNumber > MaxDays;
 
     public int TotalCareSessionsCompleted { get; private set; }

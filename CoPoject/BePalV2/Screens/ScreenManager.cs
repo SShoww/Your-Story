@@ -10,6 +10,7 @@ public sealed class ScreenManager
     public StripeWipeTransition? ActiveTransition { get; private set; }
 
     public float DefaultTransitionDuration { get; set; } = 0.65f;
+    public Action? OnExitGame { get; set; }
 
     public IScreen? ActiveScreen => _screenStack.Count > 0 ? _screenStack.Peek() : null;
     public int ScreenCount => _screenStack.Count;
@@ -19,6 +20,11 @@ public sealed class ScreenManager
     {
         Context = context;
         Context.ScreenManager = this;
+    }
+
+    public void ExitGame()
+    {
+        OnExitGame?.Invoke();
     }
 
     public void SetScreen(IScreen screen, bool transition = true, float? duration = null)
@@ -56,7 +62,7 @@ public sealed class ScreenManager
 
     public void PopOverlay()
     {
-        if (_screenStack.Count > 1 && _screenStack.Peek().IsOverlay)
+        if (_screenStack.Count > 1)
         {
             _screenStack.Pop();
         }
@@ -64,12 +70,10 @@ public sealed class ScreenManager
 
     public void Update(GameTime gameTime)
     {
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
         if (ActiveTransition != null && ActiveTransition.IsActive)
         {
-            ActiveTransition.Update(dt);
-            return; // Gate input during transition
+            ActiveTransition.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            return;
         }
 
         if (_screenStack.Count > 0)
@@ -82,16 +86,22 @@ public sealed class ScreenManager
     {
         if (_screenStack.Count == 0) return;
 
-        // Find bottom-most screen to start drawing from if overlays exist
-        var screens = _screenStack.ToArray(); // Top is [0]
-        Array.Reverse(screens); // Bottom is [0]
-
-        foreach (var scr in screens)
+        var screensToDraw = new List<IScreen>();
+        foreach (var screen in _screenStack)
         {
-            scr.Draw(gameTime, spriteBatch);
+            screensToDraw.Add(screen);
+            if (!screen.IsOverlay)
+            {
+                break;
+            }
+        }
+        screensToDraw.Reverse();
+
+        foreach (var screen in screensToDraw)
+        {
+            screen.Draw(gameTime, spriteBatch);
         }
 
-        // Transition on top
         if (ActiveTransition != null && ActiveTransition.IsActive)
         {
             ActiveTransition.Draw(spriteBatch, Context.Pixel, Context.ScreenWidth, Context.ScreenHeight);

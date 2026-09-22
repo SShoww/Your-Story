@@ -7,6 +7,7 @@ public sealed class EconomyManager
 
     public int Gold { get; private set; } = StartingGold;
     public int Debt { get; private set; } = 0;
+    public int PlayerPoints { get; private set; } = 50;
 
     public bool HasDebt => Debt > 0;
 
@@ -24,6 +25,23 @@ public sealed class EconomyManager
     {
         if (!CanAfford(amount)) return false;
         Gold -= amount;
+        return true;
+    }
+
+    public void AddPlayerPoints(int amount)
+    {
+        if (amount > 0)
+        {
+            PlayerPoints += amount;
+        }
+    }
+
+    public bool CanAffordPoints(int amount) => amount >= 0 && PlayerPoints >= amount;
+
+    public bool SpendPlayerPoints(int amount)
+    {
+        if (!CanAffordPoints(amount)) return false;
+        PlayerPoints -= amount;
         return true;
     }
 
