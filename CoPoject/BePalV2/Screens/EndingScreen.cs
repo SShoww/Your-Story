@@ -75,6 +75,18 @@ public sealed class EndingScreen : IScreen
                     "The shelter thrives as a true sanctuary of understanding."
                 };
                 break;
+            case StoryEnding.Ending_VerticalSliceForcedDefeat:
+                title = "VERTICAL SLICE FINALE: FORCED RETREAT";
+                titleColor = new Color(255, 90, 90);
+                narrative = new[]
+                {
+                    "The Chapter Boss descended upon the sanctuary with overwhelming, cataclysmic force.",
+                    "Despite brave resistance and quick evasion, the abnormal incursion forced a tactical retreat.",
+                    "Your companions shielded you until the final second, escaping safely into the research vault.",
+                    "Vertical Slice Complete! The struggle continues in the full game release.",
+                    "Thank you for playing the BePal V2 prototype."
+                };
+                break;
 
             default:
                 title = "BAD ENDING: FORECLOSURE & RUIN";

@@ -268,6 +268,8 @@ stateDiagram-v2
         Day3_MerchantOffer --> EndingA_Sell : เลือก YES (ขาย 5,000G)
         Day3_MerchantOffer --> Day3_BossFight : เลือก NO (ปฏิเสธ)
         Day3_BossFight --> EndingB_Protector : ปราบพ่อค้าสำเร็จ
+        EndingB_Protector --> FinalDay_ChapterBoss : บอสประจำบทบุกฐาน
+        FinalDay_ChapterBoss --> Ending_ForcedDefeat : บังคับแพ้ (Forced Retreat สู่ตัวเกมเต็ม)
     }
 ```
 
