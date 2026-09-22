@@ -199,7 +199,7 @@ public sealed class ChoosePetScreen : IScreen
 
         // Card 1: Red / Coco
         DrawSpecimenCard(batch, _card1,
-            title: "Coco",
+            title: "Coco (Mossling)",
             speciesCode: "SPECIMEN #01",
             element: "Fire",
             elementColor: UITheme.AccentCoral,
@@ -213,7 +213,7 @@ public sealed class ChoosePetScreen : IScreen
 
         // Card 2: Log / Gloomtail
         DrawSpecimenCard(batch, _card2,
-            title: "Gloomtail",
+            title: "Gloomtail (Blinkbun)",
             speciesCode: "SPECIMEN #02",
             element: "Void",
             elementColor: UITheme.AccentPurple,
@@ -227,7 +227,7 @@ public sealed class ChoosePetScreen : IScreen
 
         // Card 3: Green / Sproutlet
         DrawSpecimenCard(batch, _card3,
-            title: "Sproutlet",
+            title: "Sproutlet (Nibbleclaw)",
             speciesCode: "SPECIMEN #03",
             element: "Flora",
             elementColor: UITheme.AccentEmerald,
@@ -275,8 +275,7 @@ public sealed class ChoosePetScreen : IScreen
         CleanUI.DrawBadge(batch, _ctx.Font, elemBadge, element, elementColor * 0.25f, elementColor);
 
         // Name
-        batch.DrawString(_ctx.Font, title, new Vector2(drawCard.X + 16, drawCard.Y + 36), UITheme.TextPrimary, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
-
+        batch.DrawString(_ctx.Font, title, new Vector2(drawCard.X + 16, drawCard.Y + 36), UITheme.TextPrimary, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
         // Pet Texture / Avatar box with recessed background
         Rectangle iconRect = new(drawCard.Center.X - 48, drawCard.Y + 70, 96, 96);
         CleanUI.DrawPanel(batch, iconRect, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);

@@ -36,5 +36,6 @@ public enum StoryEnding
     None,
     EndingA_Betrayal,
     EndingB_Protector,
-    EndingBad_Foreclosure
+    EndingBad_Foreclosure,
+    Ending_VerticalSliceForcedDefeat
 }

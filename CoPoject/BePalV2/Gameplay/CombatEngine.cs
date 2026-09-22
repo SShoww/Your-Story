@@ -3,7 +3,8 @@ namespace BePalV2.Gameplay;
 public enum CombatMode
 {
     ToothlessTaming,
-    MerchantBoss
+    MerchantBoss,
+    ChapterBoss
 }
 
 public sealed class CombatEngine
@@ -19,7 +20,7 @@ public sealed class CombatEngine
     // Toothless Taming (Day 2)
     public float TameGauge { get; private set; } = 0f;
 
-    // Merchant Boss (Day 3) - Slide 54: "เลือด = การกดโจมตีโดน 5 ครั้ง"
+    // Merchant Boss (Day 3) / Chapter Boss (Vertical Slice Finale)
     public const int MaxBossHits = 5;
     public float BossMaxHp { get; } = 1000f;
     public float BossHp { get; private set; } = 1000f;
@@ -48,8 +49,29 @@ public sealed class CombatEngine
     public int ShieldHitsRemaining { get; private set; }
 
     public bool IsPlayerDefeated => PlayerHp <= 0f || ActivePet.Health <= 0f;
-    public bool IsCombatWon => Mode == CombatMode.ToothlessTaming ? TameGauge >= 100f : BossHp <= 0f;
+
+    // ChapterBoss cannot be won; it is a canonical forced defeat encounter (NewGDD.txt)
+    public bool IsCombatWon => Mode == CombatMode.ToothlessTaming
+        ? TameGauge >= 100f
+        : (Mode == CombatMode.MerchantBoss ? BossHp <= 0f : false);
+
     public bool IsFinished => IsPlayerDefeated || IsCombatWon;
+
+    public static bool CanPetFight(PetEntity pet, out string? refusalReason)
+    {
+        if (pet.Health <= 0f)
+        {
+            refusalReason = "Pet is incapacitated (HP = 0). Treat your pet at the Clinic first!";
+            return false;
+        }
+        if (pet.Clean < 50f)
+        {
+            refusalReason = $"Pet is too filthy to fight! (Clean: {(int)pet.Clean}/100 < 50). Clean your pet first!";
+            return false;
+        }
+        refusalReason = null;
+        return true;
+    }
 
     public CombatEngine(
         CombatMode mode,
@@ -65,7 +87,13 @@ public sealed class CombatEngine
         EquippedItem = equipped;
         ShieldHitsRemaining = initialShieldHits;
 
-        float speed = mode == CombatMode.MerchantBoss ? 3.0f : 2.5f;
+        float speed = mode switch
+        {
+            CombatMode.ChapterBoss => 3.6f,
+            CombatMode.MerchantBoss => 3.0f,
+            _ => 2.5f
+        };
+
         if (activePet.Species == PetSpecies.Coco)
         {
             speed *= 0.80f; // Coco synergy
@@ -82,6 +110,12 @@ public sealed class CombatEngine
             width *= (1.0f + consumableDodgeBonus);
         }
         DodgeZoneHalfWidth = width;
+
+        if (mode == CombatMode.ChapterBoss)
+        {
+            BossMaxHp = 2000f;
+            BossHp = 2000f;
+        }
     }
 
     public void Update(float dt)
@@ -155,6 +189,11 @@ public sealed class CombatEngine
                 GoldStolenFromPlayer += 200;
                 TakePlayerDamage(20f);
             }
+            else if (Mode == CombatMode.ChapterBoss)
+            {
+                TakePlayerDamage(35f);
+                ActivePet.TakeDamage(35f);
+            }
 
             return false;
         }
@@ -171,7 +210,7 @@ public sealed class CombatEngine
             TameGauge = Math.Min(100f, TameGauge + 25f);
             return true;
         }
-        else
+        else if (Mode == CombatMode.MerchantBoss)
         {
             float counterDmg = 80f;
             if (HasToothlessAlly || ActivePet.Species == PetSpecies.Toothless)
@@ -183,6 +222,12 @@ public sealed class CombatEngine
                 counterDmg *= (1.0f + EquippedItem.CounterDamageBonus);
             }
             ApplyDamageToBoss(counterDmg);
+            return true;
+        }
+        else
+        {
+            // Chapter Boss counter deals chip damage
+            ApplyDamageToBoss(50f);
             return true;
         }
     }

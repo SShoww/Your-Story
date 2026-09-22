@@ -168,4 +168,48 @@ public class CombatEngineTests
         Assert.Equal(920f, engine.BossHp);
         Assert.Equal(5, engine.BossHitsRemaining); // ceil(920 / 200) = 5
     }
+
+    [Fact]
+    public void CanPetFight_ChecksCleanAndHealthRequirements()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        // Default Coco: HP 100, Clean 70
+        Assert.True(CombatEngine.CanPetFight(pet, out string? refusalReason));
+        Assert.Null(refusalReason);
+        // Pet too filthy (Clean < 50)
+        pet.CleanDirect(-25); // 70 - 25 = 45
+        Assert.False(CombatEngine.CanPetFight(pet, out refusalReason));
+        Assert.Contains("too filthy", refusalReason);
+
+        // Restore clean, but pet incapacitated (HP = 0)
+        pet.CleanDirect(50);
+        pet.TakeDamage(100f);
+        Assert.False(CombatEngine.CanPetFight(pet, out refusalReason));
+        Assert.Contains("incapacitated", refusalReason);
+    }
+
+    [Fact]
+    public void ChapterBoss_ForcedDefeatMechanic_EndsInPlayerDefeat()
+    {
+        var pet = new PetEntity(PetSpecies.Coco);
+        var engine = new CombatEngine(CombatMode.ChapterBoss, pet);
+
+        Assert.Equal(2000f, engine.BossHp);
+        Assert.Equal(3.6f * 0.8f, engine.AngularVelocity, precision: 3); // Coco synergy
+        Assert.False(engine.IsCombatWon);
+        Assert.False(engine.IsFinished);
+
+        // Chapter boss misses deal lethal 35 damage each
+        for (int i = 0; i < 3; i++)
+        {
+            while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
+            engine.AttemptDodge();
+        }
+
+        // 3 misses = 105 dmg dealt to player -> PlayerHp hits 0
+        Assert.Equal(0f, engine.PlayerHp);
+        Assert.True(engine.IsPlayerDefeated);
+        Assert.False(engine.IsCombatWon);
+        Assert.True(engine.IsFinished);
+    }
 }

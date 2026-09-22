@@ -321,6 +321,14 @@ public sealed class BaseHabitatScreen : IScreen
                 }
                 else if (_doorOption2Btn.Contains(mPos))
                 {
+                    if (!CombatEngine.CanPetFight(_ctx.Run.ActivePet, out string? refusal))
+                    {
+                        _dialogue.ShowPrompt("COMBAT REFUSAL", refusal!, () => _dialogue.Close());
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayWarning();
+                        return;
+                    }
+
                     _showDoorModal = false;
                     _ctx.Audio.PlayConfirm();
                     _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.ToothlessTaming));
@@ -338,6 +346,14 @@ public sealed class BaseHabitatScreen : IScreen
                 }
                 else if (_doorOption2Btn.Contains(mPos))
                 {
+                    if (!CombatEngine.CanPetFight(_ctx.Run.ActivePet, out string? refusal))
+                    {
+                        _dialogue.ShowPrompt("COMBAT REFUSAL", refusal!, () => _dialogue.Close());
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayWarning();
+                        return;
+                    }
+
                     _showDoorModal = false;
                     _ctx.Audio.PlayConfirm();
                     _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.MerchantBoss));
@@ -353,7 +369,7 @@ public sealed class BaseHabitatScreen : IScreen
                              (run.DayNumber == 3 && !run.Day3BossDefeated);
         bool energyDepleted = run.Energy.CurrentEnergy == 0;
 
-        // Press E for door action
+        // Press E for door action or End Day (NewGDD.txt)
         if (kbd.IsKeyDown(Keys.E) && !_prevKeyboard.IsKeyDown(Keys.E))
         {
             if (hasKnockEvent)
@@ -361,7 +377,7 @@ public sealed class BaseHabitatScreen : IScreen
                 _showDoorModal = true;
                 _ctx.Audio.PlayConfirm();
             }
-            else if (energyDepleted)
+            else
             {
                 ProceedToEndOfDay();
             }
@@ -385,7 +401,7 @@ public sealed class BaseHabitatScreen : IScreen
                     _showDoorModal = true;
                     _ctx.Audio.PlayConfirm();
                 }
-                else if (energyDepleted)
+                else
                 {
                     ProceedToEndOfDay();
                 }

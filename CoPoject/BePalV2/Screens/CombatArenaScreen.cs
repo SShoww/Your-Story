@@ -197,6 +197,10 @@ public sealed class CombatArenaScreen : IScreen
             _ctx.Run.CompleteMerchantBossFight(bossDefeated: false);
             _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.EndingBad_Foreclosure));
         }
+        else if (_combat.Mode == CombatMode.ChapterBoss)
+        {
+            _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.Ending_VerticalSliceForcedDefeat));
+        }
         else
         {
             _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
@@ -290,6 +294,10 @@ public sealed class CombatArenaScreen : IScreen
         {
             CleanUI.DrawProgressBar(batch, _ctx.Font, oppRect, _combat.TameGauge / 100f, UITheme.AccentEmerald, leftText: "TOOTHLESS TAME", rightText: $"{(int)_combat.TameGauge}%");
         }
+        else if (_combat.Mode == CombatMode.ChapterBoss)
+        {
+            CleanUI.DrawProgressBar(batch, _ctx.Font, oppRect, Math.Clamp(_combat.BossHp / 2000f, 0f, 1f), UITheme.AccentCoral, leftText: "CHAPTER BOSS", rightText: "IMMENSE THREAT");
+        }
         else
         {
             float hitRatio = _combat.BossHitsRemaining / 5f;
@@ -322,10 +330,10 @@ public sealed class CombatArenaScreen : IScreen
         batch.DrawCircle(center, 12f, 24, UITheme.BgPanel, 14f);
         batch.DrawCircle(center, 18f, 24, UITheme.BorderHighlight, 2f);
 
-        // Laser Needle
-        float nx = center.X + (float)Math.Cos(_combat.NeedleAngle) * (WheelRadius - 4);
-        float ny = center.Y + (float)Math.Sin(_combat.NeedleAngle) * (WheelRadius - 4);
-        batch.DrawLine(center.X, center.Y, nx, ny, UITheme.TextPrimary, 2f);
+        // Rotating needle marker
+        float nx = center.X + (float)Math.Cos(_combat.NeedleAngle) * WheelRadius;
+        float ny = center.Y + (float)Math.Sin(_combat.NeedleAngle) * WheelRadius;
+        batch.DrawLine(center, new Vector2(nx, ny), UITheme.TextPrimary, 3f);
         batch.DrawCircle(new Vector2(nx, ny), 5f, 16, zoneColor, 2f);
         batch.FillRectangle(new Rectangle((int)nx - 2, (int)ny - 2, 4, 4), zoneColor);
     }
@@ -388,15 +396,19 @@ public sealed class CombatArenaScreen : IScreen
         CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
         batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 3), UITheme.AccentCoral);
 
-        string title = "COMBAT INCAPACITATION";
+        string title = _combat.Mode == CombatMode.ChapterBoss
+            ? "FORCED RETREAT: CHAPTER FINALE"
+            : "COMBAT INCAPACITATION";
         Vector2 tSize = _ctx.Font.MeasureString(title);
         batch.DrawString(_ctx.Font, title, new Vector2(modal.Center.X - (tSize.X * 1.3f) / 2f, modal.Y + 36), UITheme.AccentCoral, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
 
         batch.DrawLine(modal.X + 40, modal.Y + 74, modal.Right - 40, modal.Y + 74, UITheme.BorderSubtle, 1f);
 
-        string note = _combat.ActivePet.Health <= 0
-            ? "Your active specimen fainted during the encounter!\nEmergency medical protocol or retreat required."
-            : "Containment breach failed: specimen sustained severe trauma.";
+        string note = _combat.Mode == CombatMode.ChapterBoss
+            ? "The Chapter Boss overwhelmed the sanctuary with cataclysmic force!\nYour companions shielded you as you retreated into the inner vault."
+            : (_combat.ActivePet.Health <= 0
+                ? "Your active specimen fainted during the encounter!\nEmergency medical protocol or clinic treatment required."
+                : "Containment breach failed: specimen sustained severe trauma.");
         batch.DrawString(_ctx.Font, note, new Vector2(modal.X + 50, modal.Y + 130), UITheme.TextPrimary);
 
         Point mPos = Mouse.GetState().Position;
