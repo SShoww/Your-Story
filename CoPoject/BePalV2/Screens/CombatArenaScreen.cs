@@ -143,7 +143,22 @@ public sealed class CombatArenaScreen : IScreen
                 }
             }
 
-            // 2. Check Skill Zone
+            // 2. Dodge Zone Evaluation (Primary defense action)
+            if (_combat.IsNeedleInDodgeZone())
+            {
+                bool dodgeSuccess = _combat.AttemptDodge();
+                if (dodgeSuccess)
+                {
+                    _ctx.Audio.PlayConfirm();
+                    _combatFeedback = "CLEAN EVASION!";
+                    _feedbackColor = UITheme.AccentGold;
+                    _ctx.Run.Economy.AddPlayerPoints(15);
+                }
+                _feedbackTimer = 0.6f;
+                return;
+            }
+
+            // 3. Pet Skill Zone (Triggered when striking the pet's unique skill sector)
             float skillDiff = MathF.Abs(MathHelper.WrapAngle(_combat.NeedleAngle - SkillCenterAngle));
             if (skillDiff <= SkillHalfWindow)
             {
@@ -151,31 +166,20 @@ public sealed class CombatArenaScreen : IScreen
                 _combatFeedback = $"{_skillName} TRIGGERED!";
                 _feedbackColor = _skillColor;
                 _feedbackTimer = 0.6f;
-                // Skill effect: restores health and boosts tame / damage
                 _combat.ActivePet.Heal(15f);
                 if (_combat.Mode == CombatMode.ToothlessTaming)
                 {
-                    _combat.AttemptDodge(); // advances progress safely
+                    _combat.AttemptDodge();
                 }
                 _ctx.Run.Economy.AddPlayerPoints(30);
                 return;
             }
 
-            // 3. Dodge Zone Evaluation
-            bool dodgeSuccess = _combat.AttemptDodge();
-            if (dodgeSuccess)
-            {
-                _ctx.Audio.PlayConfirm();
-                _combatFeedback = "CLEAN EVASION!";
-                _feedbackColor = UITheme.AccentGold;
-                _ctx.Run.Economy.AddPlayerPoints(15);
-            }
-            else
-            {
-                _ctx.Audio.PlayFail();
-                _combatFeedback = "DODGE MISSED! DAMAGE SUSTAINED";
-                _feedbackColor = UITheme.AccentCoral;
-            }
+            // 4. Missed outside both zones -> Sustains damage
+            _combat.AttemptDodge();
+            _ctx.Audio.PlayFail();
+            _combatFeedback = "DODGE MISSED! DAMAGE SUSTAINED";
+            _feedbackColor = UITheme.AccentCoral;
             _feedbackTimer = 0.6f;
         }
     }
