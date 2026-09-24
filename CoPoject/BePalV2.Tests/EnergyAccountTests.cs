@@ -50,4 +50,18 @@ public class EnergyAccountTests
         energy.AddBonus(2);
         Assert.Equal(8, energy.CurrentEnergy);
     }
+    [Fact]
+    public void UpgradeMaxEnergy_IncreasesMaxAndCurrentEnergy_AndPersistsThroughReplenish()
+    {
+        var energy = new EnergyAccount();
+        energy.UpgradeMaxEnergy(2);
+        Assert.Equal(8, energy.MaxEnergy);
+        Assert.Equal(8, energy.CurrentEnergy);
+
+        energy.Spend(8);
+        Assert.Equal(0, energy.CurrentEnergy);
+
+        energy.Replenish();
+        Assert.Equal(8, energy.CurrentEnergy);
+    }
 }

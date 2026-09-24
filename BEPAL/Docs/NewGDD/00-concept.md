@@ -74,7 +74,7 @@ date: 2026-09-20
 
 ```mermaid
 flowchart TD
-    D1[Day 1: The Arrival & Disaster] -->|เลือก Starter Pet + เผชิญพายุ Thunderstorm| D2[Day 2: The Wild Infiltration]
+    D1[Day 1: The Arrival] -->|เลือก Starter Pet| D2[Day 2: The Wild Infiltration]
     D2 -->|เสียงเคาะประตู 'Knock Knock' + รับมือ Toothless| D2_Choice{ทางเลือก: ขับไล่ หรือ เชื่อง?}
     D2_Choice -->|Chase| D2_End[Toothless หนีไป / จบวันอย่างสงบ]
     D2_Choice -->|Tame| D2_Combat[เข้าสู่ฉาก Combat Taming / สยบ Toothless เข้าทีม]
@@ -84,14 +84,13 @@ flowchart TD
     D3_Choice -->|Sell| D3_EndingA[จบแบบ Bittersweet: ได้เงินมหาศาลแต่สูญเสียสัตว์เลี้ยง]
     D3_Choice -->|Refuse| D3_Boss[เข้าสู่ Boss Fight: Merchant Battle ปกป้องบ้าน]
     D3_Boss -->|Victory| D3_EndingB[จบแบบ Heroic: ปกป้องสัตว์เลี้ยงสำเร็จและขับไล่พ่อค้า]
-    D3_EndingB --> D_Final[Final Day: Chapter Boss Incursion]
-    D_Final -->|Boss Fight บังคับแพ้| D_EndSlice[Vertical Slice Finale: Forced Retreat สู่เนื้อเรื่องเกมเต็ม]
+    D3_EndingB --> D_Final[Final Day: Disaster]
+    D_Final -->|Thunderstorm| D_EndSlice[ดูแล ทำความสะอาดสัตว์เลี้ยง]
 ```
 
-1. **Day 1 — The Arrival & Disaster (การเริ่มต้นและภัยพิบัติ):**
+1. **Day 1 — The Arrival (การเริ่มต้น):**
    - ผู้เล่นเปิดร้าน เลือก Starter Pet ตัวแรก (Coco, Sproutlet, หรือ Gloomtail)
    - เรียนรู้ระบบพื้นฐาน: การจัดสรรพลังงาน 6 แต้ม, การให้อาหาร (Feed), ทำความสะอาด (Clean), และฝึกฝน (Train)
-   - **Disaster Event:** ช่วงบ่ายเกิดพายุฝนฟ้าคะนองรุนแรง (**Thunderstorm**) สัตว์เลี้ยงตื่นตระหนก ค่า Clean ลดฮวบ และต้องบริหารพลังงานฉุกเฉินเพื่อปลอบประโลม
 
 2. **Day 2 — The Wild Infiltration & Taming (ผู้มาเยือนปริศนา):**
    - มีเสียงเคาะประตูปริศนาดังขึ้น (**"Knock Knock !!"**)
@@ -107,9 +106,9 @@ flowchart TD
      - *ยอมรับข้อเสนอ (Sell):* ได้รับเงิน 5,000G ปลดหนี้และจบวันด้วยความร่ำรวย แต่สูญเสีย Toothless ตลอดกาล (Ending A)
      - *ปฏิเสธข้อเสนอ (Refuse):* พ่อค้าโกรธเกรี้ยว นำไปสู่การต่อสู้ระดับบอส (**Merchant Boss Fight**) ผู้เล่นและสัตว์เลี้ยงต้องร่วมมือกันต่อสู้จนคว้าชัยชนะ (Ending B)
 
-4. **Final Day — The Vertical Slice Finale (บอสประจำบทบุกรุกฐาน / บังคับแพ้):**
-   - บอสประจำบทบุกรุกสถานพักพิงด้วยพลังมหาศาล
-   - เข้าสู่การต่อสู้ฉากสุดท้าย **Boss Fight (บังคับแพ้ / Forced Defeat)** สัตว์เลี้ยงและผู้เล่นต้องถอยร่นเข้าสู่ห้องนิรภัยชั้นในเพื่อส่งต่อเข้าสู่เนื้อเรื่องตัวเกมเต็ม
+1. **Final Day — The Disaster (ภัยธรรมชาติ):**
+   - มีเสียงเคาะประตูดังขึ้น (**"Knock Knock !!"**)
+   - มีข้อความขึ้นบอกผู้เล่นว่าวันนี้มีพายุหนักโหมกระหน่ำรอบฐาน (**Thunderstorm**) ทำให้สัตว์ของเราสกปรกทุกตัว ค่า Clean ลดฮวบ และต้องบริหารพลังงานฉุกเฉินเพื่อปลอบประโลม
 
 ---
 

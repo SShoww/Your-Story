@@ -221,6 +221,14 @@ public sealed class CombatEngine
             {
                 counterDmg *= (1.0f + EquippedItem.CounterDamageBonus);
             }
+            if (ActivePet.IsGrimy)
+            {
+                counterDmg *= 0.75f;
+            }
+            if (ActivePet.CounterDamageBonus > 0f)
+            {
+                counterDmg *= (1.0f + ActivePet.CounterDamageBonus);
+            }
             ApplyDamageToBoss(counterDmg);
             return true;
         }

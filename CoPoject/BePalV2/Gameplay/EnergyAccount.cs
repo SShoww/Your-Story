@@ -27,4 +27,12 @@ public sealed class EnergyAccount
             CurrentEnergy += amount;
         }
     }
+    public void UpgradeMaxEnergy(int amount)
+    {
+        if (amount > 0)
+        {
+            MaxEnergy += amount;
+            CurrentEnergy += amount;
+        }
+    }
 }
