@@ -46,13 +46,13 @@ public sealed class DailySummaryScreen : IScreen
         _ctx.Audio.PlayConfirm();
         var run = _ctx.Run;
 
-        if (run.Ending != StoryEnding.None)
-        {
-            _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, run.Ending));
-        }
-        else if (run.DayNumber >= V2RunState.MaxDays)
+        if (run.DayNumber >= V2RunState.MaxDays && run.Day3BossDefeated)
         {
             _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.ChapterBoss));
+        }
+        else if (run.Ending != StoryEnding.None)
+        {
+            _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, run.Ending));
         }
         else
         {

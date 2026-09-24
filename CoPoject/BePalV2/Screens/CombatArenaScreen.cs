@@ -196,9 +196,8 @@ public sealed class CombatArenaScreen : IScreen
         }
         else
         {
-            _ctx.Run.Economy.AddGold(9999);
+            _ctx.Run.CompleteMerchantBossFight(true);
             _ctx.Run.Economy.AddPlayerPoints(200);
-            _ctx.Run.Day3BossDefeated = true;
         }
     }
 
@@ -210,7 +209,7 @@ public sealed class CombatArenaScreen : IScreen
         }
         else
         {
-            _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.EndingB_Protector));
+            _ctx.ScreenManager.SetScreen(new DailySummaryScreen(_ctx));
         }
     }
 
