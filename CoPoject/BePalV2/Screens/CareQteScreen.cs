@@ -242,6 +242,26 @@ public sealed class CareQteScreen : IScreen
 
     private void SelectAction(CareActionType action)
     {
+        var pet = _ctx.Run.ActivePet;
+        if (action == CareActionType.Train && !pet.CanTrain())
+        {
+            _ctx.Audio.PlayWarning();
+            _floatingFeedback = "Too hungry to train! (Needs Stomach >= 20)";
+            _floatingColor = UITheme.AccentCoral;
+            _feedbackTimer = 1.2f;
+            return;
+        }
+
+        int requiredAp = action == CareActionType.Train ? 2 : 1;
+        if (_ctx.Run.Energy.CurrentEnergy < requiredAp)
+        {
+            _ctx.Audio.PlayWarning();
+            _floatingFeedback = $"Not enough AP! (Needs {requiredAp} AP)";
+            _floatingColor = UITheme.AccentCoral;
+            _feedbackTimer = 1.2f;
+            return;
+        }
+
         _ctx.Audio.PlayConfirm();
         StartActiveQte(action);
     }
@@ -314,16 +334,16 @@ public sealed class CareQteScreen : IScreen
             switch (_activeAction)
             {
                 case CareActionType.Feed:
-                    pet.FeedDirect(isPerfect ? 18 : 10);
+                    pet.FeedDirect(isPerfect ? 4 : 2);
                     break;
                 case CareActionType.Clean:
-                    pet.CleanDirect(isPerfect ? 18 : 10);
+                    pet.CleanDirect(isPerfect ? 4 : 2);
                     break;
                 case CareActionType.Train:
-                    pet.AddExp(isPerfect ? 24 : 14, _ctx.Run.Inventory.PermanentTrainExpMultiplier);
+                    pet.AddExp(isPerfect ? 7 : 4, _ctx.Run.Inventory.PermanentTrainExpMultiplier);
                     break;
                 case CareActionType.Heal:
-                    pet.Heal(isPerfect ? 20f : 12f);
+                    pet.Heal(isPerfect ? 3.5f : 2.0f);
                     break;
             }
 
@@ -355,6 +375,14 @@ public sealed class CareQteScreen : IScreen
         run.Energy.Spend(apCost);
         run.Economy.AddPlayerPoints(25);
         run.RecordCareSessionOutcome(_engine);
+        if (_activeAction == CareActionType.Train)
+        {
+            run.ActivePet.FeedDirect(-10);
+        }
+        else if (_activeAction != CareActionType.Feed)
+        {
+            run.ActivePet.FeedDirect(-5);
+        }
 
         _ctx.Audio.PlayConfirm();
         _phase = CareQtePhase.Completed;
