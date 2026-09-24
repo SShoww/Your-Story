@@ -2,6 +2,10 @@
 
 Strictly adhere to the Atlassian Gitflow Workflow standard in this project:
 
+## Target Project
+- **PRIMARY / PRODUCTION**: `CoPoject/BePalV2` and `CoPoject/BePalV2.Tests`.
+- **LEGACY REFERENCE**: `CoPoject/BePal` and `CoPoject/BePal.Tests` (do NOT edit unless specifically asked).
+
 ## Branch Strategy & Roles
 
 1. **Permanent Branches**:
@@ -24,6 +28,7 @@ Strictly adhere to the Atlassian Gitflow Workflow standard in this project:
 - Always verify locally before opening a PR or merging:
   ```bash
   dotnet build CoPoject/CoPoject.slnx
-  dotnet run --project CoPoject/BePal -- --screenshot
+  dotnet test CoPoject/BePalV2.Tests
+  dotnet run --project CoPoject/BePalV2 -- --screenshot
   ```
 - Always use `--no-ff` (non-fast-forward) when merging feature, release, or hotfix branches to preserve branch history.

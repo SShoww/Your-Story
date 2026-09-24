@@ -55,13 +55,13 @@ docs/02_Assets/_candidates/
 ```mermaid
 flowchart LR
     A[1. Candidate Drop\n_candidates/*] --> B[2. QA Review\nPooh / Show]
-    B --> C[3. Move to Production\nCoPoject/BePal/Content/]
+    B --> C[3. Move to Production\nCoPoject/BePalV2/Content/]
     C --> D[4. Register MGCB\nContent.mgcb]
     D --> E[5. Compile & Ship\n.xnb output]
 ```
 
 1. **Candidate Drop**: Teammate places new raw candidate file into appropriate folder (`sprites/`, `sfx/`, `music/`, `fonts/`).
 2. **QA & Design Review**: Team reviews visual style, dimensions, volume levels, and audio clipping.
-3. **Move to Production**: Approved assets are moved into `CoPoject/BePal/Content/` with canonical names.
+3. **Move to Production**: Approved assets are moved into `CoPoject/BePalV2/Content/` with canonical names.
 4. **Register in MGCB**: Add asset reference into `Content.mgcb` with appropriate importer and processor settings.
 5. **Compile & Commit**: Build pipeline compiles `.xnb` artifacts, verified via `dotnet build`.

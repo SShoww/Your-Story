@@ -400,30 +400,17 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-## --- Visual Studio & .NET Build Artifacts ---
-[Bb]in/
-[Oo]bj/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
 ## --- IDE & OS Specifics ---
-.vs/
-.vscode/
 .DS_Store
 Thumbs.db
 
 ## --- MonoGame Content Pipeline ---
-# Ignore the local MGCB editor cache files
 .mgcb/
 
-
-# Obsidian
+## --- Obsidian & Scratch Dirs ---
 .obsidian/
-
-//SShowwee
-//Sung
-//Dear
-//Poomipat
+SShowwee/
+Sung/
+Dear/
+Poomipat/
 temp_gdd_pages/

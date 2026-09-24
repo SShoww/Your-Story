@@ -4,7 +4,7 @@ Date: 2026-09-13
 
 ## Status
 
-Accepted
+Superseded by ADR 0003 (BePalV2 Production Architecture)
 
 ## Context
 

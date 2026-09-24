@@ -4,29 +4,26 @@ How engineering skills should consume this repo's domain documentation when expl
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in.
-
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily when terms or decisions actually get resolved.
+- **`AGENTS.md`** at the repo root — primary repository architectural rules, domain invariants, and verification commands.
+- **`docs/adr/`** — read ADRs that touch the area you're about to work in (ADR 0003 for BePalV2 production).
+- **`BEPAL/Docs/NewGDD/`** — active Game Design Document suite (v2.0).
 
 ## File structure
 
-Single-context repo:
-
 ```
 /
-├── CONTEXT.md
+├── AGENTS.md
 ├── docs/adr/
+├── BEPAL/Docs/NewGDD/
 └── CoPoject/
+    ├── BePalV2/          # PRIMARY PRODUCTION
+    └── BePalV2.Tests/    # PRIMARY TESTS
 ```
 
 ## Use the glossary's vocabulary
 
-When naming a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
-
-If the concept needed is not in the glossary, either reconsider whether the project already has a term, or note a genuine gap for `/grill-with-docs`.
+When naming a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term as defined in `AGENTS.md` and `BEPAL/Docs/NewGDD/`. Don't drift to synonyms the glossary explicitly avoids.
 
 ## Flag ADR conflicts
 
-If output contradicts an existing ADR, surface it explicitly rather than silently overriding it.
+If output contradicts an existing ADR, surface it explicitly rather than silently overriding it. Note that ADR 0003 supersedes ADR 0002.

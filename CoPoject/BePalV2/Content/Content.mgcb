@@ -10,8 +10,6 @@
 
 #-------------------------------- References --------------------------------#
 
-/reference:..\pipeline-references\MonoGame.Extended.Content.Pipeline.dll
-
 #---------------------------------- Content ---------------------------------#
 
 #begin pet/spr_pet_angry.png
@@ -56,4 +54,3 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:PrototypeFont.spritefont
-
