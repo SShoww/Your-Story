@@ -1,104 +1,156 @@
 # BePal
 
-BePal is a single-player pet-care management simulation about learning the rules of abnormal pets through experimentation within a cozy yet dangerous shelter.
+BePal is a single-player pet-care management simulation built with C# 12 and .NET 8 on MonoGame DesktopGL. The game explores learning the hidden rules, biological needs, and behavioral patterns of abnormal creatures through trial and error within an anomalous research shelter and daycare.
+
+The primary production implementation is **BePalV2** (`CoPoject/BePalV2`), adhering strictly to the canonical **New GDD (v2.0)** specifications and architecture (superseding the V1 prototype).
+
+---
 
 ## Core Philosophy
 
 **Cozy yet Dangerous**:
-The contrast between a warm, comfortable shelter/home and uncanny, abnormal creatures with lethal potential.
+The contrast between a warm, domestic shelter environment and uncanny, abnormal creatures possessing lethal potential.
 _Avoid_: Pure horror, cute pet sim
 
 **Consequential Interaction**:
-Every choice in caring for a pet yields distinct, observable consequences—trial and error is required to deduce safe care routines.
+Every care action, resource allocation, and narrative choice yields observable consequences—trial and error is required to deduce safe care routines.
+_Avoid_: Arbitrary punishment, inconsequential branching
+
+**Tactical Resource & Energy Budgeting**:
+Balancing shelter Energy (6 AP daily budget), player Gold, and 4-tier Pet Stats across a high-density 3-day shift progression.
+
+---
 
 ## Language & Domain Terms
 
-**Pet-Care Session**:
-A focused interaction with one pet that ends when its Satisfaction is full.
-_Avoid_: Round, encounter
+### Energy & Resource Management
 
-**Satisfaction**:
-A pet-specific measure of how close the current Pet-Care Session is to completion (gained via effective Care Actions).
-_Avoid_: Object bar, happiness bar
+**Energy (AP)**:
+The player's discrete daily action budget (3–6 AP per day, default 6 AP), spent on care actions (1 AP) and heavy training (2 AP).
+_Avoid_: Stamina, mana, turns
 
-**Action Pattern**:
-A pet-specific, fixed and repeating sequence that determines its Care QTE behaviour and may include attacks.
-_Avoid_: Pet rule, behaviour pattern
+**Economy & Gold**:
+The shelter treasury in Gold currency.
+- **Daily Subsidy**: Regular morning stipend (+100 Gold).
+- **Merchant Loan**: Emergency credit when funds are insufficient, accruing 20% compound daily interest.
+- **Doctor Revive**: Emergency medical revive (500 Gold) via Doctor NPC when pet Health drops to 0.
 
-**2-Phase Care Loop**:
-The structure of pet-care interaction divided into Phase 1 (Deduction via Behavior Cues and Dynamic Wheel) and Phase 2 (Tactile Care Mini-Game).
+---
+
+### Virtual Pet Domain
+
+**Pet Stats**:
+The 4-dimensional virtual pet attributes:
+- **Health (0–100 HP)**: Core vitality; reducing to 0 causes pet incapacitation requiring emergency revive.
+- **Stomach (0–100)**: Satiety level; drops by -20 on day change, -5 per non-feed action, -10 on Train. Reaching 0 causes the Starving status effect (-10 HP daily, -2 HP per action).
+- **Clean (0–100)**: Hygiene and immunity; drops by -15 on day change. Falling below 50 triggers the Grimy status effect and Combat Refusal. Falling below 25 causes Infected status (-15 HP daily).
+- **EXP / Level**: Pet growth progression (Lv. 1–10); leveling increases Max HP and counter-attack damage.
+_Avoid_: Hunger points, dirtiness, happiness bar
+
+**Starter Pets & Nicknames**:
+- **Coco / Mossling** (ไอ่แดง): Balanced bio-plant creature, soft, shy. Passive: *Photosynthesis* (+5 HP auto-heal when Clean > 80). Favored actions: Feed, Clean.
+- **Sproutlet / Nibbleclaw** (ไอ่ซุง): Agile feline-anteater with sharp claws. Passive: *Agile Reflex* (+15% Perfect zone window in Train). Favored actions: Train, Clean.
+- **Gloomtail / Blinkbun** (ไอ่เขียว): Dark mysterious shadow rabbit with third eye. Passive: *Shadow Barrier* (-25% Dodge QTE damage penalty). Favored actions: Heal, Feed.
+
+**Stray Ally**:
+- **Toothless**: Acidic wild stray reptile encountered on Day 2; can be tamed or chased away. Passive: *Ferocious* (2x counter-attack damage).
+
+**Care Actions**:
+The four core daytime care commands executed from the console:
+- **Feed**: Sustenance restoring Stomach and granting EXP (costs 1 AP).
+- **Clean**: Bathing/scrubbing to restore Clean and prevent infection or combat refusal (costs 1 AP).
+- **Train**: Intensive conditioning granting high EXP at the cost of Stomach (costs 1 AP).
+- **Heal**: Medical treatment restoring Health and removing ailments (costs 1–2 AP).
+_Avoid_: Examine, observe, scrub, play, pet
+
+---
+
+### Care QTE & Precision Mechanics
 
 **Care QTE**:
-The Phase 1 wheel-based challenge in which the player reads Behavior Cues and selects the action required by the current Action Pattern to gain Satisfaction or advance to Phase 2.
-_Avoid_: Skill check, normal QTE
-**Care Action**:
-One of the four actions selectable in a Care QTE:
-- **Feed (Appetite)**: Providing sustenance and monitoring dietary reaction.
-- **Play (Recreation)**: Interacting with toys or activities to satisfy stimulation needs.
-- **Pet (Intimacy)**: Approaching and physically soothing the pet to build trust.
-- **Observe (Observation)**: Watching without touch to study behavior and spot abnormal shifts.
-_Avoid_: Examine
+The 10-attempt radial needle mini-game driven by `CareQteEngine` assessing care action accuracy.
+_Avoid_: Skill check, mini-game wheel, normal QTE
 
-**Pet Favor**:
-The tier of satisfaction gained from a Care Action: Very Effective (+2), Effective (+1), Neutral (+0), or Rejection/Attack (0 gain with damage or triggering Dodge QTE).
+**Precision Tiers**:
+Timing windows evaluated on Spacebar input:
+- **Perfect**: Sweet spot ($\pm 0.20$ rad), awards maximum score and increments streak counter.
+- **Good**: Outer band ($\pm 0.45$ rad), awards standard score and preserves streak counter.
+- **Miss**: Outside active zones, awards zero points and breaks streak.
 
-**Hazard Level**:
-The danger classification of an abnormal pet (Level 1 to 3), determining damage potency and aggression.
+**Care Grade**:
+Overall session evaluation rating (**S**, **A**, **B**, **C**, **F**) calculated from final QTE score, determining gold payout (10–50 Gold) and pet affection.
 
-**Harm Type**:
-The nature of damage inflicted during care failures: Physical (bodily damage) or Mental (sanity strain).
+**Dynamic QTE Gimmicks**:
+Behavioral disruptions during Care QTE sessions:
+- **Reverse Rotation**: Needle reverses direction abruptly (Feed mode).
+- **Escaping Zone**: Target zone evades needle movement (Clean mode).
+- **Blinking Needle**: Target zone or needle disappears intermittently (Heal mode).
+- **Shrinking Zone**: Target zone narrows as attempt count advances.
 
-**Dodge QTE**:
-A reactive challenge triggered by a pet attack in which the player confirms while the Wheel Marker is inside a wide Dodge Zone; completing it avoids the attack's damage.
-_Avoid_: Attack QTE
+---
 
-**Dodge Zone**:
-The marked safe area of a Dodge QTE wheel.
+### Combat & Encounters
 
-**Wheel Marker**:
-The moving indicator on a Care QTE wheel that determines the currently selected action.
-_Avoid_: Arrow, needle
+**Combat Readiness Requirement**:
+Rule enforced by `CombatEngine.CanPetFight(PetEntity)`: pets must have **Clean >= 50** and **Health > 0**. Pets with Clean < 50 refuse to fight (**Combat Refusal**) until cleaned.
 
-**Golden Sweet Spot**:
-The narrow golden arc ($\pm 15^\circ$) centered inside an action quadrant on the Care QTE wheel that awards bonus Satisfaction (+2) when timed precisely.
+**Combat Arena**:
+Real-time reflex combat encounter screen driven by `CombatEngine`:
+- **Telegraphed Attack**: Visual indicator of incoming enemy strike.
+- **Dodge Zone**: Golden safe arc where Spacebar reflex avoids incoming damage.
+- **Counter-Attack Window**: Ring-convergence opening enabling reactive damage against the opponent.
+- **Parry Window**: Advanced timing window for negating attacks and reflecting damage.
 
-**Behavior Cue**:
-An observable visual or auditory indicator (e.g. grumbling stomach, dilated pupils, trembling fur) displayed in the shelter room or during Care QTE that signals the pet's current need.
+**Encounters & Bosses**:
+- **Day 1 Thunderstorm**: Natural disaster causing panic and dirtiness; resolved via Calming QTE.
+- **Day 2 Toothless Taming**: Wild stray encounter featuring the [Chase] vs [Tame] moral dilemma.
+- **Day 3 Merchant Boss Battle**: 3-phase confrontation when refusing to sell Toothless for 5,000 Gold:
+  - *Phase 1 (Cane Strike / Greed's Splash)*: Acid flask projectiles (HP 1000 -> 700).
+  - *Phase 2 (Coin Barrage / Gold Gatling)*: Rapid coin projectiles with +2G bonus per dodge (HP 700 -> 300).
+  - *Phase 3 (Golden Rage / Collector's Cane)*: Teleporting strikes and purple parry windows (HP 300 -> 0).
+- **Chapter Boss Incursion**: Final Day base invasion ending in a canonical **Forced Defeat / Forced Retreat**.
 
-**Tactile Care Mini-Game**:
-A short (2–3 second) tactile micro-interaction in Phase 2 confirming proper care execution: Feed (Hold-to-pour), Pet (Mouse stroke), Play (Reflex catch), or Observe (Focus lens).
+---
 
-**Teleporting Marker**:
-An Action Pattern modifier in which the Wheel Marker jumps once to a random wheel position during each Care QTE before continuing to move.
+### Daily Loop & Progression
 
-**QTE Confirmation**:
-The Spacebar input used to submit a Care QTE or Dodge QTE attempt.
-_Avoid_: Click to confirm
-**Health (HP)**:
-The player's damage resource; each Game Day provides Health, and failed Care QTEs or missed Dodge QTEs deplete it.
+**4-Phase Daily Loop**:
+The structured shift progression across each day:
+1. **Morning Event (Phase 1)**: Weather briefings, hazard warnings, and doorstep arrivals ("Knock Knock !!").
+2. **Daytime Care (Phase 2)**: 6 AP energy budgeting across Feed, Clean, Train, Heal, and Base facilities.
+3. **Afternoon Encounter / Defense (Phase 3)**: Disasters, wild taming, or boss combat.
+4. **Night Summary / Progression (Phase 4)**: Natural decay application (Stomach -20, Clean -15), sickness checks, and report card payout.
 
-**Energy**:
-The daily allowance of care interactions available to the player per Game Day.
+**Narrative Outcomes & Endings**:
+- **Ending A (Sell / Betrayal)**: Accept Merchant's 5,000 Gold buyout; financial security at the cost of your companion.
+- **Ending B (Protector / Heroic)**: Defeat Merchant in 3-phase combat to defend your sanctuary and companions.
+- **Vertical Slice Finale (Forced Defeat)**: Chapter boss overwhelms sanctuary; retreat to inner vault leading into full game storyline.
 
-**Survival Log**:
-A record of discovered pet behaviour that documents pet preferences, harm types, and action patterns after repeated Pet-Care Sessions.
-_Avoid_: Journal, notebook
+---
 
-**Daily Summary Report**:
-The daily debriefing screen (report card style) presented at the conclusion of a Game Day (or Forced Retreat) that logs newly recorded discoveries, tracks retreat counts, and transitions to night rest before the next day.
-_Avoid_: Scoreboard, win screen
+### Base Shelter & Facilities
 
-**4-Wall Panoramic Shelter**:
-The 360-degree navigable pet care room inspired by *Samsara Room*, rotatable via left/right arrows across Wall 1 (Pet Zone), Wall 2 (Prep & Pantry), Wall 3 (Study Desk), and Wall 4 (Front Door).
+**Base Habitat Screen**:
+The unified 1280x720 interactive sanctuary screen (`BaseHabitatScreen`) featuring interactive stations:
+- **Front Door**: Red double doors for morning events, deliveries, and doorstep visitors ("Knock Knock !!").
+- **Doctor NPC Clinic**: Emergency medical revive for 500 Gold when pet HP hits 0.
+- **Upgrade Station**: 3-branch skill tree:
+  - *QTE Focus*: Hit zone $+15\%$ (200 Gold).
+  - *Stamina Tree*: Max energy $+2$ AP (300 Gold).
+  - *Care Booster*: Care stat return $+50\%$ (250 Gold).
+- **Survival Desk**: Research station containing Pet Discovery and Disaster Log records.
 
-**Unified Dialogue Box**:
-The typewriter-driven dialogue and inspection textbox component used consistently across Prologue, Doorstep arrival, room item inspection, and pet care confirmation prompts.
+**Inventory Grid**:
+8-slot fixed grid supporting consumable items and equipment accessories.
+_Avoid_: Backpack, bag
 
-**Game Day**:
-One unit of the run in which the player must complete at least one Pet-Care Session with the Active Pet before ending the day; additional sessions are optional, unless a Forced Retreat ends the day early.
+**Controls & Hotkeys**:
+- `WASD` / Mouse: Navigate and interact with stations.
+- `Spacebar`: QTE confirm, Dodge reflex, and Counter-attack trigger.
+- `E`: End Day / open Front Door.
+- `1`, `2`, `3`, `4`: Care action shortcuts (`1` Train, `2` Feed, `3` Clean, `4` Heal).
+- `B`: Open Inventory Grid.
+- `S`: Open Merchant Shop.
 
-**Forced Retreat**:
-The early end of a Game Day caused by Health reaching zero; the player returns home/recovers, and the following Game Day restores Health.
-
-**Active Pet**:
-The pet assigned to the current Game Day.
+**CleanUI**:
+Modern dark borderless design system (`CleanUI.cs`) utilizing a charcoal palette (`#1E1E24`), rounded cards, pill badges, and high-contrast typography.
