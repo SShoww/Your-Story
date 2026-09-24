@@ -356,10 +356,20 @@ public sealed class BaseHabitatScreen : IScreen
             {
                 if (_doorOption1Btn.Contains(mPos))
                 {
-                    _ctx.Run.AcceptMerchantBuyout();
-                    _showDoorModal = false;
-                    _ctx.Audio.PlaySuccess();
-                    _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.EndingA_Betrayal));
+                    if (_ctx.Run.HasToothlessAlly)
+                    {
+                        _ctx.Run.AcceptMerchantBuyout();
+                        _showDoorModal = false;
+                        _ctx.Audio.PlaySuccess();
+                        _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.EndingA_Betrayal));
+                    }
+                    else
+                    {
+                        _ctx.Run.SetEnding(StoryEnding.EndingBad_Foreclosure);
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayFail();
+                        _ctx.ScreenManager.SetScreen(new EndingScreen(_ctx, StoryEnding.EndingBad_Foreclosure));
+                    }
                 }
                 else if (_doorOption2Btn.Contains(mPos))
                 {
@@ -931,16 +941,24 @@ public sealed class BaseHabitatScreen : IScreen
         {
             batch.DrawString(_ctx.Font, "DAY 3 - MORNING ENCOUNTER: MERCHANT", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
             batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
-
-            string dialogue = "\"I'm quite interested in your toothless... will you sell?\"";
+            bool hasToothless = _ctx.Run.HasToothlessAlly;
+            string dialogue = hasToothless
+                ? "\"I'm quite interested in your toothless... will you sell?\""
+                : "\"No Toothless? Then hand over this shelter and your specimen!\"";
             Vector2 dSize = _ctx.Font.MeasureString(dialogue);
             batch.DrawString(_ctx.Font, dialogue, new Vector2(modal.Center.X - (dSize.X * 1.15f) / 2f, modal.Y + 150), UITheme.AccentGold, 0f, Vector2.Zero, 1.15f, SpriteEffects.None, 0f);
 
-            string desc = "The shady collector offers an astronomical buyout for Toothless!\nIf you refuse, he will attack to confiscate your specimen!";
+            string desc = hasToothless
+                ? "The shady collector offers an astronomical buyout for Toothless!\nIf you refuse, he will attack to confiscate your specimen!"
+                : "The collector attempts to forcefully seize your shelter!\nYou must fight to defend your facility!";
             batch.DrawString(_ctx.Font, desc, new Vector2(modal.X + 80, modal.Y + 230), UITheme.TextSecondary);
 
-            CleanUI.DrawButton(batch, _ctx.Font, _doorOption1Btn, "ACCEPT BUYOUT", _doorOption1Btn.Contains(mPos), accent: UITheme.AccentGold);
-            CleanUI.DrawButton(batch, _ctx.Font, _doorOption2Btn, "REFUSE / FIGHT", _doorOption2Btn.Contains(mPos), accent: UITheme.AccentCoral, isPrimary: true);
+            string opt1Label = hasToothless ? "ACCEPT BUYOUT" : "SURRENDER";
+            Color opt1Color = hasToothless ? UITheme.AccentGold : UITheme.AccentCoral;
+            CleanUI.DrawButton(batch, _ctx.Font, _doorOption1Btn, opt1Label, _doorOption1Btn.Contains(mPos), accent: opt1Color);
+
+            string opt2Label = hasToothless ? "REFUSE / FIGHT" : "DEFEND SHELTER";
+            CleanUI.DrawButton(batch, _ctx.Font, _doorOption2Btn, opt2Label, _doorOption2Btn.Contains(mPos), accent: hasToothless ? UITheme.AccentCoral : UITheme.AccentEmerald, isPrimary: true);
         }
     }
 }
