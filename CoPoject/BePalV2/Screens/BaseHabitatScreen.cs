@@ -98,30 +98,21 @@ public sealed class BaseHabitatScreen : IScreen
         var run = _ctx.Run;
         if (run.CurrentPhase == DailyPhase.MorningEvent)
         {
-            switch (run.DayNumber)
+            var eventType = run.EventManager.DetermineMorningEvent(run.DayNumber);
+            string briefing = run.EventManager.GetEventBriefing(eventType, run.DayNumber);
+            string title = run.DayNumber switch
             {
-                case 1:
-                    _dialogue.StartDialogue(
-                        "CHIEF OVERSEER",
-                        new[] { "Welcome to Shelter Sector 7. A violent thunderstorm is approaching tonight. Tend to your pet's needs before the storm hits!" },
-                        () => run.SetPhase(DailyPhase.CareAction)
-                    );
-                    break;
-                case 2:
-                    _dialogue.StartDialogue(
-                        "SECURITY PROTOCOL",
-                        new[] { "Morning alert! Strange noises detected at the outer hatch. A wild creature is knocking outside." },
-                        () => run.SetPhase(DailyPhase.CareAction)
-                    );
-                    break;
-                case 3:
-                    _dialogue.StartDialogue(
-                        "TRADING POST DISPATCH",
-                        new[] { "Final day of operation. A shady Traveling Merchant has parked his wagon outside your facility door." },
-                        () => run.SetPhase(DailyPhase.CareAction)
-                    );
-                    break;
-            }
+                1 => "ORIENTATION PROTOCOL",
+                2 => "SECURITY PROTOCOL",
+                3 => "TRADING POST DISPATCH",
+                _ => $"SHIFT 0{run.DayNumber} DISPATCH"
+            };
+
+            _dialogue.StartDialogue(
+                title,
+                new[] { briefing },
+                () => run.SetPhase(DailyPhase.CareAction)
+            );
         }
     }
 
@@ -246,55 +237,76 @@ public sealed class BaseHabitatScreen : IScreen
 
         if (click)
         {
-            var eco = _ctx.Run.Economy;
-            // Card 1: QTE Upgrade (Cost: 60 Player Points)
+            var run = _ctx.Run;
+            var eco = run.Economy;
+            var prog = run.Progression;
+            // Card 1: QTE Upgrade (Cost: 1 Skill Point or 60 PTS)
             if (_upgCard1.Contains(mPos))
             {
-                if (eco.SpendPlayerPoints(60))
+                if (prog.UpgradeQteFocus())
+                {
+                    _upgradeFeedback = $"Upgraded QTE Zone (+15% Needle Zone)! (LV. {prog.QteFocusLevel})";
+                    _ctx.Audio.PlaySuccess();
+                }
+                else if (eco.SpendPlayerPoints(60))
                 {
                     _upgradeFeedback = "Purchased QTE Upgrade (+15% Needle Zone)! (Spent 60 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Not enough Research Points! Needs 60 PTS.";
+                    _upgradeFeedback = "Requires 1 Skill Point (from Perfect QTEs) or 60 PTS!";
                     _ctx.Audio.PlayWarning();
                 }
             }
-            // Card 2: Energy Upgrade (Cost: 150 Gold + 80 Player Points)
+            // Card 2: Energy Upgrade (Cost: 1 Skill Point or 150 Gold)
             else if (_upgCard2.Contains(mPos))
             {
-                if (eco.CanAfford(150) && eco.CanAffordPoints(80))
+                if (run.Energy.MaxEnergy >= 6)
+                {
+                    _upgradeFeedback = "Energy capacity already at maximum (6 AP)!";
+                    _ctx.Audio.PlayWarning();
+                }
+                else if (prog.UpgradeEnergyCapacity())
+                {
+                    run.Energy.UpgradeMaxEnergy(1);
+                    _upgradeFeedback = $"Upgraded Max Energy (+1 AP)! Max AP is now {run.Energy.MaxEnergy}.";
+                    _ctx.Audio.PlaySuccess();
+                }
+                else if (eco.CanAfford(150))
                 {
                     eco.SpendGold(150);
-                    eco.SpendPlayerPoints(80);
-                    _ctx.Run.Energy.UpgradeMaxEnergy(2);
-                    _upgradeFeedback = "Purchased Energy Upgrade (+2 AP)! (150 G + 80 PTS)";
+                    run.Energy.UpgradeMaxEnergy(1);
+                    _upgradeFeedback = $"Purchased Energy Upgrade (+1 AP)! (Spent 150 G)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Needs both 150 Gold AND 80 Research Points to upgrade!";
+                    _upgradeFeedback = "Requires 1 Skill Point or 150 Gold to upgrade!";
                     _ctx.Audio.PlayWarning();
                 }
             }
-            // Card 3: Care Booster (Cost: 70 Player Points)
+            // Card 3: Care Booster (Cost: 1 Skill Point or 70 PTS)
             else if (_upgCard3.Contains(mPos))
             {
-                if (eco.SpendPlayerPoints(70))
+                if (prog.UpgradeProgressBooster())
+                {
+                    _upgradeFeedback = $"Upgraded Care Booster (+50% Progress)! (LV. {prog.ProgressBoosterLevel})";
+                    _ctx.Audio.PlaySuccess();
+                }
+                else if (eco.SpendPlayerPoints(70))
                 {
                     _upgradeFeedback = "Purchased Care Booster (+50% Stat Gains)! (Spent 70 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
                 else
                 {
-                    _upgradeFeedback = "Not enough Research Points! Needs 70 PTS.";
+                    _upgradeFeedback = "Requires 1 Skill Point (from Perfect QTEs) or 70 PTS!";
                     _ctx.Audio.PlayWarning();
                 }
             }
         }
     }
-
     private void UpdateLogModal(KeyboardState kbd, bool click, Point mPos)
     {
         if ((kbd.IsKeyDown(Keys.Escape) && !_prevKeyboard.IsKeyDown(Keys.Escape)) ||
@@ -386,6 +398,50 @@ public sealed class BaseHabitatScreen : IScreen
                     _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.MerchantBoss));
                 }
             }
+            else if (_ctx.Run.DayNumber >= 4)
+            {
+                var evt = _ctx.Run.EventManager.DetermineMorningEvent(_ctx.Run.DayNumber);
+                if (evt == DailyEventType.WildIncursion)
+                {
+                    if (_doorOption2Btn.Contains(mPos))
+                    {
+                        if (!CombatEngine.CanPetFight(_ctx.Run.ActivePet, out string? refusal))
+                        {
+                            _dialogue.ShowPrompt("COMBAT REFUSAL", refusal!, () => _dialogue.Close());
+                            _showDoorModal = false;
+                            _ctx.Audio.PlayWarning();
+                            return;
+                        }
+
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayConfirm();
+                        _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.ToothlessTaming));
+                    }
+                    else if (_doorOption1Btn.Contains(mPos))
+                    {
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayConfirm();
+                    }
+                }
+                else if (evt == DailyEventType.TravelingMerchant)
+                {
+                    if (_doorOption1Btn.Contains(mPos))
+                    {
+                        _showDoorModal = false;
+                        OpenShop();
+                    }
+                    else if (_doorOption2Btn.Contains(mPos))
+                    {
+                        _showDoorModal = false;
+                        _ctx.Audio.PlayConfirm();
+                    }
+                }
+                else
+                {
+                    _showDoorModal = false;
+                    _ctx.Audio.PlayConfirm();
+                }
+            }
         }
     }
 
@@ -393,8 +449,8 @@ public sealed class BaseHabitatScreen : IScreen
     {
         var run = _ctx.Run;
         bool hasKnockEvent = (run.DayNumber == 2 && !run.Day2EncounterResolved) ||
-                             (run.DayNumber == 3 && !run.Day3BossDefeated);
-
+                             (run.DayNumber == 3 && !run.Day3BossDefeated) ||
+                             (run.DayNumber >= 4);
         // Press E for door action or End Day
         if (kbd.IsKeyDown(Keys.E) && !_prevKeyboard.IsKeyDown(Keys.E))
         {
@@ -502,15 +558,7 @@ public sealed class BaseHabitatScreen : IScreen
 
     private void ProceedToEndOfDay()
     {
-        var run = _ctx.Run;
-        if (run.DayNumber == 1 && !run.Day1CalmingCompleted)
-        {
-            _ctx.ScreenManager.SetScreen(new CalmingQteScreen(_ctx));
-        }
-        else
-        {
-            _ctx.ScreenManager.SetScreen(new DailySummaryScreen(_ctx));
-        }
+        _ctx.ScreenManager.SetScreen(new DailySummaryScreen(_ctx));
     }
 
     public void Draw(GameTime gameTime, SpriteBatch batch)
@@ -575,20 +623,20 @@ public sealed class BaseHabitatScreen : IScreen
         batch.DrawString(_ctx.Font, $"{run.Economy.Gold} G", new Vector2(goldPill.X + 40, goldPill.Y + 8), UITheme.AccentGold);
 
         // Research Points Pill
-        Rectangle ptsPill = new(230, 15, 190, 40);
+        Rectangle ptsPill = new(230, 15, 230, 40);
         CleanUI.DrawPanel(batch, ptsPill, UITheme.BgCardRecessed, UITheme.BorderSubtle, borderWidth: 1, shadow: false);
         batch.FillRectangle(new Rectangle(ptsPill.X + 10, ptsPill.Y + 10, 20, 20), UITheme.AccentCyan);
-        batch.DrawString(_ctx.Font, $"{run.Economy.PlayerPoints} PTS", new Vector2(ptsPill.X + 40, ptsPill.Y + 8), UITheme.AccentCyan);
+        batch.DrawString(_ctx.Font, $"{run.Progression.SkillPoints} SP | LV.{run.Progression.Level}", new Vector2(ptsPill.X + 40, ptsPill.Y + 8), UITheme.AccentCyan);
 
         // Day Number Badge
         Rectangle dayPill = new(600, 15, 160, 40);
-        CleanUI.DrawBadge(batch, _ctx.Font, dayPill, $"DAY {run.DayNumber}", new Color(34, 42, 58), UITheme.AccentGold);
+        string dayLabel = run.IsEndlessMode ? $"DAY {run.DayNumber} (ENDLESS)" : $"DAY {run.DayNumber}";
+        CleanUI.DrawBadge(batch, _ctx.Font, dayPill, dayLabel, new Color(34, 42, 58), UITheme.AccentGold);
 
-        // EXP Progress Bar
+        // Player EXP Progress Bar
         Rectangle expBarBg = new(800, 18, 380, 34);
-        float expRatio = Math.Clamp((float)run.ActivePet.CurrentExp / run.ActivePet.MaxExp, 0f, 1f);
-        CleanUI.DrawProgressBar(batch, _ctx.Font, expBarBg, expRatio, UITheme.AccentEmerald, leftText: "EXP", rightText: $"LV. {run.ActivePet.Level}");
-
+        float expRatio = Math.Clamp((float)run.Progression.CurrentExp / run.Progression.MaxExp, 0f, 1f);
+        CleanUI.DrawProgressBar(batch, _ctx.Font, expBarBg, expRatio, UITheme.AccentEmerald, leftText: "PLAYER EXP", rightText: $"{run.Progression.CurrentExp}/{run.Progression.MaxExp}");
         // Top-Right: Energy Battery Pips
         int maxEnergy = run.Energy.MaxEnergy;
         int curEnergy = run.Energy.CurrentEnergy;
@@ -804,17 +852,15 @@ public sealed class BaseHabitatScreen : IScreen
         batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentGold);
 
         batch.DrawString(_ctx.Font, "SHELTER UPGRADE STATION", new Vector2(modal.X + 40, modal.Y + 32), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
-        // Header displays both Gold and Player Points
-        string walletText = $"Gold: {_ctx.Run.Economy.Gold} G    |    Points: {_ctx.Run.Economy.PlayerPoints} PTS";
+        string walletText = $"Gold: {_ctx.Run.Economy.Gold} G    |    Skill Points: {_ctx.Run.Progression.SkillPoints} SP";
         Vector2 wSize = _ctx.Font.MeasureString(walletText);
         batch.DrawString(_ctx.Font, walletText, new Vector2(modal.Right - wSize.X - 40, modal.Y + 36), UITheme.AccentCyan);
         batch.DrawLine(modal.X + 40, modal.Y + 80, modal.Right - 40, modal.Y + 80, UITheme.BorderSubtle, 1f);
 
         // 3 Cards with generous width (320px) and clean padding
-        DrawUpgradeCard(batch, _upgCard1, "QTE Upgrade", "Cost: 60 PTS\n\nWidens needle zones by\n+15% and slows rotation.", _upgCard1.Contains(mPos));
-        DrawUpgradeCard(batch, _upgCard2, "Energy Upgrade", "Cost: 150 G + 80 PTS\n\nIncreases daily energy\nreserves by +2 AP.", _upgCard2.Contains(mPos));
-        DrawUpgradeCard(batch, _upgCard3, "Progress Booster", "Cost: 70 PTS\n\nIncreases stat gains by\n+50% per care session.", _upgCard3.Contains(mPos));
-
+        DrawUpgradeCard(batch, _upgCard1, "QTE Upgrade", $"Level: {_ctx.Run.Progression.QteFocusLevel}\nCost: 1 Skill Point (or 60 PTS)\n\nWidens needle zones by\n+15% per level.", _upgCard1.Contains(mPos));
+        DrawUpgradeCard(batch, _upgCard2, "Max Energy", $"Cap: {_ctx.Run.Energy.MaxEnergy}/6 AP\nCost: 1 SP (or 150 G)\n\nIncreases daily energy\nreserves by +1 AP (max 6).", _upgCard2.Contains(mPos));
+        DrawUpgradeCard(batch, _upgCard3, "Progress Booster", $"Level: {_ctx.Run.Progression.ProgressBoosterLevel}\nCost: 1 Skill Point (or 70 PTS)\n\nIncreases PP gains by\n+50% per level.", _upgCard3.Contains(mPos));
         if (!string.IsNullOrEmpty(_upgradeFeedback))
         {
             batch.DrawString(_ctx.Font, _upgradeFeedback, new Vector2(modal.X + 50, modal.Bottom - 80), UITheme.AccentGold);

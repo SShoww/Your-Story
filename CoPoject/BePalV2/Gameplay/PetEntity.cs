@@ -11,8 +11,13 @@ public sealed class PetEntity
     public int Clean { get; private set; }
 
     public int Level { get; private set; } = 1;
-    public int CurrentExp { get; private set; } = 0;
-    public int MaxExp => Level * 100;
+    public int CurrentProgress { get; private set; } = 0;
+    public int MaxProgress => 100 + (Level - 1) * 50;
+
+    public int CurrentExp => CurrentProgress;
+    public int MaxExp => MaxProgress;
+
+    public float CounterDamageBonus { get; private set; } = 0f;
 
     public bool HasAcidBurn { get; set; }
 
@@ -69,7 +74,7 @@ public sealed class PetEntity
         Health = Math.Clamp(Health + amount, 0f, MaxHealth);
     }
 
-    public void Revive(float restoredHealth = 50f)
+    public void Revive(float restoredHealth = 1f)
     {
         Health = Math.Clamp(restoredHealth, 1f, MaxHealth);
         HasAcidBurn = false;
@@ -85,19 +90,31 @@ public sealed class PetEntity
         Clean = Math.Clamp(Clean + amount, 0, 100);
     }
 
+    public void AddProgress(int pp, float multiplier = 1.0f)
+    {
+        int adjusted = (int)Math.Round(pp * multiplier, MidpointRounding.AwayFromZero);
+        if (adjusted <= 0) return;
+        CurrentProgress += adjusted;
+
+        while (CurrentProgress >= MaxProgress && Level < 10)
+        {
+            CurrentProgress -= MaxProgress;
+            Level++;
+            if (Level % 2 == 0)
+            {
+                MaxHealth += 10f;
+                Health = Math.Clamp(Health + 10f, 0f, MaxHealth);
+            }
+            else
+            {
+                CounterDamageBonus += 0.10f;
+            }
+        }
+    }
+
     public void AddExp(int exp, float multiplier = 1.0f)
     {
-        int adjusted = (int)(exp * multiplier);
-        if (adjusted <= 0) return;
-        CurrentExp += adjusted;
-
-        while (CurrentExp >= MaxExp && Level < 10)
-        {
-            CurrentExp -= MaxExp;
-            Level++;
-            MaxHealth += 10f;
-            Health = Math.Clamp(Health + 10f, 0f, MaxHealth);
-        }
+        AddProgress(exp, multiplier);
     }
 
     public bool CanTrain()

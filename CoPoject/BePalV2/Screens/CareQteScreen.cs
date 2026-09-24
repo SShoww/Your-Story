@@ -159,11 +159,14 @@ public sealed class CareQteScreen : IScreen
                 _goodWindow = 0.48f;
                 break;
         }
-
         if (pet.IsGrimy)
         {
             _needleSpeed *= 1.15f;
         }
+
+        float qteBonus = _ctx.Run.Progression.QteWindowBonus;
+        _perfectWindow += qteBonus;
+        _goodWindow += qteBonus;
     }
 
     public void Update(GameTime gameTime)
@@ -340,7 +343,8 @@ public sealed class CareQteScreen : IScreen
                     pet.CleanDirect(isPerfect ? 4 : 2);
                     break;
                 case CareActionType.Train:
-                    pet.AddExp(isPerfect ? 7 : 4, _ctx.Run.Inventory.PermanentTrainExpMultiplier);
+                    float boost = _ctx.Run.Progression.ProgressBoosterMultiplier * _ctx.Run.Inventory.PermanentTrainExpMultiplier;
+                    pet.AddProgress(isPerfect ? 10 : 5, boost);
                     break;
                 case CareActionType.Heal:
                     pet.Heal(isPerfect ? 3.5f : 2.0f);
@@ -390,16 +394,7 @@ public sealed class CareQteScreen : IScreen
 
     private void RouteDefensePhase()
     {
-        var run = _ctx.Run;
-        if (run.DayNumber == 1 && run.CurrentPhase == DailyPhase.CareAction && run.Energy.CurrentEnergy == 0)
-        {
-            run.SetPhase(DailyPhase.DefenseResolution);
-            _ctx.ScreenManager.SetScreen(new CalmingQteScreen(_ctx));
-        }
-        else
-        {
-            _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
-        }
+        _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
     }
 
     public void Draw(GameTime gameTime, SpriteBatch batch)

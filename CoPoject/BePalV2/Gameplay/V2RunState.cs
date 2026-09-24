@@ -13,7 +13,9 @@ public sealed class V2RunState
     public EnergyAccount Energy { get; } = new();
     public EconomyManager Economy { get; } = new();
     public InventoryService Inventory { get; } = new();
-
+    public PlayerProgression Progression { get; } = new();
+    public EndlessEventManager EventManager { get; } = new();
+    public bool IsEndlessMode => DayNumber >= 4;
     public StoryEnding Ending { get; private set; } = StoryEnding.None;
 
     public void SetEnding(StoryEnding ending)
@@ -80,7 +82,11 @@ public sealed class V2RunState
 
         foreach (var tier in engine.History)
         {
-            if (tier == PrecisionTier.Perfect) TotalPerfectAttempts++;
+            if (tier == PrecisionTier.Perfect)
+            {
+                TotalPerfectAttempts++;
+                Progression.AddExp(1);
+            }
             else if (tier == PrecisionTier.Good) TotalGoodAttempts++;
             else TotalMissAttempts++;
         }
@@ -92,7 +98,7 @@ public sealed class V2RunState
         }
     }
 
-    public void ResolveEmergencyRevive()
+    public void ResolveEmergencyRevive(float restoredHealth = 50f)
     {
         const int fee = 500;
         if (Economy.CanAfford(fee))
@@ -103,8 +109,8 @@ public sealed class V2RunState
         {
             Economy.IssueEmergencyLoan(fee);
         }
-        ActivePet.Revive(50f);
-        ToothlessPet?.Revive(50f);
+        ActivePet.Revive(restoredHealth);
+        ToothlessPet?.Revive(restoredHealth);
     }
 
     public void CompleteDay1Calming(bool success)
@@ -181,7 +187,7 @@ public sealed class V2RunState
 
     public void AdvanceToNextDay()
     {
-        if (DayNumber >= MaxDays || Ending != StoryEnding.None)
+        if (Ending != StoryEnding.None && Ending != StoryEnding.EndingB_Protector)
         {
             return;
         }
@@ -191,5 +197,13 @@ public sealed class V2RunState
         Economy.ReceiveDailySubsidy();
         Inventory.ResetDailyCombatBuffs();
         CurrentPhase = DailyPhase.MorningEvent;
+
+        var dailyEvt = EventManager.DetermineMorningEvent(DayNumber);
+        if (dailyEvt == DailyEventType.Thunderstorm)
+        {
+            ActivePet.CleanDirect(-50);
+            if (ActivePet.Clean < 50) ActivePet.CleanDirect(50 - ActivePet.Clean);
+            ToothlessPet?.CleanDirect(-50);
+        }
     }
 }

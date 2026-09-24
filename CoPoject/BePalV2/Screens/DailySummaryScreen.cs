@@ -46,9 +46,10 @@ public sealed class DailySummaryScreen : IScreen
         _ctx.Audio.PlayConfirm();
         var run = _ctx.Run;
 
-        if (run.DayNumber >= V2RunState.MaxDays && run.Day3BossDefeated)
+        if (run.DayNumber >= V2RunState.MaxDays && run.Day3BossDefeated && !run.IsEndlessMode)
         {
-            _ctx.ScreenManager.SetScreen(new CombatArenaScreen(_ctx, CombatMode.ChapterBoss));
+            run.AdvanceToNextDay();
+            _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
         }
         else if (run.Ending != StoryEnding.None)
         {
@@ -60,7 +61,6 @@ public sealed class DailySummaryScreen : IScreen
             _ctx.ScreenManager.SetScreen(new BaseHabitatScreen(_ctx));
         }
     }
-
     public void Draw(GameTime gameTime, SpriteBatch batch)
     {
         batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), new Color(14, 16, 22));
@@ -79,7 +79,7 @@ public sealed class DailySummaryScreen : IScreen
         var pet = run.ActivePet;
 
         // Stamp title (Sized and positioned cleanly according to UI design rules)
-        string docTitle = $"DAILY CARE EVALUATION - DAY {run.DayNumber} / 3";
+        string docTitle = run.IsEndlessMode ? $"DAILY CARE EVALUATION - DAY {run.DayNumber} (ENDLESS)" : $"DAILY CARE EVALUATION - DAY {run.DayNumber} / 3";
         batch.DrawString(_ctx.Font, docTitle, new Vector2(doc.X + 60, doc.Y + 54), new Color(40, 30, 20), 0f, Vector2.Zero, 1.25f, SpriteEffects.None, 0f);
         batch.DrawLine(doc.X + 60, doc.Y + 95, doc.Right - 60, doc.Y + 95, new Color(160, 140, 120), 2f);
 
