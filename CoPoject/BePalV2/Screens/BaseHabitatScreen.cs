@@ -268,7 +268,7 @@ public sealed class BaseHabitatScreen : IScreen
                 {
                     eco.SpendGold(150);
                     eco.SpendPlayerPoints(80);
-                    _ctx.Run.Energy.AddBonus(2);
+                    _ctx.Run.Energy.UpgradeMaxEnergy(2);
                     _upgradeFeedback = "Purchased Energy Upgrade (+2 AP)! (150 G + 80 PTS)";
                     _ctx.Audio.PlaySuccess();
                 }
