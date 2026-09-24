@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using BePalV2.Audio;
 using BePalV2.Gameplay;
 using BePalV2.Screens;
@@ -8,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace BePalV2;
-
 public class Game1 : Game
 {
     private readonly GraphicsDeviceManager _graphics;
@@ -25,24 +25,38 @@ public class Game1 : Game
 
     public Game1(string[]? args = null)
     {
+        Environment.SetEnvironmentVariable("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0");
         _args = args ?? Array.Empty<string>();
         _graphics = new GraphicsDeviceManager(this);
         _graphics.PreferredBackBufferWidth = 1920;
         _graphics.PreferredBackBufferHeight = 1080;
-        _graphics.HardwareModeSwitch = false; // borderless fullscreen window
-        _graphics.IsFullScreen = true;
+        _graphics.HardwareModeSwitch = false; // borderless window
+        _graphics.IsFullScreen = false; // Start in windowed borderless so SDL does not minimize on focus loss!
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
         Window.IsBorderless = true;
+        Window.Position = Point.Zero;
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    protected override void Initialize()
+    {
+        base.Initialize();
         try
         {
-            var display = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-            Window.Position = new Point(Math.Max(0, (display.Width - 1920) / 2), Math.Max(0, (display.Height - 1080) / 2));
+            Window.Position = Point.Zero;
+            if (OperatingSystem.IsWindows() && Window.Handle != IntPtr.Zero)
+            {
+                SetForegroundWindow(Window.Handle);
+            }
         }
         catch
         {
-            // Fallback for headless/CI environments
+            // Ignore in headless/CI environments
         }
     }
 
@@ -199,36 +213,47 @@ public class Game1 : Game
             case 17:
                 // 06: Upgrade Station matching Slide 27 (3 upgrade cards)
                 SaveScreenshot("screenshots/v2/06_upgrade_station.png");
+                _context.Run.DayNumber = 2;
                 _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.ToothlessTaming), transition: false);
                 break;
 
             case 20:
                 // 07: Day 2 Toothless Taming Combat Wheel matching Slide 38
                 SaveScreenshot("screenshots/v2/07_toothless_arena.png");
+                _context.Run.DayNumber = 3;
                 _screenManager.SetScreen(new ShopModalScreen(_context), transition: false);
                 break;
 
             case 23:
                 // 08: Day 3 Merchant Shop matching Slide 59 (5 items & merchant speech)
                 SaveScreenshot("screenshots/v2/08_merchant_shop.png");
+                _context.Run.DayNumber = 3;
                 _screenManager.SetScreen(new CombatArenaScreen(_context, CombatMode.MerchantBoss), transition: false);
                 break;
 
             case 26:
                 // 09: Day 3 Merchant Boss Fight matching Slide 54 (5-hit gauge & gold theft)
                 SaveScreenshot("screenshots/v2/09_boss_battle.png");
+                _context.Run.DayNumber = 1;
+                var simEngine = new CareQteEngine(_context.Run.ActivePet, CareActionType.Train);
+                for (int i = 0; i < 7; i++) simEngine.RecordAttempt(PrecisionTier.Perfect);
+                for (int i = 0; i < 2; i++) simEngine.RecordAttempt(PrecisionTier.Good);
+                simEngine.RecordAttempt(PrecisionTier.Miss);
+                _context.Run.RecordCareSessionOutcome(simEngine);
                 _screenManager.SetScreen(new DailySummaryScreen(_context), transition: false);
                 break;
 
             case 29:
                 // 10: Daily Debriefing and Shift Summary matching Slide 30
                 SaveScreenshot("screenshots/v2/10_summary_report.png");
+                _context.Run.DayNumber = 1;
                 _screenManager.SetScreen(new CalmingQteScreen(_context), transition: false);
                 break;
 
             case 32:
                 // Emergency Thunderstorm Calming QTE
                 SaveScreenshot("screenshots/v2/05_thunderstorm.png");
+                _context.Run.DayNumber = 3;
                 _screenManager.SetScreen(new EndingScreen(_context, StoryEnding.EndingB_Protector), transition: false);
                 break;
 

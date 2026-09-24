@@ -51,9 +51,9 @@ public sealed class CombatArenaScreen : IScreen
 
     private static (string name, Color color) GetPetSkillInfo(PetSpecies species) => species switch
     {
-        PetSpecies.Coco => ("THERMAL SURGE", UITheme.AccentCoral),
+        PetSpecies.Coco => ("PHOTOSYNTHESIS", UITheme.AccentEmerald),
         PetSpecies.Gloomtail => ("SHADOW BARRIER", UITheme.AccentPurple),
-        PetSpecies.Sproutlet => ("CHLOROPHYLL", UITheme.AccentEmerald),
+        PetSpecies.Sproutlet => ("AGILE REFLEX", UITheme.AccentCoral),
         _ => ("ACID SPRAY", UITheme.AccentCyan)
     };
 
@@ -290,10 +290,16 @@ public sealed class CombatArenaScreen : IScreen
         batch.FillRectangle(new Rectangle(ptsPill.X + 10, ptsPill.Y + 10, 20, 20), UITheme.AccentCyan);
         batch.DrawString(_ctx.Font, $"{_ctx.Run.Economy.PlayerPoints} PTS", new Vector2(ptsPill.X + 40, ptsPill.Y + 8), UITheme.AccentCyan);
 
-        // Day Number Pill
+        // Day Number Pill (matches canonical encounter timeline)
+        int combatDay = _combat.Mode switch
+        {
+            CombatMode.ToothlessTaming => 2,
+            CombatMode.MerchantBoss => 3,
+            CombatMode.ChapterBoss => 3,
+            _ => _ctx.Run.DayNumber
+        };
         Rectangle dayPill = new(900, 15, 160, 40);
-        CleanUI.DrawBadge(batch, _ctx.Font, dayPill, $"DAY {_ctx.Run.DayNumber}", new Color(34, 42, 58), UITheme.AccentGold);
-
+        CleanUI.DrawBadge(batch, _ctx.Font, dayPill, $"DAY {combatDay}", new Color(34, 42, 58), UITheme.AccentGold);
         // Player Level Pill (Shifted safely away from window controls)
         Rectangle lvlPill = new(_ctx.ScreenWidth - 320, 15, 180, 40);
         CleanUI.DrawBadge(batch, _ctx.Font, lvlPill, "PLAYER LV. 1", new Color(28, 44, 38), UITheme.AccentEmerald);
@@ -369,23 +375,22 @@ public sealed class CombatArenaScreen : IScreen
             : (_combat.Mode == CombatMode.MerchantBoss ? "Illegal Specimen Collector" : "Chapter 1 Climax Threat");
         batch.DrawString(_ctx.Font, oppSub, new Vector2(rightCard.X + 24, rightCard.Y + 340), UITheme.TextSecondary);
 
-        // Opponent Gauge: Text is placed ABOVE the bar so it is NEVER covered!
+        // Opponent Gauge: scaled nicely so it never runs off the edge
         string oppGaugeLabel = _combat.Mode == CombatMode.ToothlessTaming
             ? $"TAME PROGRESS: {(int)_combat.TameGauge}% / 100%"
             : (_combat.Mode == CombatMode.ChapterBoss ? "CHAPTER BOSS: IMMENSE THREAT" : $"BOSS INTEGRITY: {_combat.BossHitsRemaining} HITS REMAINING");
-        batch.DrawString(_ctx.Font, oppGaugeLabel, new Vector2(rightCard.X + 24, rightCard.Y + 380), oppAccent, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
-
+        batch.DrawString(_ctx.Font, oppGaugeLabel, new Vector2(rightCard.X + 24, rightCard.Y + 382), oppAccent, 0f, Vector2.Zero, 0.88f, SpriteEffects.None, 0f);
         Rectangle oppBarBg = new(rightCard.X + 24, rightCard.Y + 415, rightCard.Width - 48, 26);
         float oppRatio = _combat.Mode == CombatMode.ToothlessTaming
             ? (_combat.TameGauge / 100f)
             : (_combat.Mode == CombatMode.ChapterBoss ? Math.Clamp(_combat.BossHp / 2000f, 0f, 1f) : (_combat.BossHitsRemaining / 5f));
         CleanUI.DrawProgressBar(batch, _ctx.Font, oppBarBg, oppRatio, oppAccent, leftText: null, rightText: null);
 
-        // Target Action guide
+        // Target Action guide: scale 0.78f ensures text never clips outside the card
         string actionGuide = _combat.Mode == CombatMode.ToothlessTaming
             ? "Pacify by evading acid & striking counter windows!"
             : "Break through defenses to force enemy retreat!";
-        batch.DrawString(_ctx.Font, actionGuide, new Vector2(rightCard.X + 24, rightCard.Y + 470), UITheme.TextMuted, 0f, Vector2.Zero, 0.9f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, actionGuide, new Vector2(rightCard.X + 24, rightCard.Y + 470), UITheme.TextMuted, 0f, Vector2.Zero, 0.78f, SpriteEffects.None, 0f);
     }
 
     private void DrawCombatWheel(SpriteBatch batch)

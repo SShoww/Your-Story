@@ -124,14 +124,15 @@ public sealed class MainMenuScreen : IScreen
         // --- CENTER COLUMN: Clean Minimalist Title & Menu Buttons ---
         CleanUI.DrawPanel(batch, _titleBox, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 1);
         batch.FillRectangle(new Rectangle(_titleBox.X, _titleBox.Y, _titleBox.Width, 4), UITheme.AccentGold);
-
         string title = "BePal";
         Vector2 titleSize = _ctx.Font.MeasureString(title);
-        float titleScale = 3.6f;
-        Vector2 titlePos = new(_titleBox.Center.X - (titleSize.X * titleScale) / 2f, _titleBox.Center.Y - (titleSize.Y * titleScale) / 2f - 4);
-        batch.DrawString(_ctx.Font, title, titlePos + new Vector2(2, 2), Color.Black * 0.6f, 0f, Vector2.Zero, titleScale, SpriteEffects.None, 0f);
+        float titleScale = 2.4f;
+        Vector2 titlePos = new(_titleBox.Center.X - (titleSize.X * titleScale) / 2f, _titleBox.Y + 22);
+        batch.DrawString(_ctx.Font, title, titlePos + new Vector2(2, 2), Color.Black * 0.7f, 0f, Vector2.Zero, titleScale, SpriteEffects.None, 0f);
         batch.DrawString(_ctx.Font, title, titlePos, UITheme.TextPrimary, 0f, Vector2.Zero, titleScale, SpriteEffects.None, 0f);
 
+        Rectangle protoBadge = new(_titleBox.Center.X - 100, _titleBox.Y + 82, 200, 26);
+        CleanUI.DrawBadge(batch, _ctx.Font, protoBadge, "SIMULATION PROTOCOL", UITheme.AccentGold * 0.20f, UITheme.AccentGold);
         string subtitle = "Abnormal Creature Daycare & Research Facility";
         Vector2 subSize = _ctx.Font.MeasureString(subtitle);
         batch.DrawString(_ctx.Font, subtitle, new Vector2(960 - subSize.X / 2f, 320), UITheme.TextMuted);

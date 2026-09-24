@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using BePalV2.Audio;
 using BePalV2.Gameplay;
 using BePalV2.UI;
@@ -8,12 +10,22 @@ using MonoGame.Extended;
 
 namespace BePalV2.Screens;
 
+public enum CareQtePhase
+{
+    Selection,
+    ActiveQte,
+    Completed
+}
+
 public sealed class CareQteScreen : IScreen
 {
     private readonly ScreenContext _ctx;
-    private readonly CareQteEngine _engine;
+    private CareQteEngine _engine = null!;
     private KeyboardState _prevKeyboard;
     private MouseState _prevMouse;
+
+    private CareQtePhase _phase;
+    private CareActionType _activeAction;
 
     private string? _floatingFeedback;
     private Color _floatingColor;
@@ -21,25 +33,30 @@ public sealed class CareQteScreen : IScreen
 
     // 1920x1080 Layout Constants
     private const float WheelCenterX = 960f;
-    private const float WheelCenterY = 480f;
+    private const float WheelCenterY = 500f;
     private const float WheelRadius = 240f;
 
-    // Death Spiral Shrinking Zone Parameters (Version 1 Style)
+    // Selection Phase Data (Staggered & Randomized Spawn)
+    private record struct SelectionSlot(CareActionType Action, string Label, float CenterAngle, Color Color, float AppearTime);
+    private readonly List<SelectionSlot> _selectionSlots = new();
+    private float _selectionElapsed;
+
+    // Active QTE Parameters
     private float _needleAngle;
     private float _needleSpeed = 2.4f;
-    private float _elapsedTime;
-    private const float CycleDuration = 4.0f;
-    private const float InitialSpan = MathF.PI / 3.2f; // ~56 degrees
+    private float _targetAngle = 1.5f * MathF.PI; // Top (270 deg)
+    private float _perfectWindow = 0.20f;
+    private float _goodWindow = 0.45f;
+    private float _activeElapsed;
 
-    // 4 Sectors (Death Spiral Radial Slots)
-    private record struct CareSector(CareActionType Action, string Label, float CenterAngle, Color Color);
-    private static readonly CareSector[] Sectors =
-    {
-        new(CareActionType.Train, "TRAIN", 1.25f * MathF.PI, UITheme.AccentGold),    // Top-Left (225°)
-        new(CareActionType.Heal, "HEAL", 1.75f * MathF.PI, UITheme.AccentEmerald),   // Top-Right (315°)
-        new(CareActionType.Feed, "FEED", 0.25f * MathF.PI, new Color(240, 130, 60)), // Bottom-Right (45°)
-        new(CareActionType.Clean, "CLEAN", 0.75f * MathF.PI, UITheme.AccentCyan)     // Bottom-Left (135°)
-    };
+    // Action-specific Gimmick Variables
+    // 1. Feed: needle reverses on hit
+    // 2. Clean: target zone continuously escapes needle
+    // 3. Train: faster needle + smaller constant target zone (no shrinking)
+    // 4. Heal: needle blinks intermittently after zone hit
+    private bool _healBlinkActive;
+    private float _blinkTimer;
+    private bool _needleBlinkVisible = true;
 
     private int _attemptsRemaining = 10;
     private int _successfulHits;
@@ -47,19 +64,111 @@ public sealed class CareQteScreen : IScreen
     private int _maxStreak;
     private int _totalScore;
 
-    public CareQteScreen(ScreenContext ctx, CareActionType defaultAction = CareActionType.Train)
+    public CareQteScreen(ScreenContext ctx, CareActionType? defaultAction = null)
     {
         _ctx = ctx;
-        _engine = new CareQteEngine(ctx.Run.ActivePet, defaultAction, ctx.Run.Inventory.EquippedItem);
-        var pet = ctx.Run.ActivePet;
-        if (pet.IsGrimy) _needleSpeed *= 1.15f;
+        if (defaultAction.HasValue)
+        {
+            StartActiveQte(defaultAction.Value);
+        }
+        else
+        {
+            StartSelectionPhase();
+        }
+    }
+
+    private void StartSelectionPhase()
+    {
+        _phase = CareQtePhase.Selection;
+        _selectionElapsed = 0f;
+        _needleAngle = 0f;
+        _needleSpeed = 2.2f;
+
+        // Preset 4 angles around the wheel, randomized
+        float[] presetAngles = { 0.25f * MathF.PI, 0.75f * MathF.PI, 1.25f * MathF.PI, 1.75f * MathF.PI };
+        var rng = new Random();
+        for (int i = presetAngles.Length - 1; i > 0; i--)
+        {
+            int swapIdx = rng.Next(i + 1);
+            (presetAngles[i], presetAngles[swapIdx]) = (presetAngles[swapIdx], presetAngles[i]);
+        }
+
+        var actions = new[]
+        {
+            (CareActionType.Feed, "FEED", new Color(240, 130, 60)),
+            (CareActionType.Clean, "CLEAN", UITheme.AccentCyan),
+            (CareActionType.Train, "TRAIN", UITheme.AccentGold),
+            (CareActionType.Heal, "HEAL", UITheme.AccentEmerald)
+        };
+
+        _selectionSlots.Clear();
+        for (int i = 0; i < actions.Length; i++)
+        {
+            // Staggered appearance: slot 0 at 0s, slot 1 at 0.4s, slot 2 at 0.8s, slot 3 at 1.2s
+            float appear = i * 0.40f;
+            _selectionSlots.Add(new SelectionSlot(actions[i].Item1, actions[i].Item2, presetAngles[i], actions[i].Item3, appear));
+        }
+    }
+
+    private void StartActiveQte(CareActionType action)
+    {
+        _phase = CareQtePhase.ActiveQte;
+        _activeAction = action;
+        _activeElapsed = 0f;
+        _attemptsRemaining = 10;
+        _successfulHits = 0;
+        _currentStreak = 0;
+        _maxStreak = 0;
+        _totalScore = 0;
+        _healBlinkActive = false;
+        _needleBlinkVisible = true;
+
+        var pet = _ctx.Run.ActivePet;
+        _engine = new CareQteEngine(pet, action, _ctx.Run.Inventory.EquippedItem);
+
+        _targetAngle = 1.5f * MathF.PI; // Top (270 deg)
+
+        // Tune parameters per action gimmick requested by user
+        switch (action)
+        {
+            case CareActionType.Feed:
+                // Normal speed, reverses rotation upon hitting zone
+                _needleSpeed = 2.4f;
+                _perfectWindow = 0.22f;
+                _goodWindow = 0.48f;
+                break;
+
+            case CareActionType.Clean:
+                // Normal speed, target zone continuously escapes needle
+                _needleSpeed = 2.4f;
+                _perfectWindow = 0.22f;
+                _goodWindow = 0.48f;
+                break;
+
+            case CareActionType.Train:
+                // Fast needle speed, smaller fixed target zone (does not shrink)
+                _needleSpeed = 4.0f;
+                _perfectWindow = 0.14f;
+                _goodWindow = 0.32f;
+                break;
+
+            case CareActionType.Heal:
+                // Normal speed, needle blinks intermittently when zone is struck
+                _needleSpeed = 2.4f;
+                _perfectWindow = 0.22f;
+                _goodWindow = 0.48f;
+                break;
+        }
+
+        if (pet.IsGrimy)
+        {
+            _needleSpeed *= 1.15f;
+        }
     }
 
     public void Update(GameTime gameTime)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        _elapsedTime += dt;
-        _needleAngle = (_needleAngle + _needleSpeed * dt) % (2f * MathF.PI);
 
         if (_feedbackTimer > 0f)
         {
@@ -76,72 +185,152 @@ public sealed class CareQteScreen : IScreen
         bool spaceHit = kbd.IsKeyDown(Keys.Space) && !_prevKeyboard.IsKeyDown(Keys.Space);
         bool mouseHit = mouse.LeftButton == ButtonState.Pressed && _prevMouse.LeftButton == ButtonState.Released;
 
-        if ((spaceHit || mouseHit) && _attemptsRemaining > 0)
+        if (_phase == CareQtePhase.Selection)
         {
-            ResolveAttempt();
+            UpdateSelection(dt, spaceHit, mouseHit, kbd);
+        }
+        else if (_phase == CareQtePhase.ActiveQte)
+        {
+            UpdateActiveQte(dt, spaceHit, mouseHit);
+        }
+        else if (_phase == CareQtePhase.Completed)
+        {
+            if (spaceHit || mouseHit || (kbd.IsKeyDown(Keys.Enter) && !_prevKeyboard.IsKeyDown(Keys.Enter)))
+            {
+                RouteDefensePhase();
+            }
         }
 
         _prevKeyboard = kbd;
         _prevMouse = mouse;
     }
 
-    private float GetCurrentSpan()
+    private void UpdateSelection(float dt, bool spaceHit, bool mouseHit, KeyboardState kbd)
     {
-        // Death Spiral: zone shrinks over each cycle duration
-        float cycleProgress = (_elapsedTime % CycleDuration) / CycleDuration;
-        return MathF.Max(0.12f, InitialSpan * (1f - cycleProgress * 0.75f));
+        _selectionElapsed += dt;
+        _needleAngle = (_needleAngle + _needleSpeed * dt) % (2f * MathF.PI);
+
+        // Numeric Hotkeys 1-4
+        if (kbd.IsKeyDown(Keys.D1) && !_prevKeyboard.IsKeyDown(Keys.D1)) { SelectAction(CareActionType.Train); return; }
+        if (kbd.IsKeyDown(Keys.D2) && !_prevKeyboard.IsKeyDown(Keys.D2)) { SelectAction(CareActionType.Feed); return; }
+        if (kbd.IsKeyDown(Keys.D3) && !_prevKeyboard.IsKeyDown(Keys.D3)) { SelectAction(CareActionType.Clean); return; }
+        if (kbd.IsKeyDown(Keys.D4) && !_prevKeyboard.IsKeyDown(Keys.D4)) { SelectAction(CareActionType.Heal); return; }
+
+        if (!spaceHit && !mouseHit) return;
+
+        // Check if needle is inside any currently visible slot
+        const float slotHalfSpan = 0.28f;
+        SelectionSlot? chosenSlot = null;
+
+        foreach (var slot in _selectionSlots)
+        {
+            if (_selectionElapsed < slot.AppearTime) continue; // Not spawned yet
+
+            float diff = MathF.Abs(MathHelper.WrapAngle(_needleAngle - slot.CenterAngle));
+            if (diff <= slotHalfSpan)
+            {
+                chosenSlot = slot;
+                break;
+            }
+        }
+
+        if (chosenSlot.HasValue)
+        {
+            SelectAction(chosenSlot.Value.Action);
+        }
+    }
+
+    private void SelectAction(CareActionType action)
+    {
+        _ctx.Audio.PlayConfirm();
+        StartActiveQte(action);
+    }
+
+    private void UpdateActiveQte(float dt, bool spaceHit, bool mouseHit)
+    {
+        _activeElapsed += dt;
+
+        // Gimmick 1: Clean - target zone continuously rotates away from needle
+        if (_activeAction == CareActionType.Clean)
+        {
+            float escapeSpeed = 0.80f * MathF.Sign(_needleSpeed);
+            _targetAngle = MathHelper.WrapAngle(_targetAngle + escapeSpeed * dt);
+        }
+
+        // Gimmick 2: Heal - needle blinks intermittently after first hit
+        if (_healBlinkActive)
+        {
+            _blinkTimer += dt;
+            if (_blinkTimer >= 0.25f)
+            {
+                _blinkTimer = 0f;
+                _needleBlinkVisible = !_needleBlinkVisible;
+            }
+        }
+
+        _needleAngle = (_needleAngle + _needleSpeed * dt) % (2f * MathF.PI);
+        if (_needleAngle < 0f) _needleAngle += 2f * MathF.PI;
+
+        if ((spaceHit || mouseHit) && _attemptsRemaining > 0)
+        {
+            ResolveAttempt();
+        }
     }
 
     private void ResolveAttempt()
     {
         _attemptsRemaining--;
-        float currentSpan = GetCurrentSpan();
-        CareSector? hitSector = null;
 
-        foreach (var sector in Sectors)
-        {
-            float diff = MathF.Abs(MathHelper.WrapAngle(_needleAngle - sector.CenterAngle));
-            if (diff <= currentSpan / 2f)
-            {
-                hitSector = sector;
-                break;
-            }
-        }
+        float diff = MathF.Abs(MathHelper.WrapAngle(_needleAngle - _targetAngle));
 
-        if (hitSector.HasValue)
+        bool isPerfect = diff <= _perfectWindow;
+        bool isGood = !isPerfect && diff <= _goodWindow;
+
+        var pet = _ctx.Run.ActivePet;
+
+        if (isPerfect || isGood)
         {
-            var sector = hitSector.Value;
             _successfulHits++;
             _currentStreak++;
             _maxStreak = Math.Max(_maxStreak, _currentStreak);
-            _totalScore += 100 + (_currentStreak * 25);
+            int scoreGain = isPerfect ? (120 + _currentStreak * 30) : (70 + _currentStreak * 15);
+            _totalScore += scoreGain;
 
-            // Apply Care Action
-            var pet = _ctx.Run.ActivePet;
-            _engine.RecordAttempt(PrecisionTier.Perfect);
-            switch (sector.Action)
+            _engine.RecordAttempt(isPerfect ? PrecisionTier.Perfect : PrecisionTier.Good);
+
+            // Gimmick: Feed reverses needle rotation direction immediately on hit!
+            if (_activeAction == CareActionType.Feed)
             {
-                case CareActionType.Train:
-                    pet.AddExp(25, _ctx.Run.Inventory.PermanentTrainExpMultiplier);
-                    break;
+                _needleSpeed = -_needleSpeed;
+            }
+
+            // Gimmick: Heal activates blinking needle upon hitting zone!
+            if (_activeAction == CareActionType.Heal)
+            {
+                _healBlinkActive = true;
+            }
+
+            // Apply incremental care progress
+            switch (_activeAction)
+            {
                 case CareActionType.Feed:
-                    pet.FeedDirect(20);
+                    pet.FeedDirect(isPerfect ? 18 : 10);
                     break;
                 case CareActionType.Clean:
-                    pet.CleanDirect(20);
+                    pet.CleanDirect(isPerfect ? 18 : 10);
+                    break;
+                case CareActionType.Train:
+                    pet.AddExp(isPerfect ? 24 : 14, _ctx.Run.Inventory.PermanentTrainExpMultiplier);
                     break;
                 case CareActionType.Heal:
-                    pet.Heal(20f);
+                    pet.Heal(isPerfect ? 20f : 12f);
                     break;
             }
 
-            // Award Player Points for successful action
-            _ctx.Run.Economy.AddPlayerPoints(25);
-
             _ctx.Audio.PlaySuccess();
-            _floatingFeedback = $"{sector.Label} HIT! +100 PTS";
-            _floatingColor = sector.Color;
-            _feedbackTimer = 0.55f;
+            _floatingFeedback = isPerfect ? "PERFECT! +150" : "GOOD! +80";
+            _floatingColor = isPerfect ? UITheme.AccentEmerald : UITheme.AccentGold;
+            _feedbackTimer = 0.60f;
         }
         else
         {
@@ -150,7 +339,7 @@ public sealed class CareQteScreen : IScreen
             _ctx.Audio.PlayFail();
             _floatingFeedback = "MISS!";
             _floatingColor = UITheme.AccentCoral;
-            _feedbackTimer = 0.55f;
+            _feedbackTimer = 0.60f;
         }
 
         if (_attemptsRemaining <= 0)
@@ -162,11 +351,13 @@ public sealed class CareQteScreen : IScreen
     private void FinishSession()
     {
         var run = _ctx.Run;
-        run.Energy.Spend(1);
+        int apCost = _activeAction == CareActionType.Train ? 2 : 1;
+        run.Energy.Spend(apCost);
+        run.Economy.AddPlayerPoints(25);
         run.RecordCareSessionOutcome(_engine);
 
         _ctx.Audio.PlayConfirm();
-        RouteDefensePhase();
+        _phase = CareQtePhase.Completed;
     }
 
     private void RouteDefensePhase()
@@ -188,60 +379,133 @@ public sealed class CareQteScreen : IScreen
         // Deep background
         batch.FillRectangle(new Rectangle(0, 0, _ctx.ScreenWidth, _ctx.ScreenHeight), UITheme.BgDeep);
 
-        // Header Title
-        batch.DrawString(_ctx.Font, "RADIAL CARE PROTOCOL - DEATH SPIRAL", new Vector2(80, 48), UITheme.TextPrimary, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+        if (_phase == CareQtePhase.Selection)
+        {
+            DrawSelectionPhase(batch);
+        }
+        else
+        {
+            DrawActiveQtePhase(batch);
+        }
 
-        // Attempts Remaining Badge
-        Rectangle attBadge = new(80, 100, 220, 36);
-        CleanUI.DrawBadge(batch, _ctx.Font, attBadge, $"ATTEMPTS: {_attemptsRemaining} / 10", new Color(34, 42, 58), UITheme.AccentGold);
-
-        // Subtitle Guide
-        batch.DrawString(_ctx.Font, "Press [ SPACEBAR ] when the needle rotates into any Care Sector", new Vector2(80, 150), UITheme.TextSecondary, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
-
-        // Right Score & Player Points Panel
-        int rx = 1500;
-        Rectangle scorePanel = new(rx, 160, 340, 560);
-        CleanUI.DrawPanel(batch, scorePanel, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
-        batch.FillRectangle(new Rectangle(scorePanel.X, scorePanel.Y, scorePanel.Width, 4), UITheme.AccentGold);
-
-        batch.DrawString(_ctx.Font, "RESEARCH LOG", new Vector2(rx + 24, 185), UITheme.AccentGold, 0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
-        batch.DrawLine(rx + 24, 225, rx + 316, 225, UITheme.BorderSubtle, 1f);
-
-        batch.DrawString(_ctx.Font, $"Care Score:   {_totalScore}", new Vector2(rx + 24, 250), UITheme.TextPrimary);
-        batch.DrawString(_ctx.Font, $"Hits / Total: {_successfulHits} / {10 - _attemptsRemaining}", new Vector2(rx + 24, 295), UITheme.AccentEmerald);
-        batch.DrawString(_ctx.Font, $"Streak:       {_currentStreak}", new Vector2(rx + 24, 340), UITheme.TextSecondary);
-        batch.DrawString(_ctx.Font, $"Max Streak:   {_maxStreak}", new Vector2(rx + 24, 385), UITheme.AccentGold);
-        batch.DrawString(_ctx.Font, $"Points Earned:+{_successfulHits * 25} PTS", new Vector2(rx + 24, 430), UITheme.AccentCyan);
-
-        Rectangle keycapBox = new(rx + 40, 540, 260, 56);
-        CleanUI.DrawKeycap(batch, _ctx.Font, keycapBox, "SPACEBAR", isPressed: false, isAccent: true);
-
-        Vector2 subPrompt = _ctx.Font.MeasureString("Hit space inside sector");
-        float subScale = 0.85f;
-        Vector2 subPos = new(scorePanel.Center.X - (subPrompt.X * subScale) / 2f, 616);
-        batch.DrawString(_ctx.Font, "Hit space inside sector", subPos, UITheme.TextMuted, 0f, Vector2.Zero, subScale, SpriteEffects.None, 0f);
-
-        // Draw Radial Wheel with Central Pet
-        DrawRadialWheel(batch);
-
-        // Bottom Progress Bars: EXP Bar and AP / Points HUD
         DrawBottomProgressBars(batch);
+
+        if (_phase == CareQtePhase.Completed)
+        {
+            DrawCompletionModal(batch);
+        }
+    }
+
+    private void DrawSelectionPhase(SpriteBatch batch)
+    {
+        // Header
+        batch.DrawString(_ctx.Font, "CARE PROTOCOL - SELECT PROCEDURE", new Vector2(80, 48), UITheme.TextPrimary, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+
+        Rectangle phaseBadge = new(80, 100, 240, 36);
+        CleanUI.DrawBadge(batch, _ctx.Font, phaseBadge, "SELECTION PHASE", new Color(34, 42, 58), UITheme.AccentCyan);
+
+        string guide = "Target slots are engaging. Press [ SPACEBAR ] or Click when the needle touches a procedure.";
+        batch.DrawString(_ctx.Font, guide, new Vector2(80, 150), UITheme.TextSecondary, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+
+        Vector2 center = new(WheelCenterX, WheelCenterY);
+        DrawCenterPetPortrait(batch, center);
+
+        // Concentric track circles
+        batch.DrawCircle(center, WheelRadius + 12, 64, UITheme.BorderSubtle, 1f);
+        batch.DrawCircle(center, WheelRadius, 64, UITheme.BorderLight, 3f);
+        batch.DrawCircle(center, WheelRadius - 20, 64, UITheme.BorderSubtle, 1f);
+
+        const float slotHalfSpan = 0.28f;
+        for (int i = 0; i < _selectionSlots.Count; i++)
+        {
+            var slot = _selectionSlots[i];
+            if (_selectionElapsed < slot.AppearTime) continue;
+
+            float alpha = Math.Clamp((_selectionElapsed - slot.AppearTime) / 0.3f, 0f, 1f);
+            Color arcCol = slot.Color * alpha;
+
+            DrawArcZone(batch, center, WheelRadius - 10, slot.CenterAngle, slotHalfSpan, arcCol, 18f);
+
+            Vector2 nodePos = new(center.X + MathF.Cos(slot.CenterAngle) * (WheelRadius + 48),
+                                  center.Y + MathF.Sin(slot.CenterAngle) * (WheelRadius + 48));
+            Rectangle nodeRect = new((int)nodePos.X - 56, (int)nodePos.Y - 20, 112, 40);
+            CleanUI.DrawBadge(batch, _ctx.Font, nodeRect, $"[{i + 1}] {slot.Label}", arcCol * 0.25f, arcCol);
+        }
+
+        // Needle
+        DrawNeedle(batch, center, _needleAngle, UITheme.TextPrimary);
+    }
+
+    private void DrawActiveQtePhase(SpriteBatch batch)
+    {
+        string title = _activeAction switch
+        {
+            CareActionType.Feed => "FEEDING SESSION - NUTRITIONAL INTAKE",
+            CareActionType.Clean => "DECONTAMINATION - STERILIZATION PROTOCOL",
+            CareActionType.Train => "TRAINING DRILL - REFLEX CONDITIONING",
+            _ => "MEDICAL TREATMENT - CELLULAR REPAIR"
+        };
+
+        Color accent = _activeAction switch
+        {
+            CareActionType.Feed => new Color(240, 130, 60),
+            CareActionType.Clean => UITheme.AccentCyan,
+            CareActionType.Train => UITheme.AccentGold,
+            _ => UITheme.AccentEmerald
+        };
+
+        batch.DrawString(_ctx.Font, title, new Vector2(80, 48), UITheme.TextPrimary, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+
+        Rectangle attBadge = new(80, 100, 240, 36);
+        CleanUI.DrawBadge(batch, _ctx.Font, attBadge, $"ATTEMPTS: {_attemptsRemaining} / 10", new Color(34, 42, 58), accent);
+
+        Rectangle streakBadge = new(340, 100, 180, 36);
+        CleanUI.DrawBadge(batch, _ctx.Font, streakBadge, $"STREAK: {_currentStreak}", new Color(34, 42, 58), UITheme.AccentGold);
+
+        string gimmickGuide = _activeAction switch
+        {
+            CareActionType.Feed => "NEEDLE REVERSAL: Striking the target zone immediately reverses needle rotation!",
+            CareActionType.Clean => "ESCAPING TARGET: The target zone continuously rotates and flees from the needle!",
+            CareActionType.Train => "HIGH SPEED DRILL: Fast needle rotation with a compact, fixed target zone!",
+            _ => "PHANTOM NEEDLE: Striking the target zone causes the needle to blink and flicker!"
+        };
+
+        batch.DrawString(_ctx.Font, gimmickGuide, new Vector2(80, 150), UITheme.TextSecondary, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+
+        Vector2 center = new(WheelCenterX, WheelCenterY);
+        DrawCenterPetPortrait(batch, center);
+
+        // Concentric track circles
+        batch.DrawCircle(center, WheelRadius + 12, 64, UITheme.BorderSubtle, 1f);
+        batch.DrawCircle(center, WheelRadius, 64, UITheme.BorderLight, 3f);
+        batch.DrawCircle(center, WheelRadius - 20, 64, UITheme.BorderSubtle, 1f);
+
+        // Target Zones (Good and Perfect)
+        DrawArcZone(batch, center, WheelRadius - 10, _targetAngle, _goodWindow, accent * 0.45f, 18f);
+        DrawArcZone(batch, center, WheelRadius - 10, _targetAngle, _perfectWindow, accent, 20f);
+
+        // Target Indicator Badge on perimeter
+        Vector2 targetPos = new(center.X + MathF.Cos(_targetAngle) * (WheelRadius + 44),
+                                center.Y + MathF.Sin(_targetAngle) * (WheelRadius + 44));
+        Rectangle targetRect = new((int)targetPos.X - 50, (int)targetPos.Y - 20, 100, 40);
+        CleanUI.DrawBadge(batch, _ctx.Font, targetRect, "ZONE", accent * 0.25f, accent);
+
+        // Needle (Respects Heal blinking mechanic)
+        if (!_healBlinkActive || _needleBlinkVisible)
+        {
+            DrawNeedle(batch, center, _needleAngle, UITheme.TextPrimary);
+        }
 
         // Floating feedback
         if (!string.IsNullOrEmpty(_floatingFeedback))
         {
-            Vector2 fbSize = _ctx.Font.MeasureString(_floatingFeedback);
-            Vector2 fbPos = new(WheelCenterX - (fbSize.X * 1.4f) / 2f, WheelCenterY - 40);
-            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos + new Vector2(2, 2), Color.Black * 0.7f, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, _floatingFeedback, fbPos, _floatingColor, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+            Vector2 fbSize = _ctx.Font.MeasureString(_floatingFeedback) * 1.3f;
+            batch.DrawString(_ctx.Font, _floatingFeedback, new Vector2(center.X - fbSize.X / 2f, center.Y + 120), _floatingColor, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
         }
     }
 
-    private void DrawRadialWheel(SpriteBatch batch)
+    private void DrawCenterPetPortrait(SpriteBatch batch, Vector2 center)
     {
-        Vector2 center = new(WheelCenterX, WheelCenterY);
-
-        // 1. Central Creature Display (Version 1 Style)
         Rectangle centralFrame = new((int)center.X - 90, (int)center.Y - 110, 180, 220);
         CleanUI.DrawPanel(batch, centralFrame, new Color(14, 18, 26), UITheme.BorderSubtle, borderWidth: 1, shadow: true);
 
@@ -252,68 +516,63 @@ public sealed class CareQteScreen : IScreen
             Rectangle petRect = new((int)center.X - sprW / 2, (int)center.Y - sprH / 2, sprW, sprH);
             batch.Draw(_ctx.PetIdleTex, petRect, Color.White);
         }
+    }
 
-        // Concentric track circles
-        batch.DrawCircle(center, WheelRadius + 12, 64, UITheme.BorderSubtle, 1f);
-        batch.DrawCircle(center, WheelRadius, 64, UITheme.BorderLight, 3f);
-        batch.DrawCircle(center, WheelRadius - 20, 64, UITheme.BorderSubtle, 1f);
-
-        // 2. The 4 Shrinking Care Sectors (Death Spiral)
-        float currentSpan = GetCurrentSpan();
-        float halfSpan = currentSpan / 2f;
-
-        foreach (var sector in Sectors)
-        {
-            // Arc Zone for the sector
-            DrawArcZone(batch, center, WheelRadius - 10, sector.CenterAngle, halfSpan, sector.Color, 18f);
-
-            // Action Node Badge on the perimeter
-            Vector2 nodePos = new(center.X + MathF.Cos(sector.CenterAngle) * (WheelRadius + 44),
-                                  center.Y + MathF.Sin(sector.CenterAngle) * (WheelRadius + 44));
-            Rectangle nodeRect = new((int)nodePos.X - 52, (int)nodePos.Y - 20, 104, 40);
-            CleanUI.DrawBadge(batch, _ctx.Font, nodeRect, sector.Label, sector.Color * 0.25f, sector.Color);
-        }
-
-        // Center hub ring
+    private static void DrawNeedle(SpriteBatch batch, Vector2 center, float angle, Color color)
+    {
         batch.DrawCircle(center, 24f, 32, UITheme.BorderHighlight, 2f);
 
-        // 3. Rotating Needle
-        float nx = center.X + MathF.Cos(_needleAngle) * (WheelRadius - 4);
-        float ny = center.Y + MathF.Sin(_needleAngle) * (WheelRadius - 4);
-        batch.DrawLine(center.X, center.Y, nx, ny, UITheme.TextPrimary, 3f);
+        float nx = center.X + MathF.Cos(angle) * (WheelRadius - 4);
+        float ny = center.Y + MathF.Sin(angle) * (WheelRadius - 4);
+        batch.DrawLine(center.X, center.Y, nx, ny, color, 3f);
 
-        // Needle tip pip
         batch.DrawCircle(new Vector2(nx, ny), 7f, 16, UITheme.AccentCyan, 2f);
         batch.FillRectangle(new Rectangle((int)nx - 3, (int)ny - 3, 6, 6), UITheme.AccentCyan);
     }
 
+    private void DrawCompletionModal(SpriteBatch batch)
+    {
+        CleanUI.DrawModalBackdrop(batch, _ctx.ScreenWidth, _ctx.ScreenHeight, alpha: 0.80f);
+
+        Rectangle modal = new(640, 280, 640, 420);
+        CleanUI.DrawPanel(batch, modal, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 2, shadow: true);
+        batch.FillRectangle(new Rectangle(modal.X, modal.Y, modal.Width, 4), UITheme.AccentEmerald);
+
+        var (grade, gold) = _engine.CalculateResults();
+
+        batch.DrawString(_ctx.Font, "CARE SESSION COMPLETE", new Vector2(modal.X + 40, modal.Y + 36), UITheme.AccentGold, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+
+        batch.DrawString(_ctx.Font, $"Care Grade: {grade}", new Vector2(modal.X + 40, modal.Y + 100), UITheme.AccentEmerald, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, $"Hits: {_successfulHits} / 10   |   Max Streak: {_maxStreak}", new Vector2(modal.X + 40, modal.Y + 160), UITheme.TextPrimary, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+        batch.DrawString(_ctx.Font, $"Performance Bonus: +{gold} G   |   Points: +25 PTS", new Vector2(modal.X + 40, modal.Y + 210), UITheme.AccentCyan, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
+
+        Rectangle contBtn = new(modal.Center.X - 160, modal.Bottom - 80, 320, 48);
+        Point mPos = Mouse.GetState().Position;
+        CleanUI.DrawButton(batch, _ctx.Font, contBtn, "CONTINUE", contBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true, hotkey: "[ SPACE / ENTER ]");
+    }
+
     private void DrawBottomProgressBars(SpriteBatch batch)
     {
-        // Container bar box at bottom
-        Rectangle barBox = new(360, 890, 1200, 64);
+        Rectangle barBox = new(360, 910, 1200, 64);
         CleanUI.DrawPanel(batch, barBox, UITheme.BgPanel, UITheme.BorderSubtle, borderWidth: 1, shadow: true);
 
         var pet = _ctx.Run.ActivePet;
 
-        // "EXP: LV. 1" Left Badge (Properly proportioned and non-clipping)
         Rectangle lvlBadge = new(barBox.X + 20, barBox.Y + 12, 160, 40);
         CleanUI.DrawBadge(batch, _ctx.Font, lvlBadge, $"EXP: LV. {pet.Level}", new Color(34, 46, 38), UITheme.AccentEmerald);
 
-        // EXP Progress Bar
         Rectangle fillBg = new(barBox.X + 200, barBox.Y + 16, 680, 32);
         float ratio = Math.Clamp((float)pet.CurrentExp / Math.Max(1, pet.MaxExp), 0f, 1f);
         CleanUI.DrawProgressBar(batch, _ctx.Font, fillBg, ratio, UITheme.AccentEmerald, leftText: null, rightText: $"{pet.CurrentExp} / {pet.MaxExp} EXP");
 
-        // AP Indicator Badge
         Rectangle apPill = new(barBox.Right - 300, barBox.Y + 14, 135, 36);
         CleanUI.DrawBadge(batch, _ctx.Font, apPill, $"AP: {_ctx.Run.Energy.CurrentEnergy}/{_ctx.Run.Energy.MaxEnergy}", new Color(28, 36, 48), UITheme.AccentCyan);
 
-        // Player Points Badge
         Rectangle ptsPill = new(barBox.Right - 150, barBox.Y + 14, 130, 36);
         CleanUI.DrawBadge(batch, _ctx.Font, ptsPill, $"{_ctx.Run.Economy.PlayerPoints} PTS", new Color(42, 38, 24), UITheme.AccentGold);
     }
 
-    private void DrawArcZone(SpriteBatch batch, Vector2 center, float radius, float targetAngle, float halfWindow, Color color, float thickness)
+    private static void DrawArcZone(SpriteBatch batch, Vector2 center, float radius, float targetAngle, float halfWindow, Color color, float thickness)
     {
         int segments = 24;
         float start = targetAngle - halfWindow;

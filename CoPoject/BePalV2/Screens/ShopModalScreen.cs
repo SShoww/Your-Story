@@ -141,15 +141,15 @@ public sealed class ShopModalScreen : IScreen
         CleanUI.DrawPanel(batch, _panelRect, UITheme.BgPanel, UITheme.BorderLight, borderWidth: 1, shadow: true);
         batch.FillRectangle(new Rectangle(_panelRect.X, _panelRect.Y, _panelRect.Width, 4), UITheme.AccentGold);
 
-        // Header: "MERCHANT OUTPOST" & Gold & Bag capacity
+        // Header: "MERCHANT OUTPOST" & Gold & Bag capacity (cleanly spaced, no overlap)
         batch.DrawString(_ctx.Font, $"MERCHANT OUTPOST - DAY {_ctx.Run.DayNumber}", new Vector2(_panelRect.X + 40, _panelRect.Y + 28), UITheme.AccentGold, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
 
-        Rectangle goldPill = new(_panelRect.X + 640, _panelRect.Y + 24, 180, 38);
+        Rectangle goldPill = new(_panelRect.Right - 580, _panelRect.Y + 24, 180, 38);
         CleanUI.DrawBadge(batch, _ctx.Font, goldPill, $"GOLD: {_ctx.Run.Economy.Gold} G", new Color(34, 42, 58), UITheme.AccentGold);
 
         int occupied = _ctx.Run.Inventory.Count;
         Color bagColor = occupied >= 8 ? UITheme.AccentCoral : UITheme.AccentEmerald;
-        Rectangle bagPill = new(_panelRect.X + 840, _panelRect.Y + 24, 180, 38);
+        Rectangle bagPill = new(_panelRect.Right - 380, _panelRect.Y + 24, 180, 38);
         CleanUI.DrawBadge(batch, _ctx.Font, bagPill, $"BAG: {occupied} / {InventoryService.MaxSlots}", new Color(28, 36, 44), bagColor);
 
         Point mPos = Mouse.GetState().Position;
@@ -179,8 +179,8 @@ public sealed class ShopModalScreen : IScreen
             Rectangle pricePill = new(itemRect.Right - 110, y + 14, 90, 28);
             CleanUI.DrawBadge(batch, _ctx.Font, pricePill, $"{item.Price} G", UITheme.AccentGold * 0.25f, UITheme.AccentGold);
 
-            // Description: clear vertical separation from item name (NOT cramped!)
-            batch.DrawString(_ctx.Font, item.Description, new Vector2(itemRect.X + 20, y + 54), UITheme.TextSecondary, 0f, Vector2.Zero, 0.88f, SpriteEffects.None, 0f);
+            // Description: scale 0.78f ensures full text fits comfortably without any truncation!
+            batch.DrawString(_ctx.Font, item.Description, new Vector2(itemRect.X + 20, y + 56), UITheme.TextSecondary, 0f, Vector2.Zero, 0.78f, SpriteEffects.None, 0f);
         }
 
         // Merchant Counter Frame
@@ -196,12 +196,13 @@ public sealed class ShopModalScreen : IScreen
 
         if (_pendingItem != null)
         {
-            batch.DrawString(_ctx.Font, _pendingItem.Name, new Vector2(merchRect.X + 30, merchRect.Y + 160), UITheme.TextPrimary, 0f, Vector2.Zero, 1.4f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, _pendingItem.Name, new Vector2(merchRect.X + 30, merchRect.Y + 160), UITheme.TextPrimary, 0f, Vector2.Zero, 1.35f, SpriteEffects.None, 0f);
             batch.DrawString(_ctx.Font, $"Price: {_pendingItem.Price} Gold   |   Category: {_pendingItem.Category}", new Vector2(merchRect.X + 30, merchRect.Y + 215), UITheme.AccentCyan, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
-            batch.DrawString(_ctx.Font, _pendingItem.Description, new Vector2(merchRect.X + 30, merchRect.Y + 265), UITheme.TextSecondary, 0f, Vector2.Zero, 1.0f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, _pendingItem.Description, new Vector2(merchRect.X + 30, merchRect.Y + 265), UITheme.TextSecondary, 0f, Vector2.Zero, 0.95f, SpriteEffects.None, 0f);
 
-            // Purchase confirmation prompt
-            batch.DrawString(_ctx.Font, $"Acquire {_pendingItem.Name} for facility containment?", new Vector2(merchRect.X + 30, merchRect.Y + 420), UITheme.AccentGold, 0f, Vector2.Zero, 1.1f, SpriteEffects.None, 0f);
+            // Purchase confirmation prompt (clean two-line layout so it never clips!)
+            batch.DrawString(_ctx.Font, $"Acquire {_pendingItem.Name}", new Vector2(merchRect.X + 30, merchRect.Y + 410), UITheme.AccentGold, 0f, Vector2.Zero, 1.05f, SpriteEffects.None, 0f);
+            batch.DrawString(_ctx.Font, "for facility containment?", new Vector2(merchRect.X + 30, merchRect.Y + 445), UITheme.TextSecondary, 0f, Vector2.Zero, 0.95f, SpriteEffects.None, 0f);
 
             CleanUI.DrawButton(batch, _ctx.Font, _confirmYesBtn, "BUY ITEM", _confirmYesBtn.Contains(mPos), accent: UITheme.AccentEmerald, isPrimary: true);
             CleanUI.DrawButton(batch, _ctx.Font, _confirmNoBtn, "CANCEL", _confirmNoBtn.Contains(mPos), accent: UITheme.AccentCoral);

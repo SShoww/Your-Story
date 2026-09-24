@@ -2,7 +2,7 @@ namespace BePalV2.Gameplay;
 
 public sealed class V2RunState
 {
-    public int DayNumber { get; private set; } = 1;
+    public int DayNumber { get; set; } = 1;
     public const int MaxDays = 3;
 
     public DailyPhase CurrentPhase { get; private set; } = DailyPhase.MorningEvent;
