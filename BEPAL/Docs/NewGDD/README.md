@@ -62,7 +62,7 @@ date:
 | เดียร์ | 2D Art, Sprites, Environment & UI Graphics | `docs/02_Assets/_candidates/sprites/` |
 | ภูมิ | Flex Design, Narrative Scripts & Audio (SFX/BGM) | `docs/02_Assets/_candidates/sfx/`, `music/` |
 | ซุง | Game Design, Mechanics, Numbers Balance & QTE Math | `docs/02_Assets/_candidates/fonts/`, `data/` |
-| โชว์ | Lead Gameplay Code, Architecture & Automated QA | `CoPoject/BePal/`, `CoPoject/BePal.Tests/` |
+| โชว์ | Lead Gameplay Code, Architecture & Automated QA | `CoPoject/BePalV2/`, `CoPoject/BePalV2.Tests/` |
 
 ---
 
@@ -90,7 +90,7 @@ date:
    - สามารถขยายเนื้อเรื่องไปยัง Days 4–5 ได้ในอนาคตโดยใช้สถาปัตยกรรมลูป 4 เฟสใน `01-core-loop.md`
 2. **สำหรับ Lead Programmers (โชว์):**
    - ศึกษาสถาปัตยกรรมและแผนภาพคลาสใน `04-class-diagram.md`
-   - พัฒนาโมเดลในโฟลเดอร์ `CoPoject/BePal/Gameplay/` ให้เป็น Pure C# เพื่อให้ผ่านชุดทดสอบใน `CoPoject/BePal.Tests/`
+   - พัฒนาโมเดลในโฟลเดอร์ `CoPoject/BePalV2/Gameplay/` ให้เป็น Pure C# เพื่อให้ผ่านชุดทดสอบใน `CoPoject/BePalV2.Tests/`
 3. **สำหรับ Flex Design & Audio (ภูมิ):**
    - ติดตามบทสนทนาและทางเลือกเนื้อเรื่องใน `01-core-loop.md` และ `03-mechanics.md`
    - จัดหาและตรวจสอบไฟล์เสียงตามรายการใน `05-asset-list.md`

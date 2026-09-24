@@ -9,7 +9,6 @@
     <TieredCompilation>false</TieredCompilation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-    <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
@@ -25,7 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Extended" Version="6.1.1" />
-    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="6.1.1" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
   </ItemGroup>

@@ -1,5 +1,11 @@
 # Repository Guidelines
 
+> 🚨 **AI AGENT CRITICAL DIRECTIVE (CLAUDE / GEMINI / OH MY PI)**
+> - **PRIMARY PRODUCTION**: `CoPoject/BePalV2` (Game) and `CoPoject/BePalV2.Tests` (Tests).
+> - **LEGACY REFERENCE**: `CoPoject/BePal` is V1 prototype only. **NEVER modify or import from `CoPoject/BePal`** unless explicitly requested by the user.
+> - **FAST TESTING**: Run `dotnet test CoPoject/BePalV2.Tests` during development (runs in ~0.3s).
+> - **CLEAN UI & DRAWING**: Use `CleanUI` tokens and `MonoGame.Extended` primitives (`FillRectangle`, `DrawCircle`, `DrawLine`, `DrawRectangle`).
+
 ## Project Overview
 
 **BePal** is a single-player pet-care management simulation built with C# 12 and .NET 8 on the MonoGame DesktopGL framework.
@@ -43,7 +49,7 @@ CoPoject/
 │   │   ├── DailySummaryScreen.cs  # Nightly debriefing, grade calculation, and shift gold payout
 │   │   └── EndingScreen.cs        # Narrative outcomes (Ending A: Sell, Ending B: Protector, Forced Defeat)
 │   ├── UI/
-│   │   ├── CleanUI.cs             # Modern borderless theme, rounded panels, pill badges, buttons
+│   │   ├── CleanUI.cs             # Modern borderless theme, rounded panels, pill badges, buttons (uses MonoGame.Extended)
 │   │   └── DialogueBox.cs         # Narrative typewriter display with [YES]/[NO] choice prompts
 │   ├── Gameplay/                  # PURE C# DOMAIN (Zero MonoGame references)
 │   │   ├── V2RunState.cs          # Multi-day state machine, phase router, daily stats tracker
@@ -62,7 +68,7 @@ CoPoject/
 │   │   └── SoundEffectType.cs     # Sound cue taxonomy (Confirm, Success, Fail, Dodge, etc.)
 │   └── Content/                   # Spritefonts and textures compiled via Content.mgcb
 ├── BePalV2.Tests/                 # Unit test suite (56 tests) for V2 domain, engines, and screens
-├── BePal/                         # LEGACY REFERENCE: V1 Samsara 4-Wall Prototype
+├── BePal/                         # LEGACY REFERENCE: V1 Samsara 4-Wall Prototype (Read-Only)
 │   ├── Program.cs, Game1.cs
 │   ├── Screens/                   # PanoramicRoomScreen, CareQteScreen, DodgeQteScreen, etc.
 │   ├── Gameplay/                  # PrototypeRun, PetKind, ActionPattern, HarmType
@@ -151,7 +157,7 @@ Game1.Draw(GameTime)
 
 ### Legacy Prototype Reference (BePal V1)
 
-The V1 prototype (`CoPoject/BePal/`) explores an alternate baseline design:
+The V1 prototype (`CoPoject/BePal/`) is preserved as historical reference:
 - **5-Day Loop**: Interacting with daily assigned abnormal pets (**Mossling**, **Nibbleclaw**, **Blinkbun**).
 - **Player Health (3 HP)**: Mistakes inflict physical/mental damage. Reducing HP to 0 causes a **Forced Retreat** (advances day immediately).
 - **Samsara Room 4-Wall Navigation (`PanoramicRoomScreen.cs`)**: 360-degree shelter rotation (Pet Zone, Pantry, Study Desk, Shift Control).
@@ -169,7 +175,7 @@ The V1 prototype (`CoPoject/BePal/`) explores an alternate baseline design:
   - `Audio/`: Audio service and synthetic procedural waveform fallback (`AudioManager.cs`).
   - `Content/`: Asset sources and pipeline configs (`Content.mgcb`, `PrototypeFont.spritefont`).
 - `CoPoject/BePalV2.Tests/`: Unit test suite (**56 tests**, .NET 8 xUnit) covering V2 domain logic, engines, economy, and screens.
-- `CoPoject/BePal/`: **Legacy prototype project** (`BePal.csproj`).
+- `CoPoject/BePal/`: **Legacy prototype project** (`BePal.csproj` — Read-only reference).
 - `CoPoject/BePal.Tests/`: Legacy unit test suite (**83 tests**, .NET 8 xUnit) covering V1 prototype rules and transitions.
 - `BEPAL/Docs/`:
   - `NewGDD/`: **Active Game Design Document Suite (v2.0)** (`00-concept.md` through `05-asset-list.md`, `README.md`) detailing the 3-day loop, 6 AP energy budget, 10-attempt care QTE, Toothless taming, 3-phase Merchant boss battle, and full economy.
@@ -188,11 +194,14 @@ Run all commands from the repository root:
 
 ### Restore & Build
 ```powershell
-# Restore NuGet packages and local .NET tools across the entire solution
+# Restore NuGet packages across the entire solution
 dotnet restore CoPoject/CoPoject.slnx
 
-# Compile both V1 and V2 projects and run the content pipeline (Must build with 0 warnings, 0 errors)
+# Compile both V1 and V2 projects (Must build with 0 warnings, 0 errors)
 dotnet build CoPoject/CoPoject.slnx
+
+# Compile BePalV2 only
+dotnet build CoPoject/BePalV2/BePalV2.csproj
 ```
 
 ### Run
@@ -206,11 +215,11 @@ dotnet run --project CoPoject/BePal
 
 ### Test
 ```powershell
+# Fast developer test: execute only BePalV2 tests (56 tests in ~0.3s)
+dotnet test CoPoject/BePalV2.Tests
+
 # Execute complete unit test suite across both projects (139 tests: 56 V2 + 83 V1)
 dotnet test CoPoject/CoPoject.slnx
-
-# Execute only BePalV2 tests (56 tests)
-dotnet test CoPoject/BePalV2.Tests
 
 # Execute only BePal legacy tests (83 tests)
 dotnet test CoPoject/BePal.Tests
@@ -223,15 +232,6 @@ dotnet run --project CoPoject/BePalV2 -- --screenshot
 
 # Run BePal V1 automated playtest harness (captures 9 frames to screenshots/ and exits in ~4s)
 dotnet run --project CoPoject/BePal -- --screenshot
-```
-
-### Tooling & Pipeline Commands
-```powershell
-# Restore .NET local tools explicitly (dotnet-mgcb)
-dotnet tool restore --configfile CoPoject/BePalV2/.config/dotnet-tools.json
-
-# Build content assets manually via MonoGame Content Builder
-dotnet mgcb CoPoject/BePalV2/Content/Content.mgcb
 ```
 
 ---
@@ -249,7 +249,7 @@ This repository strictly follows the [Atlassian Gitflow Workflow](https://www.at
    - **`hotfix/v<version>`**: Branch from `main` to address critical production bugs. Merge into both `main` (with tag) and `Develop`. Delete branch.
 3. **Mandatory Pre-Merge Validation (Full-Solution Rigor)**:
    - Must build with 0 errors and 0 warnings: `dotnet build CoPoject/CoPoject.slnx`
-   - Must pass all **139 unit tests**: `dotnet test CoPoject/CoPoject.slnx`
+   - Must pass all tests: `dotnet test CoPoject/BePalV2.Tests` (and full `dotnet test CoPoject/CoPoject.slnx`)
    - Must pass V2 visual regression screenshot harness: `dotnet run --project CoPoject/BePalV2 -- --screenshot`
 
 ---
@@ -273,6 +273,8 @@ This repository strictly follows the [Atlassian Gitflow Workflow](https://www.at
    - The game loop runs synchronously on the main thread at 60 FPS. Do not dispatch background threads that touch MonoGame resources or `GraphicsDevice`.
 4. **CleanUI Design Consistency**:
    - Window and UI elements must use the `CleanUI` design tokens (dark charcoal backgrounds, pill badges, rounded panels, high-contrast text).
+5. **MonoGame.Extended Usage**:
+   - `using MonoGame.Extended;` is used in presentation screens and UI components for 2D primitives (`batch.FillRectangle`, `batch.DrawCircle`, `batch.DrawLine`, `batch.DrawRectangle`).
 
 ---
 
@@ -302,14 +304,3 @@ Adhere strictly to canonical terminology from `BEPAL/Docs/NewGDD/` (avoid synony
 - **Inventory Grid**: 8-slot fixed grid with consumable items and equipment accessories (*avoid*: backpack, bag).
 - **Controls**: `WASD` / Mouse to navigate, `Spacebar` for QTE/Dodge/Counter, `E` for End Day, `1-4` for Care shortcuts, `B` for Bag, `S` for Shop.
 - **CleanUI**: Modern dark borderless theme with pill badges and rounded cards.
-
-### Legacy V1 Reference Vocabulary
-
-Historical terms specific to the V1 prototype (`CoPoject/BePal/`):
-- **Pet-Care Session**: Single care interaction with legacy pet.
-- **Satisfaction**: 0 to 3 session progress bar.
-- **Player Health (3 HP)**: Player life resource (inflicted by mis-timed needles).
-- **Forced Retreat**: Early end of Day when player HP hits 0.
-- **V1 Abnormal Pets**: Mossling (Baseline), Nibbleclaw (Attacker), Blinkbun (Trickster).
-- **Samsara Navigation**: 4-Wall Panoramic Room (Pet Zone, Pantry, Study Desk, Front Door).
-- **Survival Log**: Research discovery journal.
