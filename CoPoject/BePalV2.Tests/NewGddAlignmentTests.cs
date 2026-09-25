@@ -103,8 +103,8 @@ public class NewGddAlignmentTests
         engine.AttemptCounter();
         float damageDealt = bossHpBefore - engine.BossHp;
 
-        // Base 80 dmg * 0.75 (Grimy) = 60 dmg
-        Assert.Equal(60f, damageDealt, precision: 1);
+        // Base 120 dmg * 0.75 (Grimy) = 90 dmg
+        Assert.Equal(90f, damageDealt, precision: 1);
     }
 
     [Fact]

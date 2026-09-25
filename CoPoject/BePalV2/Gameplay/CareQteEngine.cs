@@ -57,7 +57,7 @@ public sealed class CareQteEngine
         // Slide 18: Train (EXP) -> "เล็กและหมุนเร็ว" (Faster needle)
         if (action == CareActionType.Train)
         {
-            speedMultiplier *= 1.4f;
+            speedMultiplier *= 1.2f;
         }
         AngularVelocity = BaseAngularVelocity * speedMultiplier;
 
@@ -80,7 +80,7 @@ public sealed class CareQteEngine
             }
             else
             {
-                perfectBonusMultiplier *= 0.75f; // Standard Train narrow window
+                perfectBonusMultiplier *= 0.85f; // Standard Train narrow window
             }
         }
 
@@ -172,7 +172,7 @@ public sealed class CareQteEngine
 
             case PrecisionTier.Miss:
                 CurrentStreak = 0;
-                DayProgressPercent = Math.Min(100f, DayProgressPercent + 15f);
+                DayProgressPercent = Math.Min(100f, DayProgressPercent + 5f);
                 break;
         }
 

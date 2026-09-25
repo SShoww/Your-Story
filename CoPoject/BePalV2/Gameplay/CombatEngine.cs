@@ -22,10 +22,10 @@ public sealed class CombatEngine
 
     // Merchant Boss (Day 3) / Chapter Boss (Vertical Slice Finale)
     public const int MaxBossHits = 5;
-    public float BossMaxHp { get; } = 1000f;
-    public float BossHp { get; private set; } = 1000f;
+    public float BossMaxHp { get; } = 600f;
+    public float BossHp { get; private set; } = 600f;
     public int BossHitsRemaining => (int)Math.Ceiling(Math.Max(0f, BossHp) / (BossMaxHp / MaxBossHits));
-    public int BossPhase => BossHp > 700f ? 1 : (BossHp > 300f ? 2 : 3);
+    public int BossPhase => BossHp > 400f ? 1 : (BossHp > 150f ? 2 : 3);
 
     // Needle & QTE State
     public float NeedleAngle { get; private set; }
@@ -167,7 +167,7 @@ public sealed class CombatEngine
             }
 
             // Slide 38: "ปุ่มจะค่อยๆหดสั้นลง" (Dodge window dynamically shrinks each dodge)
-            DodgeZoneHalfWidth = Math.Max(0.12f, DodgeZoneHalfWidth * 0.95f);
+            DodgeZoneHalfWidth = Math.Max(0.12f, DodgeZoneHalfWidth * 0.97f);
 
             // Shift dodge zone to new angle
             DodgeZoneCenter = (DodgeZoneCenter + 1.6f) % (float)(2.0 * Math.PI);
@@ -186,8 +186,8 @@ public sealed class CombatEngine
             }
             else if (Mode == CombatMode.MerchantBoss)
             {
-                GoldStolenFromPlayer += 200;
-                TakePlayerDamage(20f);
+                GoldStolenFromPlayer += 50;
+                TakePlayerDamage(15f);
             }
             else if (Mode == CombatMode.ChapterBoss)
             {
@@ -212,7 +212,7 @@ public sealed class CombatEngine
         }
         else if (Mode == CombatMode.MerchantBoss)
         {
-            float counterDmg = 80f;
+            float counterDmg = 120f;
             if (HasToothlessAlly || ActivePet.Species == PetSpecies.Toothless)
             {
                 counterDmg *= 2.0f; // 2x Toothless counter synergy
@@ -254,8 +254,8 @@ public sealed class CombatEngine
         }
         else
         {
-            GoldStolenFromPlayer += 200;
-            TakePlayerDamage(25f);
+            GoldStolenFromPlayer += 50;
+            TakePlayerDamage(20f);
             return false;
         }
     }
