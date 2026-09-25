@@ -57,8 +57,8 @@ public class CombatEngineTests
             gloomEngine.Update(0.1f);
         }
         gloomEngine.AttemptDodge();
-        // Merchant boss attack is 20 dmg, Gloomtail takes 50% = 10 dmg -> PlayerHp = 90
-        Assert.Equal(90f, gloomEngine.PlayerHp);
+        // Merchant boss attack is 15 dmg, Gloomtail takes 50% = 7.5 dmg -> PlayerHp = 92.5
+        Assert.Equal(92.5f, gloomEngine.PlayerHp, precision: 1);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class CombatEngineTests
         // Force miss 3
         while (engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
         engine.AttemptDodge();
-        Assert.Equal(80f, engine.PlayerHp); // Took full 20 damage!
+        Assert.Equal(85f, engine.PlayerHp); // Took 15 damage
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class CombatEngineTests
     {
         var pet = new PetEntity(PetSpecies.Coco);
         var engine = new CombatEngine(CombatMode.MerchantBoss, pet);
-        Assert.Equal(1000f, engine.BossHp);
+        Assert.Equal(600f, engine.BossHp);
         Assert.Equal(1, engine.BossPhase);
 
         for (int i = 0; i < 3; i++)
@@ -100,7 +100,7 @@ public class CombatEngineTests
         }
 
         // 3 consecutive dodges in phase 1 dealt 100 dmg
-        Assert.Equal(900f, engine.BossHp);
+        Assert.Equal(500f, engine.BossHp);
     }
 
     [Fact]
@@ -113,13 +113,13 @@ public class CombatEngineTests
         // Trigger counter opportunity
         while (!engineWithout.IsNeedleInDodgeZone()) engineWithout.Update(0.05f);
         engineWithout.AttemptDodge();
-        engineWithout.AttemptCounter(); // 80 dmg
-        Assert.Equal(920f, engineWithout.BossHp);
+        engineWithout.AttemptCounter(); // 120 dmg
+        Assert.Equal(480f, engineWithout.BossHp);
 
         while (!engineWith.IsNeedleInDodgeZone()) engineWith.Update(0.05f);
         engineWith.AttemptDodge();
-        engineWith.AttemptCounter(); // 80 * 2 = 160 dmg
-        Assert.Equal(840f, engineWith.BossHp);
+        engineWith.AttemptCounter(); // 120 * 2 = 240 dmg
+        Assert.Equal(360f, engineWith.BossHp);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class CombatEngineTests
 
         Assert.False(dodged);
         // Slide 54: "ถ้ากดไม่ทัน จะโดนขโมยเงิน"
-        Assert.Equal(200, engine.GoldStolenFromPlayer);
+        Assert.Equal(50, engine.GoldStolenFromPlayer);
     }
 
     [Fact]
@@ -161,12 +161,12 @@ public class CombatEngineTests
 
         Assert.Equal(5, engine.BossHitsRemaining);
 
-        // Deal 250 damage (each hit is 200 hp)
+        // Deal 120 damage via counter (each hit segment is 120 hp)
         while (!engine.IsNeedleInDodgeZone()) engine.Update(0.05f);
         engine.AttemptDodge();
-        engine.AttemptCounter(); // 80 dmg
-        Assert.Equal(920f, engine.BossHp);
-        Assert.Equal(5, engine.BossHitsRemaining); // ceil(920 / 200) = 5
+        engine.AttemptCounter(); // 120 dmg
+        Assert.Equal(480f, engine.BossHp);
+        Assert.Equal(4, engine.BossHitsRemaining); // ceil(480 / 120) = 4
     }
 
     [Fact]

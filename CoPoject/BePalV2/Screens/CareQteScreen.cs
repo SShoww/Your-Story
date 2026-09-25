@@ -147,9 +147,9 @@ public sealed class CareQteScreen : IScreen
 
             case CareActionType.Train:
                 // Fast needle speed, smaller fixed target zone (does not shrink)
-                _needleSpeed = 4.0f;
-                _perfectWindow = 0.14f;
-                _goodWindow = 0.32f;
+                _needleSpeed = 3.0f;
+                _perfectWindow = 0.18f;
+                _goodWindow = 0.40f;
                 break;
 
             case CareActionType.Heal:

@@ -108,6 +108,12 @@ public sealed class BaseHabitatScreen : IScreen
                 _ => $"SHIFT 0{run.DayNumber} DISPATCH"
             };
 
+            // Append Grimy warning when pet is too dirty for combat encounters
+            if (run.ActivePet.IsGrimy && run.DayNumber >= 2)
+            {
+                briefing += $" [WARNING: {run.ActivePet.Name} is filthy (Clean: {run.ActivePet.Clean}/100). Pets with Clean < 50 refuse combat! Clean your pet before opening the door.]";
+            }
+
             _dialogue.StartDialogue(
                 title,
                 new[] { briefing },

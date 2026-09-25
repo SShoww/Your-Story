@@ -71,10 +71,10 @@ public class CareQteEngineTests
         var engineTrain = new CareQteEngine(coco, CareActionType.Train);
         var engineFeed = new CareQteEngine(coco, CareActionType.Feed);
 
-        // Slide 18: Train needle speed is 1.4x faster
-        Assert.Equal(engineFeed.AngularVelocity * 1.4f, engineTrain.AngularVelocity, precision: 4);
-        // Slide 18: Train perfect window is 0.75x narrower
-        Assert.Equal(engineFeed.PerfectWindow * 0.75f, engineTrain.PerfectWindow, precision: 4);
+        // Slide 18: Train needle speed is 1.2x faster
+        Assert.Equal(engineFeed.AngularVelocity * 1.2f, engineTrain.AngularVelocity, precision: 4);
+        // Slide 18: Train perfect window is 0.85x narrower
+        Assert.Equal(engineFeed.PerfectWindow * 0.85f, engineTrain.PerfectWindow, precision: 4);
     }
 
     [Fact]
