@@ -1,6 +1,4 @@
 <Solution>
-  <Project Path="BePal/BePal.csproj" />
-  <Project Path="BePal.Tests/BePal.Tests.csproj" />
   <Project Path="BePalV2/BePalV2.csproj" />
   <Project Path="BePalV2.Tests/BePalV2.Tests.csproj" />
 </Solution>
