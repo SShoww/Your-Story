@@ -2,7 +2,7 @@
 
 This directory serves as the raw staging landing zone for external, free, or newly created asset candidates (2D art, sound effects, background music, and typography) before they are approved by QA and compiled via the MonoGame Content Pipeline (MGCB).
 
-Non-programmer team members (**Dear** for 2D Art, **Pooh** for Audio/SFX) should place raw candidates here before pipeline integration.
+Non-programmer team members (**Dear** for 2D Art, **Zunk** for Flex/Audio, **Pooh** for Game Design & UI Lead) should place raw candidates here before pipeline integration.
 
 ---
 
@@ -54,7 +54,7 @@ docs/02_Assets/_candidates/
 
 ```mermaid
 flowchart LR
-    A[1. Candidate Drop\n_candidates/*] --> B[2. QA Review\nPooh / Show]
+    A[1. Candidate Drop\n_candidates/*] --> B[2. QA Review\nPooh / Show / Zunk]
     B --> C[3. Move to Production\nCoPoject/BePalV2/Content/]
     C --> D[4. Register MGCB\nContent.mgcb]
     D --> E[5. Compile & Ship\n.xnb output]

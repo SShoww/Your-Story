@@ -4,9 +4,9 @@
 **ระยะเวลา:** 2026-09-01 — 2026-09-14  
 **Team:**
 - วศิน ศรีวรกุล (โชว์) — Lead Programmer (14 SP)
-- ปีย์ตะวัน แห่งหาญ (ซุง) — Game Designer (15 SP)
-- ภูมิพัฒน์ ตามวงค์ (ภูมิ) — Flex (leans towards Design) / Audio Support (0 SP)
-- ธัญญรัตน์ ติ๊บหน่อ (เดียร์) — 2D Art & UI Lead (0 SP)
+- ปีย์ตะวัน แห่งหาญ (ซุง) — Flex (15 SP)
+- ภูมิพัฒน์ ตามวงค์ (ภูมิ) — Game Designer & UI Lead (0 SP)
+- ธัญญรัตน์ ติ๊บหน่อ (เดียร์) — 2D Art (0 SP)
 **Total Velocity:** 29 SP (Done ✅)
 
 ---
@@ -17,10 +17,10 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 | Starter Pet Selection & Base Habitat Room | โชว์ (Lead Prog) | Must Have | 4 | ✅ Done |
 | 2 | 10-Attempt Care QTE Engine | โชว์ (Lead Prog) | Must Have | 5 | ✅ Done |
-| 3 | Pet Stats Model & Mathematical Decay Rules | ซุง (Game Designer) | Must Have | 6 | ✅ Done |
+| 3 | Pet Stats Model & Mathematical Decay Rules | ซุง (Flex) | Must Have | 6 | ✅ Done |
 | 4 | Discrete Energy Budget (6 AP) System | โชว์ (Lead Prog) | Must Have | 5 | ✅ Done |
-| 5 | Sickness & Health Status Effects Design | ซุง (Game Designer) | Must Have | 5 | ✅ Done |
-| 6 | Day 1 Thunderstorm Disaster & Calming QTE | ซุง (Game Designer) | Must Have | 4 | ✅ Done |
+| 5 | Sickness & Health Status Effects Design | ซุง (Flex) | Must Have | 5 | ✅ Done |
+| 6 | Day 1 Thunderstorm Disaster & Calming QTE | ซุง (Flex) | Must Have | 4 | ✅ Done |
 
 ## Status Legend
 - 🔲 Todo

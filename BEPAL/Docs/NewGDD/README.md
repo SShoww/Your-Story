@@ -12,9 +12,9 @@ date:
 | รหัส | ชื่อ | ชื่อเล่น | บทบาทหน้าที่ |
 | --- | --- | --- | --- |
 | 682110141 | วศิน ศรีวรกุล | โชว์ | Lead Programmer |
-| 682110128 | ปีย์ตะวัน แห่งหาญ | ซุง | Game Designer |
-| 682110137 | ภูมิพัฒน์ ตามวงค์ | ภูมิ | Flex (leans towards Design) / Audio Support |
-| 682110119 | ธัญญรัตน์ ติ๊บหน่อ | เดียร์ | 2D Art & UI Lead |
+| 682110128 | ปีย์ตะวัน แห่งหาญ | ซุง | Flex |
+| 682110137 | ภูมิพัฒน์ ตามวงค์ | ภูมิ | Game Designer & UI Lead |
+| 682110119 | ธัญญรัตน์ ติ๊บหน่อ | เดียร์ | 2D Art |
 
 | ไฟล์ | เนื้อหา | สถานะ |
 | --- | --- | --- |
@@ -59,9 +59,9 @@ date:
 
 | คนในทีม | รับผิดชอบ | โฟลเดอร์ staging / Source |
 | --- | --- | --- |
-| เดียร์ | 2D Art, Sprites, Environment & UI Graphics | `docs/02_Assets/_candidates/sprites/` |
-| ภูมิ | Flex Design, Narrative Scripts & Audio (SFX/BGM) | `docs/02_Assets/_candidates/sfx/`, `music/` |
-| ซุง | Game Design, Mechanics, Numbers Balance & QTE Math | `docs/02_Assets/_candidates/fonts/`, `data/` |
+| เดียร์ | 2D Art, Sprites (Pets & Boss), Environment Backgrounds | `docs/02_Assets/_candidates/sprites/` |
+| ภูมิ | Game Design, Numbers Balance, Narrative Scripts & UI Lead | `docs/02_Assets/_candidates/data/`, `ui/` |
+| ซุง | Flex Support, Audio Production (SFX/BGM) & QA Playtesting | `docs/02_Assets/_candidates/sfx/`, `music/` |
 | โชว์ | Lead Gameplay Code, Architecture & Automated QA | `CoPoject/BePalV2/`, `CoPoject/BePalV2.Tests/` |
 
 ---
@@ -85,15 +85,15 @@ date:
 
 ## Guidelines for Developers & Designers
 
-1. **สำหรับ Game Designers (ซุง):**
-   - ใช้ค่าตัวเลขและสูตรคำนวณใน `03-mechanics.md` เป็นฐานในการ Balance ตัวเลข
-   - สามารถขยายเนื้อเรื่องไปยัง Days 4–5 ได้ในอนาคตโดยใช้สถาปัตยกรรมลูป 4 เฟสใน `01-core-loop.md`
-2. **สำหรับ Lead Programmers (โชว์):**
+1. **สำหรับ Game Designer & UI Lead (ภูมิ):**
+   - ใช้ค่าตัวเลขและสูตรคำนวณใน `03-mechanics.md` เป็นฐานในการ Balance ตัวเลข และออกแบบโครงสร้าง UI/HUD/Dialogue
+   - ติดตามบทสนทนาและทางเลือกเนื้อเรื่องใน `01-core-loop.md` และ `03-mechanics.md`
+2. **สำหรับ Lead Programmer (โชว์):**
    - ศึกษาสถาปัตยกรรมและแผนภาพคลาสใน `04-class-diagram.md`
    - พัฒนาโมเดลในโฟลเดอร์ `CoPoject/BePalV2/Gameplay/` ให้เป็น Pure C# เพื่อให้ผ่านชุดทดสอบใน `CoPoject/BePalV2.Tests/`
-3. **สำหรับ Flex Design & Audio (ภูมิ):**
-   - ติดตามบทสนทนาและทางเลือกเนื้อเรื่องใน `01-core-loop.md` และ `03-mechanics.md`
+3. **สำหรับ Flex (ซุง):**
    - จัดหาและตรวจสอบไฟล์เสียงตามรายการใน `05-asset-list.md`
-4. **สำหรับ UI & 2D Artists (เดียร์):**
+   - ดำเนินการทดสอบ Playtesting QA ระบบ และดูแลไฟล์ฟอนต์/Config สนับสนุนทีม
+4. **สำหรับ 2D Artist (เดียร์):**
    - ยึดสัดส่วนความละเอียดและรายการภาพตามที่ระบุใน `05-asset-list.md`
    - ออกแบบชุดสไปรต์สัตว์เลี้ยงให้มีอารมณ์ Idle, Happy, Angry, Attack/Teleport และ Hurt เพื่อรองรับ Status Effects
